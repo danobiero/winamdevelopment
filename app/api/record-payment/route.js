@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
@@ -90,8 +92,8 @@ export async function GET(req) {
       const newTotal = Number(
         metadata.new_total_price || oldTotal + difference
       );
-      const numStudents = Number(metadata.num_Students)
-      const observations = String(metadata.reason)
+      const numStudents = Number(metadata.num_Students);
+      const observations = String(metadata.reason);
 
       // Update booking totals
       const { error: bookingUpdateError } = await supabase

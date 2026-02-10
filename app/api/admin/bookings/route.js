@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createAdminSupabaseClient } from '@/app/_lib/supabase';
 
 export async function GET() {
