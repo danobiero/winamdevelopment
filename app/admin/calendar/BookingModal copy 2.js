@@ -78,16 +78,16 @@ export default function BookingModal({
         <div className="mt-6 flex gap-3">
           {ev.meet_link && (
             <button
-              onClick={() => !hasEnded && window.open(ev.meet_link, '_blank')}
-              disabled={hasEnded}
+              onClick={() => !isPast && window.open(ev.meet_link, '_blank')}
+              disabled={isPast}
               className={`flex-[2] py-3 font-bold rounded-xl transition-all
-      ${
-        hasEnded
-          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          : 'bg-blue-600 text-white hover:bg-blue-700'
-      }`}
+                ${
+                  isPast
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
             >
-              {hasEnded ? 'Session Ended' : 'Join Meeting'}
+              {isPast ? 'Session Ended' : 'Join Meeting'}
             </button>
           )}
 

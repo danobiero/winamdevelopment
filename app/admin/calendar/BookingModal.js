@@ -14,18 +14,17 @@ export default function BookingModal({
   const displayDate = new Date(
     isSingleEvent ? event.start_time : date
   ).toLocaleDateString([], {
-    weekday: 'long',
+    weekday: 'short',
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
   const renderSession = (ev) => {
     const start = new Date(ev.start_time);
     const end = new Date(ev.end_time);
-    const isPast = start < now;
+    const hasEnded = now > end;
 
-    // 🔑 SUPPORT BOTH BACKEND SHAPES
     const students = Array.isArray(ev.bookingDetails)
       ? ev.bookingDetails
       : Array.isArray(ev.bookings)
@@ -33,66 +32,71 @@ export default function BookingModal({
         : [];
 
     return (
-      <div key={ev.id} className="border rounded-xl p-4 bg-gray-50">
+      <div
+        key={ev.id}
+        className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50"
+      >
         {/* SESSION INFO */}
-        <DetailRow label="Session" value={ev.title || '—'} />
-        <DetailRow
-          label="Time"
-          value={`${start.toLocaleTimeString([], {
-            hour: 'numeric',
-            minute: '2-digit',
-          })} – ${end.toLocaleTimeString([], {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}`}
-        />
+        <div className="space-y-3">
+          <DetailRow label="Session" value={ev.title || '—'} />
+          <DetailRow
+            label="Time"
+            value={`${start.toLocaleTimeString([], {
+              hour: 'numeric',
+              minute: '2-digit',
+            })} – ${end.toLocaleTimeString([], {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}`}
+          />
+        </div>
 
         {/* STUDENTS */}
-        <div className="mt-4">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-            Students
+        <div className="mt-5">
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            Confirmed Students
           </label>
 
           {students.length > 0 ? (
-            <ul className="mt-2 space-y-1">
+            <ul className="mt-2 space-y-2">
               {students.map((b, idx) => (
                 <li
                   key={b.id ?? idx}
-                  className="text-sm font-semibold text-gray-800 bg-white border rounded-lg px-3 py-2"
+                  className="text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm"
                 >
                   {b.studentName ?? 'Unknown Student'}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-gray-400 italic">
+            <p className="mt-2 text-sm text-gray-400 italic px-1">
               No students booked.
             </p>
           )}
         </div>
 
-        {/* ACTIONS */}
-        <div className="mt-6 flex gap-3">
+        {/* ACTIONS - Responsive Flex Direction */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
           {ev.meet_link && (
             <button
-              onClick={() => !isPast && window.open(ev.meet_link, '_blank')}
-              disabled={isPast}
-              className={`flex-[2] py-3 font-bold rounded-xl transition-all
+              onClick={() => !hasEnded && window.open(ev.meet_link, '_blank')}
+              disabled={hasEnded}
+              className={`flex-[2] order-1 sm:order-none py-4 px-6 font-bold rounded-2xl transition-all active:scale-[0.98]
                 ${
-                  isPast
+                  hasEnded
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
                 }`}
             >
-              {isPast ? 'Session Ended' : 'Join Meeting'}
+              {hasEnded ? 'Session Ended' : 'Join Meeting'}
             </button>
           )}
 
           <button
             onClick={onClose}
-            className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+            className="flex-1 order-2 sm:order-none py-4 px-6 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 active:scale-[0.98] transition-all"
           >
-            Close
+            {isSingleEvent ? 'Close' : 'Back'}
           </button>
         </div>
       </div>
@@ -100,62 +104,69 @@ export default function BookingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* OVERLAY */}
       <div
-        className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-gray-900/40 backdrop-blur-md transition-opacity"
         onClick={onClose}
       />
 
-      {/* MODAL */}
-      <div className="relative bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
-        {/* HANDLE */}
-        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
+      {/* MODAL / BOTTOM SHEET */}
+      <div className="relative bg-white w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]">
+        {/* MOBILE DRAG HANDLE */}
+        <div className="pt-4 pb-2 sm:hidden flex justify-center">
+          <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+        </div>
 
         {/* HEADER */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="px-6 py-4 flex justify-between items-center border-b border-gray-50">
           <div>
-            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
-              Session Details
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">
+              {isSingleEvent ? 'Session' : 'Daily Schedule'}
             </h2>
-            <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-[0.15em]">
               {displayDate}
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-500"
+            className="hidden sm:flex p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
           >
-            ✕
+            <span className="text-xl leading-none">×</span>
           </button>
         </div>
 
-        {/* BODY */}
-        <div className="space-y-6">
-          {isSingleEvent ? (
-            renderSession(event)
-          ) : sessions.length > 0 ? (
-            sessions.map(renderSession)
-          ) : (
-            <p className="text-sm text-gray-500 italic text-center">
-              No sessions for this date.
-            </p>
-          )}
+        {/* BODY - Scrollable area */}
+        <div className="p-6 overflow-y-auto custom-scrollbar">
+          <div className="space-y-6 pb-4">
+            {isSingleEvent ? (
+              renderSession(event)
+            ) : sessions.length > 0 ? (
+              sessions.map(renderSession)
+            ) : (
+              <div className="py-12 text-center">
+                <p className="text-gray-400 italic font-medium">
+                  No sessions scheduled.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ===================== HELPER ===================== */
 function DetailRow({ label, value }) {
   return (
-    <div className="border-b border-gray-200 pb-2">
-      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+    <div className="group border-b border-gray-100 pb-2 last:border-0">
+      <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">
         {label}
       </label>
-      <p className="text-base font-semibold text-gray-800">{value}</p>
+      <p className="text-base font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+        {value}
+      </p>
     </div>
   );
 }
