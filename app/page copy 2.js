@@ -34,17 +34,6 @@ export default function Page() {
             Explore Lessons
           </Link>
         </div>
-
-        {/* PRIVACY POLICY LINK */}
-        <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center">
-          <Link href="/about" className="text-xs text-blue-950 hover:underline">
-            Privacy Policy || 
-          </Link>
-          
-          <Link href="/about" className="text-xs text-blue-950 hover:underline">
-            Terms of Service
-          </Link>
-        </div>
       </main>
     </div>
   );
