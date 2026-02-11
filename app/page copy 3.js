@@ -21,15 +21,10 @@ export default function Page() {
 
         {/* CONTENT LAYER: Perfectly centered over the background */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
-          {/* BRANDING: This matches your Google OAuth App Name */}
-          <p className="text-white font-bold tracking-[0.2em] uppercase text-sm mb-2 opacity-80">
-            Praxida
-          </p>
-
-          <h1 className="text-5xl md:text-7xl lg:text-8xl text-white mb-4 tracking-tight font-normal">
+          {/* Responsive Text: scaled down for mobile to avoid overflow */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl text-blue-950 mb-10 tracking-tight font-normal">
             Welcome
           </h1>
-
 
           <Link
             href="/lessons"
@@ -40,14 +35,12 @@ export default function Page() {
           </Link>
         </div>
 
-        {/* PRIVACY POLICY & TERMS: Essential for Google Verification */}
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-4">
+        {/* PRIVACY POLICY LINK */}
+        <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center">
           <Link href="/about" className="text-xs text-blue-950 hover:underline">
-            Privacy Policy
+            Privacy Policy || 
           </Link>
-
-          <span className="text-xs text-blue-950">|</span>
-
+          
           <Link href="/about" className="text-xs text-blue-950 hover:underline">
             Terms of Service
           </Link>
