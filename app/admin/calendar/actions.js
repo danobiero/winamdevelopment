@@ -63,38 +63,6 @@ export async function attachCalendarEvent({ bookingId, event }) {
      return { processed: events.length, upserted };
    }
 
-export async function saveCalendarToSupabase_old(accessToken) {
-  const supabase = createAdminSupabaseClient();
-  const events = await getGoogleCalendarEvents(accessToken);
-
-  let upserted = 0;
-
-  for (const event of events) {
-    const { error } = await supabase.from('calendar').upsert(
-      {
-        google_event_id: event.id, // identity
-        title: event.title || 'Untitled Event',
-        description: event.description,
-        start_time: event.start,
-        end_time: event.end,
-        meet_link: event.meetLink,
-        session_key: null, // 🔒 CRITICAL RULE
-      },
-      {
-        onConflict: 'google_event_id',
-      }
-    );
-
-    if (error) throw error;
-    upserted++;
-  }
-
-  return {
-    processed: events.length,
-    upserted,
-  };
-}
-
 // ============================================================
 // ASSIGN BOOKINGS TO CALENDAR (TIME-SLOT DRIVEN) NEW
 // ============================================================

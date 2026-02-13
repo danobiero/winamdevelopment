@@ -44,29 +44,6 @@ export async function getBookingById(id) {
 }
 
 
-export async function getBookingById_old(id) {
-  const session = await auth();
-  if (!session?.user?.adminId) throw new Error('Unauthorized');
-
-  const supabase = createAdminSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(
-      `*,
-      lessons(*),
-      students(*),
-      refunds(*) 
-    `
-    )
-    .eq('id', id)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-
-  return data;
-}
-
 //DELETE BOOKING ACTION
 export async function deleteBookingAction(formData) {
   const bookingId = Number(formData.get('bookingId'));
@@ -178,31 +155,6 @@ export async function getBookings({ from, to }) {
   return data ?? [];
 }
 
-
-export async function getBookings_old({ from, to }) {
-  const supabase = createAdminSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(
-      `
-      *,
-      lessons ( name ),
-      students ( fullName ),
-      refunds ( id )
-    `
-    )
-    .order('created_at', { ascending: false })
-    .range(from, to);
-
-  if (error) throw error;
-
-  return data.map((booking) => ({
-    ...booking,
-    hasRefund: booking.refunds?.length > 0,
-    refundId: booking.refunds?.[0]?.id ?? null,
-  }));
-}
 
 
 //CHECK BOOKINGS REFUND STATUS

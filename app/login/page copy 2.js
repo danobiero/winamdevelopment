@@ -1,6 +1,5 @@
 import AdminSignInButton from '../_components/AdminSignInButton';
 import SignInButton from '../_components/SignInButton';
-import SupabaseSignInButton from '../_components/SupabaseSigninButton';
 
 export const metadata = {
   title: 'Login',
@@ -27,7 +26,6 @@ export default function Page() {
       <div className="flex flex-col gap-4 w-full max-w-xs sm:max-w-sm">
         <SignInButton />
         <AdminSignInButton />
-        
       </div>
 
       <p className="text-sm text-primary-600 opacity-70">

@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import Spinner from '../_components/Spinner';
 import OngoingLessonsContainer from '../_components/OngoingLessonsContainer';
-import PostLoginInstallTrigger from '../_components/PostLoginInstallTrigger';
 
 export const metadata = {
   title: 'Account',
@@ -10,9 +9,6 @@ export const metadata = {
 export default function AccountPage() {
   return (
     <div className="px-4 md:px-8 lg:px-12 py-6 md:py-10 max-w-7xl mx-auto">
-      {/* MOBILE INSTALL MODAL TRIGGER */}
-      <PostLoginInstallTrigger />
-
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-logo-100 mb-8 leading-tight text-center md:text-left">
         Your Ongoing Lessons
       </h2>

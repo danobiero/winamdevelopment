@@ -4,7 +4,7 @@ import gradient from '@/public/office_2.jpg';
 
 export default function Page() {
   return (
-    <div className="h-screen w-full overflow-hidden">
+    <div className="h-screen w-full w-full">
       <main className="h-full w-full">
         {/* BACKGROUND LAYER: Occupies 100% of the screen from the very top */}
         <div className="absolute inset-0 z-0">

@@ -1369,3 +1369,21 @@ export async function getLessonCalendar(bookingId) {
 
   return eventsByDate;
 }
+
+export async function emailSignInAction(formData) {
+  const supabase = createClient();
+
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    redirect('/login?error=Invalid credentials');
+  }
+
+  redirect('/lessons');
+}
