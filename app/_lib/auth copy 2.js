@@ -14,8 +14,7 @@ const authConfig = {
         params: {
           access_type: 'offline',
           prompt: 'consent',
-          scope:
-            'openid email profile https://www.googleapis.com/auth/calendar.readonly',
+          scope: 'openid email profile',
         },
       },
     }),

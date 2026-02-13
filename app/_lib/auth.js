@@ -7,53 +7,88 @@ const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      // No extra authorization params needed for default email/profile
+
+      // ✅ FIX: Add the required calendar scope here
+      authorization: {
+        url: 'https://accounts.google.com/o/oauth2/v2/auth',
+        params: {
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: 'openid email profile',
+        },
+      },
     }),
   ],
 
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       try {
-        // 1. Check Admin
+        // CHECK ADMIN
         const admin = await getAdmin(user.email);
         if (admin) {
           user.adminId = admin.id;
+          user.id = `admin-${admin.id}`;
+
           return true;
         }
 
-        // 2. Check/Create Student
+        // CHECK STUDENT
         const student = await getStudent(user.email);
+
         if (!student) {
           const newStudent = await createStudent({
             email: user.email,
             fullName: user.name,
           });
-          user.studentId = newStudent.id;
+
+          user.id = `student-${newStudent.id}`;
         } else {
-          user.studentId = student.id;
+          user.id = `student-${student.id}`;
         }
 
         return true;
       } catch (err) {
-        console.error('❌ Sign-in database error:', err);
+        console.error('❌ Sign-in failed:', err);
         return false;
       }
     },
 
-    async jwt({ token, user }) {
-      // 'user' is only passed on the first call (sign in)
-      if (user) {
-        token.adminId = user.adminId || null;
-        token.studentId = user.studentId || null;
+    // JWT stores tokens between requests
+    async jwt({ token, user, account }) {
+      // First login
+      if (account && user) {
+        token.email = user.email;
+        token.name = user.name;
+
+        // Preserve admin or student identity
+        if (user.adminId) token.adminId = user.adminId;
+        if (user.studentId) token.studentId = user.studentId;
+
+        // Store access token ONLY for admin sessions
+        if (token.adminId && account.access_token) {
+          token.accessToken = account.access_token;
+          token.scope = account.scope;
+        }
       }
+
       return token;
     },
 
+    // Expose only correct data to the session
     async session({ session, token }) {
-      if (session.user) {
+      session.user.email = token.email;
+      session.user.name = token.name;
+
+      if (token.adminId) {
         session.user.adminId = token.adminId;
-        session.user.studentId = token.studentId;
+        session.accessToken = token.accessToken ?? null;
+        session.scope = token.scope ?? null;
+      } else {
+        // Student session → ensure no admin properties leak
+        const student = await getStudent(token.email);
+        session.user.studentId = student.id;
       }
+
       return session;
     },
   },
@@ -61,8 +96,6 @@ const authConfig = {
   pages: {
     signIn: '/login',
   },
-  // Essential for Vercel deployment
-  trustHost: true,
 };
 
 export const {
