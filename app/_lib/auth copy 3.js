@@ -7,6 +7,8 @@ const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+
+      // ✅ FIX: Add the required calendar scope here
       authorization: {
         url: 'https://accounts.google.com/o/oauth2/v2/auth',
         params: {
@@ -18,29 +20,19 @@ const authConfig = {
     }),
   ],
 
-  session: {
-    strategy: 'jwt',
-  },
-
-  trustHost: true,
-
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       try {
-        // =========================
-        // ADMIN CHECK
-        // =========================
+        // CHECK ADMIN
         const admin = await getAdmin(user.email);
-
         if (admin) {
           user.adminId = admin.id;
           user.id = `admin-${admin.id}`;
+
           return true;
         }
 
-        // =========================
-        // STUDENT CHECK
-        // =========================
+        // CHECK STUDENT
         const student = await getStudent(user.email);
 
         if (!student) {
@@ -49,10 +41,8 @@ const authConfig = {
             fullName: user.name,
           });
 
-          user.studentId = newStudent.id;
           user.id = `student-${newStudent.id}`;
         } else {
-          user.studentId = student.id;
           user.id = `student-${student.id}`;
         }
 
@@ -63,18 +53,20 @@ const authConfig = {
       }
     },
 
+    // JWT stores tokens between requests
     async jwt({ token, user, account }) {
+      
       // First login
       if (account && user) {
         token.email = user.email;
         token.name = user.name;
 
-        // Preserve identities
+        // Preserve admin or student identity
         if (user.adminId) token.adminId = user.adminId;
         if (user.studentId) token.studentId = user.studentId;
 
-        // Admin-only Google access token
-        if (user.adminId && account.access_token) {
+        // Store access token ONLY for admin sessions
+        if (token.adminId && account.access_token) {
           token.accessToken = account.access_token;
           token.scope = account.scope;
         }
@@ -83,6 +75,7 @@ const authConfig = {
       return token;
     },
 
+    // Expose only correct data to the session
     async session({ session, token }) {
       session.user.email = token.email;
       session.user.name = token.name;
@@ -92,8 +85,9 @@ const authConfig = {
         session.accessToken = token.accessToken ?? null;
         session.scope = token.scope ?? null;
       } else {
-        // No DB call — rely on JWT
-        session.user.studentId = token.studentId;
+        // Student session → ensure no admin properties leak
+        const student = await getStudent(token.email);
+        session.user.studentId = student.id;
       }
 
       return session;
