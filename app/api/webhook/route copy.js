@@ -1,16 +1,14 @@
 import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
-import { createAdminSupabaseClient } from '@/app/_lib/supabase-admin';
+import { db } from '@/app/_lib/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const db = createAdminSupabaseClient();
 
 export async function POST(req) {
   const sig = req.headers.get('stripe-signature');
   const body = await req.text();
 
   let event;
-
   try {
     event = stripe.webhooks.constructEvent(
       body,
@@ -26,12 +24,10 @@ export async function POST(req) {
     const session = event.data.object;
     const bookingId = session.metadata.bookingId;
 
-    if (!bookingId) {
-      console.error('Missing bookingId in Stripe metadata');
-      return NextResponse.json({ received: true });
-    }
-
-    await db.from('bookings').update({ status: 'paid' }).eq('id', bookingId);
+    await db
+      .from('bookings')
+      .update({ status: 'paid' })
+      .eq('id', bookingId);
 
     console.log(`✅ Payment confirmed for booking ${bookingId}`);
   }
