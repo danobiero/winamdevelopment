@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/app/_lib/supabase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+//create db
 const db = createAdminSupabaseClient();
 
 export async function POST(req) {
