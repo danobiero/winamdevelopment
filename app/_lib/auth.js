@@ -12,10 +12,8 @@ const authConfig = {
       authorization: {
         url: 'https://accounts.google.com/o/oauth2/v2/auth',
         params: {
-          access_type: 'offline',
-          prompt: 'consent',
           scope:
-            'openid email profile https://www.googleapis.com/auth/calendar.readonly',
+            'openid email profile',
         },
       },
     }),
