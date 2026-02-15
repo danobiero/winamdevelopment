@@ -95,6 +95,8 @@ const authConfig = {
   pages: {
     signIn: '/login',
   },
+
+  debug: true, // 👈 Add this line
 };
 
 export const {
