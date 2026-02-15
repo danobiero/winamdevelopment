@@ -2,7 +2,6 @@ import '@/app/_styles/globals.css';
 import { Roboto } from 'next/font/google';
 import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
-import PWARegister from './_components/PWARegister';
 
 export const metadata = {
   title: {
@@ -10,17 +9,7 @@ export const metadata = {
     default: 'Praxida - Practical Financial Foundation',
   },
   description: 'Financial Literacy based on practical financial foundations',
-
-  manifest: '/manifest.json',
-
-  icons: {
-    icon: '/icon-192.png',
-    apple: '/icon-192.png',
-  },
-
-  themeColor: '#2563eb',
 };
-
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -34,7 +23,6 @@ export default function RootLayout({ children }) {
       <body
         className={`${roboto.className} antialiased text-primary-950 min-h-screen flex flex-col relative overflow-x-hidden`}
       >
-        <PWARegister />
         <Header />
         <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col">
           <main className="max-w-7xl mx-auto w-full flex-1">
