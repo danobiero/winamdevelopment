@@ -4,29 +4,28 @@ import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
 
-// 1. New Viewport export for themeColor and other scaling properties
-export const viewport = {
-  themeColor: '#2563eb',
-};
-
-// 2. Updated Metadata export (themeColor removed)
 export const metadata = {
   title: {
     template: 'Praxida - %s',
     default: 'Praxida - Practical Financial Foundation',
   },
   description: 'Financial Literacy based on practical financial foundations',
+
   manifest: '/manifest.json',
+
   icons: {
     icon: '/icon-192.png',
     apple: '/icon-192.png',
   },
+
+  themeColor: '#2563eb',
 };
+
 
 const roboto = Roboto({
   subsets: ['latin'],
   display: 'swap',
-  weight: ['400', '700'],
+  weight: ['400', '700'], // Added 700 for bold weights used in your UI
 });
 
 export default function RootLayout({ children }) {
