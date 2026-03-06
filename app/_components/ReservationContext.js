@@ -8,7 +8,7 @@ const today = new Date();
 const initialState = {
   from: undefined,
   to: undefined,
-  month: today, // initial focus for DayPicker
+  month: today, 
   student: 1
 };
 

@@ -9,15 +9,20 @@ export const metadata = {
 
 export default function AccountPage() {
   return (
-    <div className="px-4 md:px-8 lg:px-12 py-6 md:py-10 max-w-7xl mx-auto">
+    /* Increased max-w to 1600px (max-w-screen-2xl) to support multi-column grids on wide monitors */
+    <div className="px-4 md:px-8 lg:px-12 py-8 md:py-14 max-w-[1600px] mx-auto">
       {/* MOBILE INSTALL MODAL TRIGGER */}
       <PostLoginInstallTrigger />
 
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-logo-100 mb-8 leading-tight text-center md:text-left">
-        Your Ongoing Lessons
+      {/* Typography Updated: 
+         - font-black for a more premium look 
+         - color changed to #000033 to match Praxida logo
+      */}
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
+        Your Ongoing <span className="text-blue-600">Sessions</span>
       </h2>
 
-      <div className="min-h-[400px]">
+      <div className="min-h-[500px]">
         <Suspense fallback={<Spinner />}>
           <OngoingLessonsContainer />
         </Suspense>

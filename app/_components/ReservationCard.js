@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PencilSquareIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, ArrowDownTrayIcon, InformationCircleIcon } from '@heroicons/react/24/solid';
 import { format, isPast, isToday, parseISO, formatDistance } from 'date-fns';
 import DeleteReservation from './DeleteReservation';
 import Image from 'next/image';
@@ -15,7 +15,7 @@ export const formatDistanceFromNow = (dateStr) =>
     addSuffix: true,
   }).replace('about ', '');
 
-function ReservationCard({ booking, onDelete }) {
+function ReservationCard({ booking, onDelete, isFullWidth }) {
   const {
     id,
     startDate,
@@ -29,19 +29,19 @@ function ReservationCard({ booking, onDelete }) {
     refunds,
   } = booking;
 
+  
+  const [showMaterialsList, setShowMaterialsList] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
   const isCancelled =
     cancelled === true || cancelled === 'true' || cancelled === 1;
-
   const refundsSafe = refunds ?? [];
   const hasRefunds = refundsSafe.length > 0;
-  const [refundOpen, setRefundOpen] = useState(false);
 
   const name = lessons?.name || 'Invalid Lesson';
   const image = lessons?.image || '/default-avatar.jpg';
 
   const today = new Date();
   let bookingStatus = 'upcoming';
-
   if (isToday(new Date(startDate))) bookingStatus = 'new';
   else if (new Date(startDate) < today && new Date(endDate) >= today)
     bookingStatus = 'ongoing';
@@ -58,39 +58,60 @@ function ReservationCard({ booking, onDelete }) {
     cancelled: 'bg-red-100 text-red-700 border border-red-200',
   };
 
+  // Extract the material (taking the first one if multiple exist)
+  const material = lessons?.lesson_materials?.[0];
+  const materialUrl = material?.file_url;
+  const materials = lessons?.lesson_materials || [];
+  const hasMultiple = materials.length > 1;
+  const hasSingle = materials.length === 1;
+  const hasNone = materials.length === 0;
+
+  const handleDownload = () => {
+    if (!materialUrl) return;
+    // Opens the file in a new tab; browser handles the download/view
+    window.open(materialUrl, '_blank');
+  };
+
   return (
     <>
       <div
-        className={`flex flex-col md:flex-row rounded-xl border border-primary-200
-        bg-white shadow-sm hover:shadow-md transition-all overflow-hidden
+        className={`flex rounded-xl border border-primary-200 bg-white shadow-sm 
+        hover:shadow-md transition-all overflow-hidden h-full
+        ${isFullWidth ? 'flex-col md:flex-row' : 'flex-col'} 
         ${isCancelled ? 'opacity-75 grayscale-[0.4]' : ''}`}
       >
-        {/* Image */}
-        <div className="relative h-44 sm:h-52 md:h-auto md:w-52 flex-shrink-0">
+        {/* Image Section */}
+        <div
+          className={`relative flex-shrink-0 
+          ${isFullWidth ? 'aspect-video md:aspect-auto md:w-2/5' : 'h-48 w-full'}`}
+        >
           <Image
             src={image}
             fill
             alt={`Lesson ${name}`}
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, 208px"
+            sizes={
+              isFullWidth
+                ? '(max-width: 768px) 100vw, 40vw'
+                : '(max-width: 768px) 100vw, 50vw'
+            }
           />
 
           <span
-            className={`absolute top-3 left-3 md:hidden px-3 py-1 rounded-full
-            text-[10px] font-bold uppercase tracking-wider shadow
+            className={`absolute top-3 left-3 px-3 py-1 rounded-full
+            text-[10px] font-bold uppercase tracking-wider shadow-md z-10
             ${statusColors[displayStatus]}`}
           >
             {displayStatus}
           </span>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-grow p-5 sm:p-6 flex flex-col justify-between min-w-0">
-          <div className="min-w-0">
-            {/* Title + Desktop Status */}
-            <div className="flex items-start justify-between gap-4">
+        {/* Content Section */}
+        <div className="flex-grow flex flex-col min-w-0">
+          <div className="p-5 flex-grow flex flex-col min-w-0">
+            <div className="min-w-0">
               <h3
-                className={`text-lg md:text-xl font-bold text-blue-950 leading-tight break-words
+                className={`text-lg font-bold text-blue-950 leading-tight break-words
                 ${isCancelled ? 'line-through text-gray-400' : ''}`}
               >
                 {numNights
@@ -99,105 +120,133 @@ function ReservationCard({ booking, onDelete }) {
                 in {name}
               </h3>
 
-              <span
-                className={`hidden md:inline-flex px-3 py-1 rounded-full
-                text-[10px] font-bold uppercase tracking-wider shrink-0
-                ${statusColors[displayStatus]}`}
-              >
-                {displayStatus}
-              </span>
-            </div>
-
-            {/* Price */}
-            <div className="mt-3">
-              <p className="text-2xl font-black text-logo-100">
-                {formattedPrice}
-              </p>
-            </div>
-
-            {/* Details Panel */}
-            <div className="mt-4 rounded-lg bg-primary-50/60 border border-primary-100 p-3 space-y-1">
-              <div className="flex flex-wrap items-center gap-3 text-xs text-primary-600">
-                <span className="font-semibold">
-                  {numStudents} Student{numStudents === 1 ? '' : 's'}
-                </span>
-                <span className="hidden sm:inline text-primary-300">•</span>
-                <span>
-                  Starts {format(new Date(startDate), 'MMM dd, yyyy')}
-                </span>
+              <div className="mt-2">
+                <p className="text-2xl font-black text-logo-100">
+                  {formattedPrice}
+                </p>
               </div>
 
-              <span className="block text-[10px] font-mono uppercase opacity-60">
-                Booking #{id.toString().slice(-6)}
-              </span>
+              <div className="mt-4 rounded-lg bg-primary-50/60 border border-primary-100 p-3 space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-primary-600">
+                  <span className="font-semibold">
+                    {numStudents} Student{numStudents === 1 ? '' : 's'}
+                  </span>
+                  <span className="text-primary-300">•</span>
+                  <span>
+                    Starts {format(new Date(startDate), 'MMM dd, yyyy')}
+                  </span>
+                  
+                </div>
+                <span className="block text-[10px] font-mono uppercase opacity-60">
+                  Booking #{id.toString().slice(-6)}
+                </span>
+              </div>
+            </div>
+
+            {/* Middle Action Buttons (Payment/Refund) */}
+            <div className="mt-auto pt-5 flex flex-col gap-2">
+              {!isCancelled && status !== 'paid' && (
+                <PaymentButton bookingId={id} amount={totalPrice} />
+              )}
+              {hasRefunds && (
+                <button
+                  onClick={() => setRefundOpen(true)}
+                  className="w-full px-4 py-2 rounded-lg text-xs font-bold uppercase 
+                  bg-amber-50 text-amber-700 border border-amber-200
+                  hover:bg-amber-100 transition flex items-center justify-center gap-2"
+                >
+                  Refund History
+                  <span className="text-[10px] bg-amber-200/60 px-2 py-0.5 rounded-full">
+                    {refundsSafe.length}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="mt-6 pt-4 border-t border-primary-100 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            {!isCancelled && status !== 'paid' && (
-              <PaymentButton bookingId={id} amount={totalPrice} />
-            )}
-
-            {hasRefunds && (
+          {/* Bottom Action Bar (Edit/Delete) */}
+          {/* Material Action Section */}
+          {!isCancelled &&
+            (hasNone ? (
+              <div
+                className="flex-1 flex ... opacity-50 cursor-help"
+                title="No materials yet"
+              >
+                <InformationCircleIcon className="h-4 w-4" />
+                <span>Pending</span>
+              </div>
+            ) : (
               <button
-                onClick={() => setRefundOpen(true)}
-                className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide
-                bg-amber-50 text-amber-700 border border-amber-200
-                hover:bg-amber-100 transition flex items-center justify-center gap-2"
+                onClick={() => {
+                  if (hasSingle) handleDownload(materials[0].file_url);
+                  if (hasMultiple) {
+                    // Option: Toggle a small local state to show a list
+                    setShowMaterialsList(!showMaterialsList);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-2
+      px-4 py-4 text-[10px] font-bold uppercase text-primary-600
+      hover:bg-white transition-all border-r border-primary-100 relative"
               >
-                Refund History
-                <span className="text-[10px] bg-amber-200/60 px-2 py-0.5 rounded-full">
-                  {refundsSafe.length}
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                <span>
+                  {hasMultiple ? `Materials (${materials.length})` : 'Material'}
                 </span>
+
+                {/* MINI DROPDOWN (Shown if hasMultiple and toggled) */}
+                {hasMultiple && showMaterialsList && (
+                  <div className="absolute bottom-full left-0 w-64 bg-white border border-primary-100 shadow-xl rounded-t-lg z-50 mb-1 overflow-hidden">
+                    <div className="bg-primary-50 px-3 py-2 border-b border-primary-100 text-[9px] text-primary-700">
+                      Select Material to Download
+                    </div>
+                    {materials.map((m, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(m.file_url, '_blank');
+                        }}
+                        className="w-full text-left px-4 py-3 text-[10px] hover:bg-primary-50 flex items-center gap-2 border-b last:border-0 border-gray-50"
+                      >
+                        <ArrowDownTrayIcon className="h-3 w-3 text-primary-400" />
+                        <span className="truncate">{m.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </button>
-            )}
+            ))}
 
-            {isCancelled && !hasRefunds && (
-              <span
-                className="text-[10px] font-bold uppercase tracking-widest
-                text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded"
-              >
-                Cancelled
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Control Sidebar */}
-        {!isCancelled &&
-          (bookingStatus === 'upcoming' || bookingStatus === 'new') && (
-            <div
-              className="flex md:flex-col border-t md:border-t-0 md:border-l
-              border-primary-100 bg-primary-50/40 md:w-28 shrink-0"
-            >
-              <Link
-                href={`/account/reservations/edit/${id}`}
-                className="flex-1 flex flex-col items-center justify-center gap-1
+          {/*Booking status symbol */}
+          {!isCancelled &&
+            (bookingStatus === 'upcoming' || bookingStatus === 'new') && (
+              <div className="flex border-t border-primary-100 bg-primary-50/40 w-full">
+                <Link
+                  href={`/account/reservations/edit/${id}`}
+                  className="flex-1 flex items-center justify-center gap-2
                 px-4 py-4 text-[10px] font-bold uppercase text-primary-600
-                hover:bg-white md:hover:bg-logo-100 md:hover:text-white transition-all
-                border-r md:border-r-0 md:border-b border-primary-100"
-              >
-                <PencilSquareIcon className="h-5 w-5" />
-                <span>Edit</span>
-              </Link>
+                hover:bg-white transition-all border-r border-primary-100"
+                >
+                  <PencilSquareIcon className="h-4 w-4" />
+                  <span>Edit</span>
+                </Link>
 
-              <div className="flex-1 flex items-center justify-center p-2 hover:bg-red-50 transition-all">
-                <DeleteReservation
-                  bookingId={id}
-                  onDelete={onDelete}
-                  buttonLabel={status === 'paid' ? 'Cancel' : 'Delete'}
-                  refundAmount={totalPrice}
-                  numStudents={numStudents}
-                  oldTotal={totalPrice}
-                  newTotal={0}
-                />
+                <div className="flex-1 flex items-center justify-center p-2 hover:bg-red-50 transition-all">
+                  <DeleteReservation
+                    bookingId={id}
+                    onDelete={onDelete}
+                    buttonLabel={status === 'paid' ? 'Cancel' : 'Delete'}
+                    refundAmount={totalPrice}
+                    numStudents={numStudents}
+                    oldTotal={totalPrice}
+                    newTotal={0}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+        </div>
       </div>
 
-      {/* Refund Modal */}
       <RefundHistoryModal
         open={refundOpen}
         onClose={() => setRefundOpen(false)}

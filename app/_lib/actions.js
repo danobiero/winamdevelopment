@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { auth, signIn, signOut } from './auth';
 import { supabase } from './supabase';
 import Stripe from 'stripe';
+import { createAdminSupabaseClient } from './supabase-admin';
 
 //Initializing Stripe
 
@@ -160,14 +161,10 @@ export async function createBooking(bookingData, formData) {
   // 2. Identify Admin/Staff by absence of studentId
   // If studentId is missing, they are likely an Admin and shouldn't book
   if (!session.user?.studentId) {
-    console.warn(
-      `User ${session.user?.email} attempted to create a booking.`
-    );
-    throw new Error(
-      'Please use a student account to create a lesson.'
-    );
+    console.warn(`User ${session.user?.email} attempted to create a booking.`);
+    throw new Error('Please use a student account to create a lesson.');
   }
-  
+
   const studentId = session.user.studentId;
   const newBooking = {
     ...bookingData,
@@ -309,66 +306,6 @@ export async function updateBooking({
   redirect('/account/reservations');
 
   return { success: true, booking: data };
-}
-
-export async function updateBooking_old(formData) {
-  const session = await auth();
-  if (!session) throw new Error('Login First to update Lesson');
-  if (!session?.user?.studentId) {
-    throw new Error('Invalid session: no student ID found');
-  }
-  const userId = session.user.studentId;
-  // Extract values from formData
-
-  const bookingId = Number(formData.get('bookingId'));
-  const numStudents = Number(formData.get('numStudents'));
-  const observations = formData.get('observations').slice(0, 1000);
-  const totalPrice = Number(formData.get('totalPrice'));
-  const balance = Number(formData.get('balance'));
-
-  if (!bookingId) throw new Error('Booking ID is required');
-  // Fetch the booking and check ownership
-  const { data: booking, error: bookingError } = await supabase
-    .from('bookings')
-    .select('id, studentId')
-    .eq('id', bookingId)
-    .single();
-
-  if (bookingError || !booking) throw new Error('Booking not found');
-  if (booking.studentId !== session.user.studentId) {
-    throw new Error('Access Denied');
-  }
-
-  const updatedFields = {
-    numStudents: Number(numStudents), // ensure integer
-    observations: observations || null,
-    totalPrice: totalPrice,
-    balance: balance,
-  };
-  // Run update
-  const { data, error } = await supabase
-    .from('bookings')
-    .update(updatedFields)
-    .eq('id', bookingId)
-    .select()
-    .maybeSingle();
-
-  if (error) {
-    console.error(error);
-    throw new Error('Reservation could not be updated');
-  }
-
-  // ✅ Log action
-  await supabase.from('booking_actions').insert({
-    student_id: userId,
-    booking_id: bookingId,
-    action: 'edited',
-  });
-  //Revalidate before redirecting
-  revalidatePath(`/account/reservations/edit/${bookingId}`);
-  revalidatePath(`/account/reservations`);
-
-  redirect('/account/reservations');
 }
 
 //Update bookings end
@@ -756,143 +693,9 @@ export async function additionalPaymentAdmin({
   return { url: stripeSession.url, id: stripeSession.id };
 }
 
-export async function additionalPaymentAdmin_old({
-  bookingId,
-  difference,
-  oldTotal,
-  newTotal,
-  newStudents,
-  reason,
-}) {
-  // 1️⃣ Verify session
-  const session = await auth();
-  if (!session) throw new Error('Login first to continue.');
-
-  // Must be admin
-  if (!session?.user?.adminId)
-    throw new Error('Unauthorized: admin access only.');
-
-  // Admin override → studentId ALWAYS = 1
-  const forcedStudentId = 1;
-
-  // 2️⃣ Validate difference
-  const diffAmount = Number(difference);
-  if (isNaN(diffAmount) || diffAmount <= 0)
-    throw new Error('Invalid additional payment amount.');
-
-  // 3️⃣ Fetch booking
-  const { data: booking, error: bookingError } = await supabase
-    .from('bookings')
-    .select('id,totalPrice,status,lessonId,studentId')
-    .eq('id', bookingId)
-    .single();
-
-  if (bookingError || !booking) throw new Error('Booking not found.');
-
-  // 4️⃣ Fetch lesson name
-  const { data: lesson } = await supabase
-    .from('lessons')
-    .select('name')
-    .eq('id', booking.lessonId)
-    .single();
-
-  const lessonName = lesson?.name || 'Unnamed Lesson';
-
-  // 5️⃣ Convert difference to cents
-  const priceCents = Math.round(diffAmount * 100);
-  const priceDollars = diffAmount;
-  if (priceCents <= 0) throw new Error('Invalid payment amount.');
-
-  // 6️⃣ Create Stripe Checkout Session
-  let stripeSession;
-  try {
-    stripeSession = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Admin Additional Payment - ${lessonName}`,
-              description: `Booking #${bookingId} (${reason})`,
-            },
-            unit_amount: priceCents,
-          },
-          quantity: 1,
-        },
-      ],
-      // admin does not use their email → use booking student email?
-      // but you said: studentId always = 1 → so no real student email
-      customer_email: session.user.email, // still required for Stripe
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}&bookingId=${bookingId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-cancelled`,
-      metadata: {
-        type: 'additional_payment_admin',
-        booking_id: String(bookingId),
-        student_id: String(forcedStudentId), // 🔥 overridden
-        lesson_id: String(booking.lessonId),
-        lesson_name: lessonName,
-        reason: String(reason),
-        num_Students: String(newStudents),
-        difference: String(priceDollars),
-        old_total_price: String(oldTotal ?? 0),
-        new_total_price: String(newTotal ?? oldTotal + priceDollars),
-
-        admin_id: String(session.user.adminId),
-      },
-      expires_at: Math.floor(Date.now() / 1000) + 3600,
-    });
-  } catch (err) {
-    console.error('❌ Stripe additional payment ADMIN failed:', err);
-    throw new Error('Stripe session creation failed.');
-  }
-
-  // 7️⃣ Insert pending payment record
-  try {
-    const { data: existing } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('booking_id', bookingId)
-      .eq('status', 'pending')
-      .maybeSingle();
-
-    if (!existing) {
-      await supabase.from('payments').insert({
-        student_id: forcedStudentId, // 🔥 admin override
-        booking_id: bookingId,
-        stripe_session_id: stripeSession.id,
-        stripe_event: 'checkout.session.created (admin override)',
-        status: 'pending',
-        amount: priceDollars,
-        currency: 'usd',
-        type: 'additional_admin',
-        description: `Admin additional payment for Booking #${bookingId} (${reason})`,
-        metadata: {
-          bookingId,
-          lessonName,
-          lessonId: booking.lessonId,
-          studentId: forcedStudentId,
-          reason,
-          adminOverride: true,
-          adminId: session.user.adminId,
-        },
-      });
-    }
-  } catch (err) {
-    console.error('⚠️ Failed to insert ADMIN additional payment:', err);
-  }
-
-  // 8️⃣ Return session
-  return { url: stripeSession.url, id: stripeSession.id };
-}
-
-//*******Payment section ends*********
-
-//********Request refund server action begins**********
+//=========================================================
 // ******** Request refund server action begins **********
-
-// ******** Request refund server action begins **********
+//=========================================================
 export async function requestRefund({
   bookingId,
   refundAmount,
@@ -1021,105 +824,9 @@ export async function requestRefund({
     redirectUrl: '/account/reservations',
   };
 }
-
-export async function requestRefund_old({
-  bookingId,
-  refundAmount,
-  reason,
-  numStudents,
-  newTotal,
-}) {
-  const session = await auth();
-  if (!session) throw new Error('Login First to request refund');
-  if (!session?.user?.studentId)
-    throw new Error('Invalid session: no student ID found');
-
-  const studentId = session.user.studentId;
-
-  // --- 1️⃣ Fetch the current booking ---
-  const { data: bookingData, error: bookingError } = await supabase
-    .from('bookings')
-    .select('id, totalPrice, numStudents')
-    .eq('id', bookingId)
-    .single();
-
-  if (bookingError || !bookingData) throw new Error('Booking not found');
-
-  const oldTotal = Number(bookingData.totalPrice || 0);
-  const oldStudents = Number(bookingData.numStudents || 0);
-
-  // --- 2️⃣ Normalize all incoming values ---
-  const safeRefundAmount = Number(refundAmount || 0);
-  const safeNumStudents = Number(numStudents ?? oldStudents);
-  const safeNewTotal = Number(newTotal ?? oldTotal);
-
-  // --- 3️⃣ Insert refund record ---
-  const { data: refundData, error: refundError } = await supabase
-    .from('refunds')
-    .insert({
-      booking_id: bookingId,
-      student_id: studentId,
-      refund_amount: safeRefundAmount,
-      reason: reason || null,
-      status: 'pending',
-      updated_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
-  if (refundError) throw new Error('Refund request could not be submitted');
-
-  // --- 4️⃣ Log booking change ---
-  await supabase.from('booking_changes').insert({
-    booking_id: bookingId,
-    student_id: studentId,
-    change_type:
-      safeNumStudents === 0 && safeNewTotal === 0
-        ? 'lesson_cancelled'
-        : 'refund_requested',
-    field_changed: {
-      num_students: {
-        old: oldStudents,
-        new: safeNumStudents,
-      },
-    },
-    amount_difference: -Math.abs(safeRefundAmount),
-    old_total_price: oldTotal,
-    new_total_price: safeNewTotal,
-    stripe_session_id: null,
-  });
-
-  // --- 5️⃣ Determine cancellation state ---
-  const isCancelled = safeNumStudents === 0 && safeNewTotal === 0;
-
-  // --- 6️⃣ Update bookings table ---
-  const { error: bookingUpdateError } = await supabase
-    .from('bookings')
-    .update({
-      numStudents: safeNumStudents,
-      observations: reason,
-      totalPrice: safeNewTotal,
-      cancelled: isCancelled, // ✅ mark as cancelled if full refund
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', bookingId);
-
-  if (bookingUpdateError) throw new Error('Booking update failed');
-
-  // --- 7️⃣ Optional: notify admin / revalidate ---
-  revalidatePath(`/account/reservations/${bookingId}`);
-  revalidatePath(`/account/reservations`);
-
-  return {
-    success: true,
-    message: isCancelled
-      ? 'Lesson cancelled successfully and refund request submitted.'
-      : 'Refund request submitted successfully.',
-    refundId: refundData?.id,
-    redirectUrl: '/account/reservations',
-  };
-}
-
+//===================================================
+//REQUEST REFUNG
+//===================================================
 export async function requestRefundAdmin({
   bookingId,
   refundAmount,
@@ -1259,7 +966,6 @@ export async function signInAction() {
 export async function adminSignInAction() {
   await signIn('google', {
     redirectTo: '/admin',
-    
   });
 }
 
@@ -1268,7 +974,6 @@ export async function signOutAction() {
     redirectTo: '/',
   });
 }
-
 
 //GET STUDENTS CALENDAR EVENTS
 export async function getStudentCalendar(studentId) {
@@ -1386,4 +1091,169 @@ export async function emailSignInAction(formData) {
   }
 
   redirect('/lessons');
+}
+
+//======================================================================
+//SUBMIT SUPPORT FORM
+//======================================================================
+
+export async function submitSupportAction(formData) {
+  const session = await auth();
+  const supabase = createAdminSupabaseClient();
+
+  const subject = formData.get('subject')?.toString().trim();
+  const message = formData.get('message')?.toString().trim();
+  const name = formData.get('name')?.toString().trim() || null;
+  const email = formData.get('email')?.toString().trim() || null;
+
+  if (!subject || !message) {
+    throw new Error('Missing required fields');
+  }
+
+  const insertData = {
+    subject,
+    message,
+    status: 'open',
+    source: 'public',
+    student_id: null,
+    name: null,
+    email: null,
+  };
+
+  // Logged-in student
+  if (session?.user?.studentId) {
+    insertData.student_id = session.user.studentId;
+    insertData.name = session.user.name;
+    insertData.email = session.user.email;
+    insertData.source = 'student';
+  } else {
+    if (!name || !email) {
+      throw new Error('Name and email are required');
+    }
+
+    insertData.name = name;
+    insertData.email = email;
+  }
+
+  const { error } = await supabase.from('support').insert(insertData);
+
+  if (error) {
+    console.error('SUPPORT INSERT ERROR:', error);
+    throw new Error('Failed to submit support request');
+  }
+
+  // ✅ Server-side redirect (cleanest solution)
+  if (session?.user?.studentId) {
+    redirect('/support/thank-you');
+  } else {
+    redirect('/support/thank-you');
+  }
+}
+
+//========================================================
+//GET STUDENT SUPPORT MESSAGES
+//========================================================
+export async function getStudentSupportTickets() {
+  const session = await auth();
+
+  if (!session?.user?.studentId) {
+    throw new Error('Unauthorized');
+  }
+
+  const { data, error } = await supabase
+    .from('support')
+    .select('*')
+    .eq('student_id', session.user.studentId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+//------------------------------------------------------
+// GET STUDENT THREAD
+//------------------------------------------------------
+export async function getStudentSupportThread(supportId) {
+  const session = await auth();
+
+  if (!session?.user?.studentId) {
+    throw new Error('Unauthorized');
+  }
+
+  const { data, error } = await supabase
+    .from('support_messages')
+    .select('*')
+    .eq('support_id', supportId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+//------------------------------------------------------
+// STUDENT REPLY
+//------------------------------------------------------
+
+export async function replyAsStudent({ supportId, message }) {
+  const session = await auth();
+
+  if (!session?.user?.studentId) {
+    throw new Error('Unauthorized');
+  }
+
+  const { error } = await supabase.from('support_messages').insert([
+    {
+      support_id: supportId,
+      sender_type: 'student',
+      sender_student_id: session.user.studentId, // ✅ REQUIRED
+      sender_id: null,
+      message,
+    },
+  ]);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  await supabase
+    .from('support')
+    .update({ status: 'in_progress' })
+    .eq('id', supportId);
+
+  // refresh student support page
+  revalidatePath('/account/support');
+}
+
+//==============================================
+//STUDEND TICKETING SYSTEM
+//==============================================
+
+export async function createSupportTicket(formData) {
+  const session = await auth();
+  
+  if (!session) throw new Error('You must be logged in');
+
+  const ticketData = {
+    subject: formData.get('subject'),
+    priority: formData.get('priority'),
+    message: formData.get('message'),
+    // Mapping session data to your SQL columns
+    student_id: session.user.studentId, 
+    name: session.user.name,
+    email: session.user.email,
+    status: 'open',
+    source: 'portal',
+  };
+
+  const { error } = await supabase
+    .from('support')
+    .insert([ticketData]);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath('/account/support');
+  redirect('/account/support');
 }

@@ -12,7 +12,7 @@ export default async function Header() {
       doesn't sit too close to the header border.
     */
     <header className="bg-white border-b border-primary-300 px-6 py-4 relative z-50 mb-2 md:mb-3">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
+      <div className="max-w-[100vw] flex justify-between items-center mx-auto">
         <Logo />
 
         {/* Desktop Nav: Shown only on xl screens */}

@@ -180,9 +180,13 @@ export async function getBookings(studentId) {
       created_at,
       cancelled,
       lessons (
+        id,
         name,
         image,
-        category
+        category,
+        lesson_materials (
+        file_url,
+        name)
       ),
       refunds (
         id,
@@ -208,7 +212,6 @@ export async function getBookings(studentId) {
 
   return data;
 }
-
 
 export async function getBookings_working(studentId) {
   const { data, error } = await supabase
@@ -250,7 +253,6 @@ export async function getBookings_working(studentId) {
 
   return data;
 }
-
 
 // bookings.js
 /**
@@ -443,9 +445,7 @@ export async function getCountries() {
     // ⬅️ 1. Check if countries.json already exists
     const file = await fs.readFile(filePath, 'utf8');
     return JSON.parse(file);
-  } catch {
-    console.log('🌍 countries.json not found — downloading from API...');
-  }
+  } catch {}
 
   // ⬅️ 2. Fetch from the API (only ONCE)
   try {
@@ -462,28 +462,15 @@ export async function getCountries() {
     // ⬅️ 3. Save to local file
     await fs.writeFile(filePath, JSON.stringify(countries, null, 2), 'utf8');
 
-    console.log('✅ Saved countries.json locally');
-
     return countries;
   } catch (err) {
     throw new Error('Could not fetch countries');
   }
 }
 
-export async function getCountries_old() {
-  try {
-    const res = await fetch(
-      'https://restcountries.com/v2/all?fields=name,flag'
-    );
-    const countries = await res.json();
-    return countries;
-  } catch {
-    throw new Error('Could not fetch countries');
-  }
-}
-
-/////////////
+//=================================================
 // CREATE  STUDENT
+//=================================================
 
 export async function createStudent(newStudent) {
   const { data, error } = await supabase

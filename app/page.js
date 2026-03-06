@@ -4,7 +4,7 @@ import gradient from '@/public/office_2.jpg';
 
 export default function Page() {
   return (
-    <div className="h-screen w-full w-full">
+    <div className="h-screen w-full">
       <main className="h-full w-full">
         {/* BACKGROUND LAYER: Occupies 100% of the screen from the very top */}
         <div className="absolute inset-0 z-0">
@@ -42,13 +42,13 @@ export default function Page() {
 
         {/* PRIVACY POLICY & TERMS: Essential for Google Verification */}
         <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-4">
-          <Link href="/about" className="text-xs text-blue-950 hover:underline">
+          <Link href="/privacy-policy" className="text-xs text-blue-950 hover:underline">
             Privacy Policy
           </Link>
 
           <span className="text-xs text-blue-950">|</span>
 
-          <Link href="/about" className="text-xs text-blue-950 hover:underline">
+          <Link href="/terms-of-service" className="text-xs text-blue-950 hover:underline">
             Terms of Service
           </Link>
         </div>

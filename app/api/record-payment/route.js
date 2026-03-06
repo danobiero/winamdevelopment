@@ -130,7 +130,7 @@ export async function GET(req) {
 
       if (changeError) throw changeError;
 
-      console.log(`✅ Additional payment recorded for booking ${bookingId}`);
+      `✅ Additional payment recorded for booking ${bookingId}`;
     } else {
       // 🟦 Normal Payment Flow
       await supabase

@@ -23,15 +23,19 @@ async function CabinList({ filter }) {
     displayLessons = activeLessons;
   }
 
-  // Handle case where a category might be empty after filtering
   if (!displayLessons.length)
     return (
-      <p className="text-center text-lg">No items found for this category.</p>
+      <p className="text-center text-lg py-10 text-slate-500">
+        No items found for this category.
+      </p>
     );
 
   return (
-    <div className="max-w-7xl px-4 md:px-8 lg:px-16 mx-auto">
-      <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 xl:gap-14">
+    /* REMOVED: max-w-7xl (to allow stretching)
+       ADDED: w-full and fluid padding
+    */
+    <div className="w-full">
+      <div className="grid gap-8 sm:gap-10 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
         {displayLessons.map((lesson) => (
           <CabinCard lesson={lesson} key={lesson.id} />
         ))}
@@ -39,6 +43,5 @@ async function CabinList({ filter }) {
     </div>
   );
 }
-
 
 export default CabinList;

@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
 import {
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
   addDays,
   addMonths,
+  endOfMonth,
+  endOfWeek,
   format,
   isSameMonth,
   isToday,
+  startOfMonth,
+  startOfWeek,
 } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
 
 import BookingModal from './BookingModal';
-import DateBookingsModal from './DateBookingsModal';
 import { getAdminBookingsForDate } from './actions';
 
 /* ============================================================
@@ -27,6 +26,7 @@ const COLOR_POOL = [
   { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-900' },
   { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-900' },
   { bg: 'bg-teal-100', border: 'border-teal-300', text: 'text-teal-900' },
+  { bg: 'bg-yellow-100', border: 'border-yellow-300', text: 'text-yellow-900' },
 ];
 
 const FALLBACK_COLOR = {
@@ -45,7 +45,7 @@ function formatTime(ts) {
   });
 }
 
-export default function CalendarGrid({ events }) {
+export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
 
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -244,13 +244,16 @@ export default function CalendarGrid({ events }) {
         event={selectedEvent}
         date={selectedDate}
         sessions={bookingsForDate}
+        onError={onError}
+        onAddAvailability = { onAddAvailability }
         onClose={() => {
           setSelectedEvent(null);
           setSelectedDate(null);
           setBookingsForDate([]);
+          
+          
         }}
       />
-
     </div>
   );
 }

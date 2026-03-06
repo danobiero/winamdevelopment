@@ -7,7 +7,7 @@ export default function RefundApprovedModal({ refund }) {
       )[0]
     : null;
 
-  console.log(latestPayment);
+  latestPayment;
 
   const payment = refund.latestPayment;
   const paymentIntent = latestPayment.stripe_payment_intent_id;

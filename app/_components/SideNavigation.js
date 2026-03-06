@@ -3,7 +3,7 @@
 import {
   CalendarDaysIcon,
   HomeIcon,
-  UserIcon,
+  UserIcon, LifebuoyIcon
 } from '@heroicons/react/24/solid';
 import SignOutButton from './SignOutButton';
 import Link from 'next/link';
@@ -12,9 +12,14 @@ import { usePathname } from 'next/navigation';
 const navLinks = [
   { name: 'Home', href: '/account', icon: <HomeIcon className="h-6 w-6" /> },
   {
-    name: 'Lessons',
+    name: 'My Lessons',
     href: '/account/reservations',
     icon: <CalendarDaysIcon className="h-6 w-6" />,
+  },
+  {
+    name: 'Support',
+    href: '/account/support',
+    icon: <LifebuoyIcon className="h-6 w-6" />,
   },
   {
     name: 'Profile',
@@ -72,8 +77,8 @@ function SideNavigation({ isMobile }) {
                 href={link.href}
                 className={`py-3 px-5 transition-all flex items-center gap-4 font-semibold rounded-lg ${
                   isActive
-                    ? 'bg-primary-100 text-blue-950 shadow-sm'
-                    : 'text-primary-600 hover:bg-primary-50 hover:translate-x-1'
+                    ? 'bg-logo-100 text-blue-950 shadow-sm'
+                    : 'text-primary-600 hover:bg-logo-10 hover:translate-x-1'
                 }`}
               >
                 <span className="text-blue-950">{link.icon}</span>

@@ -1,60 +1,68 @@
-import { UsersIcon } from '@heroicons/react/24/solid';
+import {
+  UsersIcon,
+  ArrowRightIcon,
+  ArrowDownTrayIcon,
+} from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 
 function CabinCard({ lesson }) {
-  const { id, name, maxCapacity, regularPrice, discount, image, category } = lesson;
+  const { id, name, maxCapacity, regularPrice, discount, image, category } =
+    lesson;
   const material = 'Included';
   const finalPrice =
     regularPrice && discount > 0 ? regularPrice - discount : null;
 
-
   return (
-    <div className="w-full flex max-w-md flex-col border border-primary-200 rounded-lg overflow-hidden shadow-md">
+    <div className="group w-full flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Image Section */}
-      <div className="relative w-full h-[220px]">
+      <div className="relative w-full h-[240px] overflow-hidden">
         <Image
           src={image || '/logo.png'}
           fill
           alt={`lesson ${name}`}
-          className="object-cover"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
         />
+        {discount > 0 && (
+          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+            Save ${discount}
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col justify-between flex-grow">
-        {/* Lesson Details */}
-        <div className="pt-5 pb-4 px-7">
-          <h3 className="text-blue-950 font-semibold text-xl sm:text-2xl mb-3 ml-0">
+      <div className="flex flex-col flex-grow">
+        <div className="flex-grow p-7 pb-5">
+          <h3 className="text-slate-900 font-bold text-2xl mb-6 group-hover:text-blue-600 transition-colors">
             {name}
           </h3>
 
-          {/* Capacity & Price in Same Row */}
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-            {/* Capacity */}
-            <div className="flex gap-2 items-center px-3 py-1 bg-gray-200 rounded-full text-sm sm:text-base">
-              <UsersIcon className="h-5 w-5 text-primary-800" />
-              <p className="text-blue-950">
+          {/* Metadata Row: Space-Between logic */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Left Justified: Capacity */}
+            <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg text-slate-700 text-sm border border-slate-200/50">
+              <UsersIcon className="h-5 w-5 text-blue-600" />
+              <span className="whitespace-nowrap">
                 Capacity <span className="font-bold">{maxCapacity}</span>{' '}
                 Students
-              </p>
+              </span>
             </div>
 
-            {/* Price */}
-            <div className="text-right inline-block bg-gray-200 rounded-full px-3 py-1 ">
+            {/* Right Justified: Price */}
+            <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg border border-slate-200/50">
               {finalPrice ? (
                 <>
-                  <span className="block sm:inline text-base sm:text-xl lg:text-2xl text-blue-950 font-semibold">
+                  <span className="text-lg font-black text-slate-900">
                     ${finalPrice}
                   </span>
-                  <span className="block sm:inline ml-2 line-through font-medium text-primary-600 text-sm sm:text-base">
+                  <span className="text-xs text-slate-400 line-through">
                     ${regularPrice}
                   </span>
                 </>
               ) : (
-                <span className="text-base sm:text-xl lg:text-2xl font-semibold">
+                <span className="text-sm font-bold text-blue-600 uppercase tracking-widest whitespace-nowrap">
                   {material}
                 </span>
               )}
@@ -62,26 +70,33 @@ function CabinCard({ lesson }) {
           </div>
         </div>
 
-        {/* Button */}
-        <div className="bg-logo-10 border-t border-t-primary-200">
+        {/* Action Button: End-to-End */}
+        <div className="mt-auto border-t border-slate-100">
           <Link
-            href={category === 1 ? `/lessons/${id}` : `/lessons/${id}`}
+            href={`/lessons/${id}`}
             aria-label={
               category === 1
                 ? `View details and reserve lesson: ${name}`
                 : `Download materials for lesson: ${name}`
             }
-            className="block w-full text-center py-4 px-6 hover:bg-logo-100 transition-all hover:text-primary-900 text-sm sm:text-base"
+            className="flex items-center justify-center gap-2 w-full py-5 bg-logo-10 hover:bg-logo-100 text-slate-900 font-bold text-sm transition-all uppercase tracking-widest"
           >
-            
-            {category === 1 ? 'Details & Reservation →' :  'Download →'}
+            {category === 1 ? (
+              <>
+                Details & Reservation
+                <ArrowRightIcon className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Download Resources
+                <ArrowDownTrayIcon className="h-4 w-4" />
+              </>
+            )}
           </Link>
         </div>
       </div>
     </div>
   );
-
-  
 }
 
 export default CabinCard;

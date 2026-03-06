@@ -1,10 +1,16 @@
 'use client';
 
+import UnpublishButton from './UnpublishButton';
+import CancelSessionButton from './CancelSessionButton';
+import Tooltip from './_components/Tooltip';
+
 export default function BookingModal({
-  event, // single session (event click)
-  date, // yyyy-MM-dd (date click)
-  sessions = [], // sessions for a date (date click)
+  event,
+  date,
+  sessions = [],
   onClose,
+  onError,
+  onAddAvailability,
 }) {
   if (!event && !date) return null;
 
@@ -34,9 +40,9 @@ export default function BookingModal({
     return (
       <div
         key={ev.id}
-        className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50"
+        className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 mb-4 last:mb-0 shadow-sm"
       >
-        {/* SESSION INFO */}
+        {/* ===================== SESSION INFO ===================== */}
         <div className="space-y-3">
           <DetailRow label="Session" value={ev.title || '—'} />
           <DetailRow
@@ -51,10 +57,13 @@ export default function BookingModal({
           />
         </div>
 
-        {/* STUDENTS */}
+        {/* ===================== STUDENTS ===================== */}
         <div className="mt-5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
             Confirmed Students
+            <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-md text-[9px]">
+              {students.length}
+            </span>
           </label>
 
           {students.length > 0 ? (
@@ -62,39 +71,61 @@ export default function BookingModal({
               {students.map((b, idx) => (
                 <li
                   key={b.id ?? idx}
-                  className="text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm"
+                  className="text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm hover:border-blue-200 transition-colors"
                 >
                   {b.studentName ?? 'Unknown Student'}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-gray-400 italic px-1">
-              No students booked.
-            </p>
+            <div className="mt-2 flex flex-col items-center justify-center py-6 bg-white/40 border border-dashed border-gray-200 rounded-xl">
+              <p className="text-xs text-gray-400 font-medium">
+                Waiting for bookings...
+              </p>
+            </div>
           )}
         </div>
 
-        {/* ACTIONS - Responsive Flex Direction */}
+        {/* ===================== ACTIONS ===================== */}
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          {ev.meet_link && (
+          {ev.source_event_id &&
+            (ev.status === 'published' || ev.status === 'exported') && (
+              <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                <Tooltip text={'Remove session'}>
+                  <UnpublishButton
+                    eventId={ev.source_event_id}
+                    onError={onError}
+                    onSuccess={onClose}
+                  />
+                </Tooltip>
+                <Tooltip text={'Permanently cancel'}>
+                  <CancelSessionButton
+                    eventId={ev.source_event_id}
+                    onError={onError}
+                    onSuccess={onClose}
+                  />
+                </Tooltip>
+              </div>
+            )}
+
+          {ev.meet_link ? (
             <button
               onClick={() => !hasEnded && window.open(ev.meet_link, '_blank')}
               disabled={hasEnded}
-              className={`flex-[2] order-1 sm:order-none py-4 px-6 font-bold rounded-2xl transition-all active:scale-[0.98]
-                ${
-                  hasEnded
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
-                }`}
+              className={`flex-[2] py-4 px-6 font-bold rounded-2xl transition-all active:scale-[0.98]
+                ${hasEnded ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white shadow-lg shadow-blue-100 hover:bg-blue-700'}`}
             >
               {hasEnded ? 'Session Ended' : 'Join Meeting'}
             </button>
+          ) : (
+            <div className="flex-[2] py-4 px-6 bg-amber-50 text-amber-600 text-xs font-bold rounded-2xl flex items-center justify-center border border-amber-100">
+              Meeting Link Pending
+            </div>
           )}
 
           <button
             onClick={onClose}
-            className="flex-1 order-2 sm:order-none py-4 px-6 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 active:scale-[0.98] transition-all"
+            className="flex-1 py-4 px-6 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all"
           >
             {isSingleEvent ? 'Close' : 'Back'}
           </button>
@@ -105,53 +136,79 @@ export default function BookingModal({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      {/* OVERLAY */}
       <div
-        className="fixed inset-0 bg-gray-900/40 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-gray-900/40 backdrop-blur-md"
         onClick={onClose}
       />
 
-      {/* MODAL / BOTTOM SHEET */}
       <div className="relative bg-white w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]">
-        {/* MOBILE DRAG HANDLE */}
-        <div className="pt-4 pb-2 sm:hidden flex justify-center">
-          <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
-        </div>
-
-        {/* HEADER */}
-        <div className="px-6 py-4 flex justify-between items-center border-b border-gray-50">
+        {/* MODAL HEADER */}
+        <div className="px-6 py-5 border-b flex justify-between items-center bg-gray-50/50">
           <div>
-            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">
-              {isSingleEvent ? 'Session' : 'Daily Schedule'}
+            <h2 className="text-xl font-black uppercase tracking-tight">
+              {isSingleEvent ? 'Session Info' : 'Daily Schedule'}
             </h2>
-            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-[0.15em]">
-              {displayDate}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-bold text-blue-600 uppercase">
+                {displayDate}
+              </p>
+              {!isSingleEvent && sessions.length === 0 && (
+                <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold uppercase">
+                  Empty
+                </span>
+              )}
+            </div>
           </div>
-
           <button
             onClick={onClose}
-            className="hidden sm:flex p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+            className="p-2 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <span className="text-xl leading-none">×</span>
+            ✕
           </button>
         </div>
 
-        {/* BODY - Scrollable area */}
-        <div className="p-6 overflow-y-auto custom-scrollbar">
-          <div className="space-y-6 pb-4">
-            {isSingleEvent ? (
+        {/* MODAL CONTENT */}
+        <div className="p-6 overflow-y-auto">
+          {isSingleEvent || sessions.length > 0 ? (
+            isSingleEvent ? (
               renderSession(event)
-            ) : sessions.length > 0 ? (
-              sessions.map(renderSession)
             ) : (
-              <div className="py-12 text-center">
-                <p className="text-gray-400 italic font-medium">
-                  No sessions scheduled.
-                </p>
+              sessions.map(renderSession)
+            )
+          ) : (
+            /* EMPTY STATE UI - THE FIX FOR THE "UGLY BOX" */
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                <span className="text-3xl">🗓️</span>
               </div>
-            )}
-          </div>
+
+              <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">
+                No Lessons Scheduled
+              </h3>
+              <p className="mt-2 text-sm text-gray-500 font-medium max-w-[240px]">
+                This date is wide open. Would you like to add availability?
+              </p>
+
+              <div className="mt-8 w-full space-y-3">
+                <button
+                  onClick={() => {
+                    onClose(); // 1. Close the "Empty" modal
+                    onAddAvailability(date); // 2. Trigger the "Create" modal in the parent
+                  }}
+                  className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-[0.98]"
+                >
+                  + Add Availability
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="w-full py-4 bg-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-200 transition-all"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -160,13 +217,11 @@ export default function BookingModal({
 
 function DetailRow({ label, value }) {
   return (
-    <div className="group border-b border-gray-100 pb-2 last:border-0">
-      <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">
+    <div className="border-b border-gray-100 pb-2">
+      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">
         {label}
       </label>
-      <p className="text-base font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-        {value}
-      </p>
+      <p className="text-base font-bold text-gray-800">{value}</p>
     </div>
   );
 }

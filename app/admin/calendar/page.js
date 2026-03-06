@@ -1,6 +1,6 @@
 import { auth } from '@/app/_lib/auth';
 import { redirect } from 'next/navigation';
-import { getAdminCalendarData } from './actions';
+import { getAdminCalendarData, getAdminLessons } from './actions';
 import AdminCalendarPage from './AdminCalendarPage';
 
 export default async function Page() {
@@ -11,11 +11,24 @@ export default async function Page() {
   }
 
   const accessToken = session.accessToken;
-  const events = await getAdminCalendarData();
+  const adminId = session.user.adminId;
+
+  /* =======================
+     LOAD DATA (SERVER)
+     ======================= */
+  const [events, lessons] = await Promise.all([
+    getAdminCalendarData(),
+    getAdminLessons(),
+  ]);
 
   return (
     <main className="min-h-screen bg-white">
-      <AdminCalendarPage events={events} accessToken={accessToken} />
+      <AdminCalendarPage
+        events={events}
+        accessToken={accessToken}
+        lessons={lessons}
+        adminId={adminId}
+      />
     </main>
   );
 }

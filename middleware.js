@@ -32,7 +32,7 @@ export async function middleware(req) {
   // ==================================================
   if (path.startsWith("/admin") && path !== "/admin-login") {
     if (!isAdmin) {
-      console.log("🚫 Non-admin attempting admin route — clearing session");
+      
 
       const loginUrl = new URL("/admin-login", req.url);
       loginUrl.searchParams.set("reason", "signedout");

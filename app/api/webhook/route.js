@@ -34,7 +34,7 @@ export async function POST(req) {
 
     await db.from('bookings').update({ status: 'paid' }).eq('id', bookingId);
 
-    console.log(`✅ Payment confirmed for booking ${bookingId}`);
+    `✅ Payment confirmed for booking ${bookingId}`;
   }
 
   return NextResponse.json({ received: true });

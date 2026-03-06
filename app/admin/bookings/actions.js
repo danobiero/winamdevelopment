@@ -2,7 +2,6 @@
 
 import { auth } from '@/app/_lib/auth';
 import { createAdminSupabaseClient } from '@/app/_lib/supabase-admin';
-import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 //------------------------------------------------------

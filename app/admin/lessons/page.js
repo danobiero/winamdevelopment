@@ -17,6 +17,7 @@ import {
   PhotoIcon,
 } from '@heroicons/react/24/outline';
 import ToastListener from './ToastListener';
+import Tooltip from '../calendar/_components/Tooltip';
 
 export default async function LessonsPage({ searchParams }) {
   const session = await auth();
@@ -40,7 +41,6 @@ export default async function LessonsPage({ searchParams }) {
   return (
     <div className="space-y-6 pb-20 sm:pb-0">
       <ToastListener />
-
       {viewedLesson && (
         <ViewModal
           lesson={viewedLesson.lesson}
@@ -55,29 +55,35 @@ export default async function LessonsPage({ searchParams }) {
         </h1>
 
         <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-3">
+          <Tooltip text={"Create a new lesson"}>
           <Link
             href="/admin/lessons/new"
             className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
-          >
+            >
             <PlusIcon className="h-4 w-4" />
             <span>Create</span>
           </Link>
+            </Tooltip>
 
+<Tooltip text={"Upload lesson materials"}>
           <Link
             href="/admin/lessons/upload"
             className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-emerald-700 transition shadow-sm"
-          >
+            >
             <ArrowUpTrayIcon className="h-4 w-4" />
             <span>Upload</span>
           </Link>
+            </Tooltip>
 
+<Tooltip text={"Manage lesson images"}>
           <Link
             href="/admin/lessons/uploadImage"
             className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-slate-900 transition shadow-sm"
-          >
+            >
             <PhotoIcon className="h-4 w-4" />
             <span>Images</span>
           </Link>
+            </Tooltip>
         </div>
       </div>
 

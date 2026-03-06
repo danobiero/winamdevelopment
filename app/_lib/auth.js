@@ -7,15 +7,6 @@ const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-
-      // ✅ FIX: Add the required calendar scope here
-      /* authorization: {
-        url: 'https://accounts.google.com/o/oauth2/v2/auth',
-        params: {
-          scope:
-            'openid email profile',
-        },
-      }, */
     }),
   ],
 
@@ -96,7 +87,7 @@ const authConfig = {
     signIn: '/login',
   },
 
-  debug: true, // 👈 Add this line
+  debug: false, 
 };
 
 export const {

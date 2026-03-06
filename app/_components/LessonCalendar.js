@@ -10,6 +10,7 @@ import {
 } from 'date-fns';
 
 export default function LessonCalendar({ eventsByDate }) {
+  
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
 
@@ -83,7 +84,7 @@ export default function LessonCalendar({ eventsByDate }) {
                 aspect-square md:aspect-auto md:min-h-[120px] 
                 p-1 border rounded-lg transition-all
                 ${hasEvents ? 'bg-purple-50 border-purple-200' : 'border-gray-50'}
-                ${isTodayDate ? 'ring-2 ring-purple-600 bg-white shadow-md' : ''}
+                ${isTodayDate ? 'ring-2 ring-purple-600 bg-green-100 shadow-md' : ''}
               `}
             >
               {/* Day Number */}
@@ -114,7 +115,7 @@ export default function LessonCalendar({ eventsByDate }) {
         })}
       </div>
 
-      {/* Mobile-Only Event List: Shows only when events exist for current month to save space */}
+      {/* ===== MOBILE EVENT LIST ===== */}
       <div className="mt-6 md:hidden">
         <h5 className="text-xs font-bold text-primary-400 uppercase mb-3">
           Schedule for {format(currentMonth, 'MMM')}
@@ -133,28 +134,39 @@ export default function LessonCalendar({ eventsByDate }) {
                   </p>
                 </div>
                 <div className="flex-grow space-y-2">
-                  {eventsByDate[format(day, 'yyyy-MM-dd')].map((evt) => (
-                    <div
-                      key={evt.id}
-                      className="p-3 bg-primary-50 rounded-xl flex justify-between items-center"
-                    >
-                      <div>
-                        <p className="text-xs font-bold text-primary-900">
-                          {format(new Date(evt.start_time), 'p')} -{' '}
-                          {format(new Date(evt.end_time), 'p')}
-                        </p>
+                  {eventsByDate[format(day, 'yyyy-MM-dd')].map((evt) => {
+                    const now = new Date();
+                    const end = new Date(evt.end_time);
+                    const isEnded = end < now;
+
+                    return (
+                      <div
+                        key={evt.id}
+                        className="p-3 bg-primary-50 rounded-xl flex justify-between items-center"
+                      >
+                        <div>
+                          <p className="text-xs font-bold text-primary-900">
+                            {format(new Date(evt.start_time), 'p')} -{' '}
+                            {format(new Date(evt.end_time), 'p')}
+                          </p>
+                        </div>
+
+                        {isEnded ? (
+                          <span className="bg-gray-300 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold">
+                            Ended
+                          </span>
+                        ) : isSameDay(day, today) ? (
+                          <a
+                            href={evt.meet_link}
+                            target="_blank"
+                            className="bg-purple-600 text-white px-4 py-1.5 rounded-full text-xs font-bold"
+                          >
+                            Join
+                          </a>
+                        ) : null}
                       </div>
-                      {isSameDay(day, today) && (
-                        <a
-                          href={evt.meet_link}
-                          target="_blank"
-                          className="bg-purple-600 text-white px-4 py-1.5 rounded-full text-xs font-bold"
-                        >
-                          Join
-                        </a>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -165,12 +177,20 @@ export default function LessonCalendar({ eventsByDate }) {
 }
 
 function EventItem({ evt, isToday }) {
+  const now = new Date();
+  const end = new Date(evt.end_time);
+  const isEnded = end < now;
+
   return (
     <div className="flex flex-col items-center w-full px-1">
       <span className="text-[9px] leading-tight text-primary-600 text-center">
         {format(new Date(evt.start_time), 'p')}
       </span>
-      {isToday ? (
+      {isEnded ? (
+        <span className="text-[9px] bg-gray-300 text-gray-600 px-2 py-0.5 rounded-md mt-1 w-full text-center">
+          Ended
+        </span>
+      ) : isToday ? (
         <a
           href={evt.meet_link}
           target="_blank"

@@ -25,7 +25,7 @@ export default function InstallPraxidaModal({ trigger = false }) {
     setIsAndroid(android);
 
     const handler = (e) => {
-      console.log('INSTALL EVENT READY');
+      ('INSTALL EVENT READY');
       e.preventDefault();
       setDeferredPrompt(e);
     };

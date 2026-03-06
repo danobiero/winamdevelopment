@@ -3,6 +3,7 @@ import { Roboto } from 'next/font/google';
 import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
+import Footer from './_components/Footer';
 
 // 1. New Viewport export for themeColor and other scaling properties
 export const viewport = {
@@ -37,11 +38,12 @@ export default function RootLayout({ children }) {
       >
         <PWARegister />
         <Header />
-        <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col">
+        <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col max-w-full">
           <main className="max-w-7xl mx-auto w-full flex-1">
             <ReservationProvider>{children}</ReservationProvider>
           </main>
         </div>
+        <Footer />
       </body>
     </html>
   );
