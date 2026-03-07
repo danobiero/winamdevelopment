@@ -4,13 +4,12 @@ import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
 import Footer from './_components/Footer';
+import { headers } from 'next/headers';
 
-// 1. New Viewport export for themeColor and other scaling properties
 export const viewport = {
   themeColor: '#2563eb',
 };
 
-// 2. Updated Metadata export (themeColor removed)
 export const metadata = {
   title: {
     template: 'Praxida - %s',
@@ -31,19 +30,30 @@ const roboto = Roboto({
 });
 
 export default function RootLayout({ children }) {
+  const pathname = headers().get('x-pathname') || '';
+
+  const isLanding = pathname === '/';
+
   return (
     <html lang="en">
       <body
         className={`${roboto.className} antialiased text-primary-950 min-h-screen flex flex-col relative overflow-x-hidden`}
       >
         <PWARegister />
-        <Header />
-        <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col max-w-full">
-          <main className="max-w-7xl mx-auto w-full flex-1">
-            <ReservationProvider>{children}</ReservationProvider>
-          </main>
-        </div>
-        <Footer />
+
+        {!isLanding && <Header />}
+
+        {isLanding ? (
+          children
+        ) : (
+          <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col max-w-full">
+            <main className="max-w-7xl mx-auto w-full flex-1">
+              <ReservationProvider>{children}</ReservationProvider>
+            </main>
+          </div>
+        )}
+
+        {!isLanding && <Footer />}
       </body>
     </html>
   );
