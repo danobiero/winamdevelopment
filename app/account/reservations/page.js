@@ -14,9 +14,11 @@ export default async function Page() {
   return (
     <div className="md:pt-4">
       {/* Change 1: Responsive text size and alignment */}
-      <h2 className="font-semibold text-xl md:text-2xl text-blue-950 mb-7 text-center md:text-left">
-        Your Lessons
-      </h2>
+      
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
+              Your <span className="text-blue-600">Lessons</span>
+            </h2>
+      
 
       {bookings.length === 0 ? (
         /* Change 2: Balanced empty state with better mobile spacing */

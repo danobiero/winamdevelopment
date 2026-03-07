@@ -15,9 +15,10 @@ export default async function SupportPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Support Requests
-          </h1>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
+            Support <span className="text-blue-600">Requests</span>
+          </h2>
+
           <p className="mt-1 text-sm text-slate-500">
             View and manage your active help tickets and inquiries.
           </p>

@@ -15,8 +15,9 @@ export default async function Page() {
     /* Change 1: Added a container with responsive vertical spacing */
     <div className="md:pt-4">
       {/* Change 2: Responsive heading size (text-xl on mobile, 2xl on desktop) */}
-      <h2 className="font-semibold text-xl md:text-2xl text-blue-950 mb-4 text-center md:text-left">
-        Update Profile
+      
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
+        Update <span className="text-blue-600">Profile</span>
       </h2>
 
       {/* Change 3: Slightly smaller text on mobile to save vertical space */}
