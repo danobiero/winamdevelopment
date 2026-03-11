@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Archive Duplicate Files",
+      "type": "shell",
+      "command": "mkdir -p dev_backup && find . \\( -path \"./node_modules\" -o -path \"./.next\" -o -path \"./.git\" -o -path \"./dev_backup\" \\) -prune -o -type f \\( -name \"* copy.js\" -o -name \"* copy [0-9]*.js\" \\) -exec sh -c 'mkdir -p dev_backup/$(dirname \"{}\") && mv \"{}\" dev_backup/\"{}\"' \\;",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Restore Duplicate Files",
+      "type": "shell",
+      "command": "cp -r dev_backup/* . 2>/dev/null && echo \"Files restored.\" || echo \"Backup empty.\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Clear Backup",
+      "type": "shell",
+      "command": "rm -rf dev_backup/* 2>/dev/null && echo \"Backup cleared.\" || echo \"Nothing to clear.\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    }
+  ]
+}
