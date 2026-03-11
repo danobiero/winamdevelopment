@@ -7,11 +7,10 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    /* Added 'mb-8' (Mobile) and 'md:mb-12' (Desktop) 
-      This ensures the "Practical Lessons" page (or any other page) 
-      doesn't sit too close to the header border.
+    /* REMOVED: mb-2 md:mb-3 
+       This eliminates the gap between the header border and the body content.
     */
-    <header className="bg-white border-b border-primary-300 px-6 py-4 relative z-50 mb-2 md:mb-3">
+    <header className="bg-white border-b border-primary-300 px-6 py-2 relative z-50">
       <div className="max-w-[100vw] flex justify-between items-center mx-auto">
         <Logo />
 

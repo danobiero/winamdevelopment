@@ -6,9 +6,7 @@ import PWARegister from './_components/PWARegister';
 import Footer from './_components/Footer';
 import { headers } from 'next/headers';
 
-export const viewport = {
-  themeColor: '#2563eb',
-};
+export const viewport = { themeColor: '#2563eb' };
 
 export const metadata = {
   title: {
@@ -17,10 +15,7 @@ export const metadata = {
   },
   description: 'Financial Literacy based on practical financial foundations',
   manifest: '/manifest.json',
-  icons: {
-    icon: '/icon-192.png',
-    apple: '/icon-192.png',
-  },
+  icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
 };
 
 const roboto = Roboto({
@@ -31,29 +26,36 @@ const roboto = Roboto({
 
 export default function RootLayout({ children }) {
   const pathname = headers().get('x-pathname') || '';
-
   const isLanding = pathname === '/';
 
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${roboto.className} antialiased text-primary-950 min-h-screen flex flex-col relative overflow-x-hidden`}
+        className={`${roboto.className} antialiased text-primary-950 h-dvh flex flex-col overflow-hidden`}
       >
         <PWARegister />
 
-        {!isLanding && <Header />}
-
-        {isLanding ? (
-          children
-        ) : (
-          <div className="flex-1 px-4 py-6 sm:px-8 sm:py-12 flex flex-col max-w-full">
-            <main className="max-w-7xl mx-auto w-full flex-1">
-              <ReservationProvider>{children}</ReservationProvider>
-            </main>
+        {!isLanding && (
+          <div className="flex-none">
+            <Header />
           </div>
         )}
 
-        {!isLanding && <Footer />}
+        <div className="flex-1 flex flex-col w-full overflow-hidden bg-slate-50">
+          <main className="w-full flex-1 overflow-y-auto flex flex-col">
+            <ReservationProvider>{children}</ReservationProvider>
+          </main>
+        </div>
+
+        {/* 1. hidden: Removes footer on small screens.
+           2. md:block: Brings it back on desktop.
+           3. flex-none: Maintains structural height.
+        */}
+        {!isLanding && (
+          <div className="hidden md:block flex-none">
+            <Footer />
+          </div>
+        )}
       </body>
     </html>
   );

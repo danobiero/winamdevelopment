@@ -1,9 +1,8 @@
 import { auth } from '@/app/_lib/auth';
 import { redirect } from 'next/navigation';
-import AdminSideNavigation from './side-navigation';
+import AdminNavigationWrapper from './_components/AdminNavigationWrapper';
 import AdminHomeFloatingButton from './AdminFloatingButton';
 import { ToastProvider } from '../_lib/ToastContext';
-import AdminNavigationWrapper from './_components/AdminNavigationWrapper'
 
 export default async function AdminLayout({ children }) {
   const session = await auth();
@@ -14,26 +13,22 @@ export default async function AdminLayout({ children }) {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-screen w-full bg-slate-50">
-        {/* Sidebar: 
-          - On Desktop (lg): Fixed/Sticky on the left.
-          - On Mobile: Becomes a bottom bar (handled inside the component).
-          */}
+      {/* 1. h-full: ensures the wrapper matches the Root Layout's screen height.
+        2. overflow-hidden: prevents the entire admin area from scrolling as one piece.
+      */}
+      <div className="flex h-full w-full bg-slate-50 overflow-hidden">
+        {/* SIDE NAV: This will now stay fixed because the parent is overflow-hidden */}
         <AdminNavigationWrapper />
 
-        {/* Main content:
-          - lg:ml-0 (Standard flex-1 behavior)
-          - pb-24: Ensures mobile content isn't hidden behind the bottom navigation bar.
-          - px-4: Narrower padding for mobile.
-          - px-8: Wider padding for desktop.
-          */}
-        <main className="flex-1 w-full overflow-x-hidden px-4 py-6 sm:px-8 sm:py-10 pb-24 lg:pb-10">
-          <div className="max-w-[100vw] mx-auto">{children}</div>
+        {/* MAIN CONTENT: 
+          1. h-full: fills the vertical space.
+          2. overflow-y-auto: ONLY this area will show a scrollbar.
+        */}
+        <main className="flex-1 h-full overflow-y-auto px-2 pt-0 sm:px-8 pb-24 lg:pb-10">
+          <div className="w-full flex flex-col">{children}</div>
         </main>
 
-        {/* Floating Home Button:
-          Ensure its z-index is high enough to sit above the navigation.
-          */}
+        {/* Floating Home Button */}
         <div className="relative z-50">
           <AdminHomeFloatingButton />
         </div>

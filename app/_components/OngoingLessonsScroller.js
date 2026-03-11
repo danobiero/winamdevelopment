@@ -1,13 +1,12 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import OngoingReservationCard from './OngoingReservationCard';
 
 export default function OngoingLessonsScroller({ lessons }) {
   const scrollRef = useRef(null);
   const [index, setIndex] = useState(0);
 
-  // Update index based on scroll position (detects manual swipes on mobile)
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, clientWidth } = scrollRef.current;
@@ -33,7 +32,7 @@ export default function OngoingLessonsScroller({ lessons }) {
   };
 
   return (
-    <div className="group relative w-full max-w-7xl mx-auto px-1">
+    <div className="group relative w-full max-w-7xl mx-auto">
       {/* Carousel Container */}
       <div
         ref={scrollRef}
@@ -54,7 +53,7 @@ export default function OngoingLessonsScroller({ lessons }) {
             className="
               snap-center shrink-0 
               w-full
-              px-1 md:px-4 lg:px-8
+              px-2 md:px-8 lg:px-12
             "
           >
             <OngoingReservationCard
@@ -65,22 +64,21 @@ export default function OngoingLessonsScroller({ lessons }) {
         ))}
       </div>
 
-      {/* NAVIGATION ARROWS - Hidden on small mobile, visible on hover/tablet+ */}
+      {/* NAVIGATION ARROWS - Now visible on mobile */}
       {lessons.length > 1 && (
         <>
           {index > 0 && (
             <button
               onClick={handlePrev}
               className="
-                hidden md:flex
-                absolute left-2 top-1/2 -translate-y-1/2 
-                bg-primary-900/80 backdrop-blur-sm text-white w-10 h-10 
-                items-center justify-center rounded-full shadow-lg
-                hover:bg-primary-800 transition-all z-20
+                absolute left-0 md:left-2 top-1/2 -translate-y-1/2 
+                bg-white/80 backdrop-blur-md text-slate-800 w-8 h-8 md:w-10 md:h-10 
+                flex items-center justify-center rounded-full shadow-md border border-slate-200
+                hover:bg-white transition-all z-20 active:scale-90
               "
               aria-label="Previous lesson"
             >
-              <span className="text-2xl mb-1">‹</span>
+              <span className="text-xl md:text-2xl mb-0.5">‹</span>
             </button>
           )}
 
@@ -88,29 +86,28 @@ export default function OngoingLessonsScroller({ lessons }) {
             <button
               onClick={handleNext}
               className="
-                hidden md:flex
-                absolute right-2 top-1/2 -translate-y-1/2 
-                bg-primary-900/80 backdrop-blur-sm text-white w-10 h-10 
-                items-center justify-center rounded-full shadow-lg
-                hover:bg-primary-800 transition-all z-20
+                absolute right-0 md:right-2 top-1/2 -translate-y-1/2 
+                bg-white/80 backdrop-blur-md text-slate-800 w-8 h-8 md:w-10 md:h-10 
+                flex items-center justify-center rounded-full shadow-md border border-slate-200
+                hover:bg-white transition-all z-20 active:scale-90
               "
               aria-label="Next lesson"
             >
-              <span className="text-2xl mb-1">›</span>
+              <span className="text-xl md:text-2xl mb-0.5">›</span>
             </button>
           )}
         </>
       )}
 
-      {/* DOT INDICATORS - Essential for Mobile UX */}
+      {/* DOT INDICATORS */}
       {lessons.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-1.5 mt-6">
           {lessons.map((_, i) => (
             <button
               key={i}
               onClick={() => scrollToIndex(i)}
-              className={`h-2 rounded-full transition-all ${
-                index === i ? 'w-6 bg-accent-500' : 'w-2 bg-primary-200'
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === i ? 'w-8 bg-blue-600' : 'w-1.5 bg-slate-200'
               }`}
               aria-label={`Go to slide ${i + 1}`}
             />

@@ -76,27 +76,35 @@ export default async function AdminHomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 relative overflow-x-hidden">
-      {/* Background Decorative Blobs - Reduced size for mobile to avoid layout shifts */}
-      <div className="absolute -top-20 -left-20 w-64 h-64 sm:w-96 sm:h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute -top-20 -right-20 w-64 h-64 sm:w-96 sm:h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div className="bg-slate-50 relative overflow-x-hidden w-full h-full">
+      {/* Decorative Blobs */}
+      <div className="absolute -top-32 -left-20 w-64 h-64 sm:w-96 sm:h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="absolute -top-32 -right-20 w-64 h-64 sm:w-96 sm:h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
-      <div className="relative z-10 px-4 py-6 sm:py-10 lg:px-10">
-        {/* Header Card (Requested Format) */}
-        <div className="max-w-7xl mx-auto mb-6 sm:mb-10">
-          <div className="w-full rounded-xl bg-logo-10 shadow-sm border border-gray-200 px-5 py-6 sm:px-10 sm:py-8 text-center backdrop-blur-sm">
-            <h2 className="text-xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-              Admin Console
-            </h2>
-            <p className="text-slate-500 mt-1 text-xs sm:text-base">
-              Logged in as{' '}
-              <span className="font-semibold">{session.user.name}</span>
-            </p>
+      <div className="relative z-10 px-4 py-4 sm:py-6 lg:px-10">
+        {/* SLIM HEADER SECTION */}
+        <div className="max-w-7xl mx-auto mb-6 sm:mb-8">
+          <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Admin <span className="text-blue-600">Console</span>
+              </h1>
+              <p className="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-bold mt-1">
+                Management Dashboard
+              </p>
+            </div>
+
+            <div className="mt-2 sm:mt-0 flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm w-fit">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <p className="text-slate-600 text-xs font-medium">
+                {session.user.name}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Card Grid - Optimized for Mobile Taps */}
-        <section className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Card Grid */}
+        <section className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pb-24 sm:pb-10">
           {adminCards.map(
             ({
               name,
@@ -110,47 +118,45 @@ export default async function AdminHomePage() {
               <Link
                 key={name}
                 href={href}
-                className="group relative flex flex-row sm:flex-col items-center sm:items-start bg-white border border-slate-200 rounded-2xl p-4 sm:p-8 shadow-sm transition-all active:scale-95 sm:active:scale-100 hover:shadow-xl overflow-hidden"
+                className="group relative flex flex-row sm:flex-col items-center sm:items-start bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm transition-all active:scale-95 hover:shadow-lg overflow-hidden"
               >
-                {/* Colored Indicator for Mobile (Left side bar) */}
+                {/* Visual Accent */}
                 <div
-                  className={`absolute left-0 top-0 bottom-0 w-1.5 sm:hidden ${color}`}
+                  className={`absolute left-0 top-0 bottom-0 w-1 sm:hidden ${color}`}
                 ></div>
 
-                {/* Icon Container - Scaled down for mobile */}
+                {/* Icon */}
                 <div className="flex-shrink-0 relative z-20">
                   <div
-                    className={`p-3 sm:p-4 rounded-xl ${lightColor} ${textColor} transition-transform duration-300 group-hover:scale-110`}
+                    className={`p-2.5 sm:p-3 rounded-xl ${lightColor} ${textColor} transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110`}
                   >
-                    <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
                 </div>
 
-                {/* Text Content - Side by side on mobile, stacked on desktop */}
-                <div className="ml-4 sm:ml-0 sm:mt-8 flex-grow relative z-20">
+                {/* Text */}
+                <div className="ml-4 sm:ml-0 sm:mt-5 flex-grow relative z-20">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-800">
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-800">
                       {name}
                     </h3>
                     <ChevronRightIcon
-                      className={`h-5 w-5 ${textColor} sm:opacity-0 sm:-translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0`}
+                      className={`h-4 w-4 ${textColor} sm:opacity-0 sm:-translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0`}
                     />
                   </div>
-                  {/* Description - Hidden on very small screens to save space, visible on sm+ */}
-                  <p className="hidden sm:block mt-2 text-slate-500 text-sm leading-relaxed line-clamp-2">
+                  <p className="hidden sm:block mt-1 text-slate-500 text-xs leading-relaxed line-clamp-1 font-medium">
                     {description}
                   </p>
                 </div>
 
-                {/* Management text hidden on mobile for cleaner look */}
-                <div className="hidden sm:flex mt-auto pt-6 items-center text-xs font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-600 transition-colors">
-                  Open Dashboard
+                <div className="hidden sm:flex mt-5 pt-4 border-t border-slate-50 items-center text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">
+                  Go to {name}
                 </div>
               </Link>
             )
           )}
         </section>
       </div>
-    </main>
+    </div>
   );
 }

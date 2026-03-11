@@ -1,0 +1,438 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  replyToSupportTicket,
+  updateSupportStatus,
+  getSupportThread,
+} from './actions';
+
+/**
+ * MAIN TABLE & CARD COMPONENT
+ */
+export default function SupportTable({
+  tickets = [],
+  total = 0,
+  page = 1,
+  pageCount = 1,
+  status = 'all',
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const changeStatus = (newStatus) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('status', newStatus);
+    params.set('page', '1');
+    router.push(`/admin/support?${params.toString()}`);
+  };
+
+  const changePage = (newPage) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    router.push(`/admin/support?${params.toString()}`);
+  };
+
+  const handleOpen = async (ticketId) => {
+    setLoading(true);
+    try {
+      const thread = await getSupportThread(ticketId);
+      setSelected(thread);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statuses = [
+    'all',
+    'open',
+    'in_progress',
+    'waiting_on_student',
+    'resolved',
+    'closed',
+  ];
+
+  return (
+    <>
+      {/* STATUS FILTERS */}
+      <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar scroll-smooth">
+        {statuses.map((s) => (
+          <button
+            key={s}
+            onClick={() => changeStatus(s)}
+            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all shrink-0 border ${
+              status === s
+                ? 'bg-[#000033] border-[#000033] text-white shadow-md'
+                : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+            }`}
+          >
+            {s.replace(/_/g, ' ')}
+          </button>
+        ))}
+      </div>
+
+      {/* TABLE / CARD CONTAINER */}
+      <div className="space-y-4 md:space-y-0 md:bg-white md:rounded-2xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden">
+        {/* DESKTOP HEADER */}
+        <div className="hidden md:grid grid-cols-12 bg-slate-50/50 px-6 py-4 text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] border-b border-slate-100">
+          <div className="col-span-7">Ticket Details</div>
+          <div className="col-span-2 text-center">Status</div>
+          <div className="col-span-3 text-right">Activity</div>
+        </div>
+
+        {/* ROWS / CARDS */}
+        <div className="md:divide-y md:divide-slate-100">
+          {tickets.length > 0 ? (
+            tickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                onClick={() => handleOpen(ticket.id)}
+                className="
+                  bg-white rounded-2xl border border-slate-200 shadow-sm p-5 
+                  md:rounded-none md:border-none md:shadow-none md:px-6 md:py-4 md:grid md:grid-cols-12 
+                  hover:bg-blue-50/30 transition-all cursor-pointer group items-center
+                  border-b-4 border-b-slate-100 md:border-b-0
+                "
+              >
+                {/* Subject & User Info */}
+                <div className="col-span-7 mb-4 md:mb-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-[9px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                      #{ticket.id}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 truncate max-w-[180px]">
+                      {ticket.student_email || 'System Request'}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-base md:text-[13px] leading-tight group-hover:text-blue-700 transition-colors">
+                    {ticket.subject}
+                  </h3>
+                </div>
+
+                {/* Status Badge */}
+                <div className="col-span-2 flex items-center md:justify-center mb-4 md:mb-0">
+                  <StatusBadge status={ticket.status} />
+                </div>
+
+                {/* Date/Time (Activity) */}
+                <div className="col-span-3 flex justify-between items-center md:block md:text-right border-t border-slate-50 pt-3 md:pt-0 md:border-none">
+                  <p className="text-[11px] font-black text-slate-900 uppercase">
+                    {new Date(ticket.created_at).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                    {formatRelativeTime(ticket.created_at)}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-20 text-center bg-white rounded-2xl border border-slate-200 border-dashed">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                No tickets found.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RESPONSIVE PAGINATION */}
+      {pageCount > 1 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-8 px-2 gap-4">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+            Page {page} of {pageCount}
+          </p>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              disabled={page <= 1}
+              onClick={() => changePage(page - 1)}
+              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
+            >
+              Prev
+            </button>
+            <button
+              disabled={page >= pageCount}
+              onClick={() => changePage(page + 1)}
+              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading && <LoadingOverlay />}
+      {selected && (
+        <SupportViewModal
+          ticket={selected.ticket}
+          messages={selected.messages}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * UPDATED SUPPORT VIEW MODAL
+ */
+function SupportViewModal({ ticket, messages = [], onClose }) {
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState(ticket.status);
+  const [isPending, startTransition] = useTransition();
+
+  const isDbResolved =
+    ticket.status === 'resolved' || ticket.status === 'closed';
+  const isLocalChanging = status !== ticket.status;
+  const showResolvedUI = isDbResolved && !isLocalChanging;
+
+  const handleSubmit = () => {
+    if (!message.trim()) return;
+    startTransition(async () => {
+      await replyToSupportTicket({ supportId: ticket.id, message });
+      await updateSupportStatus({ supportId: ticket.id, status });
+      onClose();
+    });
+  };
+
+  const handleQuickClose = () => {
+    startTransition(async () => {
+      await updateSupportStatus({ supportId: ticket.id, status: 'closed' });
+      onClose();
+    });
+  };
+
+  const priorityStyles = {
+    low: 'bg-slate-100 text-slate-600',
+    normal: 'bg-blue-50 text-blue-600 border border-blue-100',
+    high: 'bg-amber-50 text-amber-700 border border-amber-100',
+    urgent: 'bg-red-50 text-red-700 border border-red-100 animate-pulse',
+  };
+
+  const statusStyles = {
+    open: 'bg-rose-50 text-rose-700',
+    in_progress: 'bg-amber-50 text-amber-700',
+    waiting_on_student: 'bg-indigo-50 text-indigo-700',
+    resolved: 'bg-emerald-50 text-emerald-700',
+    closed: 'bg-slate-100 text-slate-500',
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-md p-0 sm:p-4">
+      <div className="bg-white flex flex-col w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[85vh] rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden ring-1 ring-white/20">
+        {/* HEADER */}
+        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-start shrink-0">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold text-slate-400">
+                #{ticket.id}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${priorityStyles[ticket.priority]}`}
+              >
+                {ticket.priority}
+              </span>
+            </div>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight leading-tight line-clamp-1 uppercase">
+              {ticket.subject}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* THREAD CONTENT */}
+        <div className="flex-1 overflow-y-auto bg-slate-50/30 p-4 sm:p-6 space-y-6 overscroll-contain">
+          {/* Student Info Card */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                Student Contact
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {ticket.name || 'Anonymous'}
+              </p>
+              <p className="text-[11px] font-medium text-slate-500">
+                {ticket.email}
+              </p>
+            </div>
+            <div className="sm:text-right">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                Received At
+              </p>
+              <p className="text-[11px] font-bold text-slate-700 uppercase">
+                {new Date(ticket.created_at).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Original Message */}
+            <div className="flex flex-col items-start max-w-[92%]">
+              <div className="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm">
+                <p className="text-[9px] font-black text-blue-600 mb-2 uppercase tracking-widest border-b border-blue-50 pb-1">
+                  Original Inquiry
+                </p>
+                <p className="text-[13px] font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
+                  {ticket.message}
+                </p>
+              </div>
+            </div>
+
+            {/* Response Thread */}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex flex-col max-w-[92%] ${msg.sender_type === 'admin' ? 'ml-auto items-end' : 'items-start'}`}
+              >
+                <div
+                  className={`p-4 rounded-2xl shadow-sm ${msg.sender_type === 'admin' ? 'bg-[#000033] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}
+                >
+                  <p className="text-[9px] font-black mb-2 uppercase tracking-widest opacity-60">
+                    {msg.sender_type === 'admin' ? 'Support Lead' : 'Student'}
+                  </p>
+                  <p className="text-[13px] font-medium whitespace-pre-wrap leading-relaxed">
+                    {msg.message}
+                  </p>
+                  <p className="text-[9px] mt-2 opacity-40 font-bold text-right italic">
+                    {new Date(msg.created_at).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* MODAL FOOTER */}
+        <div className="p-4 sm:p-6 border-t border-slate-100 bg-white shrink-0">
+          {!showResolvedUI ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                    Update Status:
+                  </span>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border-none ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-slate-900 transition-all ${statusStyles[status]}`}
+                  >
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="waiting_on_student">
+                      Waiting on Student
+                    </option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                {message.trim().length === 0 && (
+                  <span className="text-[9px] font-black text-amber-600 animate-pulse uppercase tracking-widest">
+                    Message Required
+                  </span>
+                )}
+              </div>
+
+              <div className="relative">
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                  placeholder="Draft your response..."
+                  className="w-full border border-slate-200 rounded-2xl p-4 pr-14 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all resize-none text-sm font-medium"
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={isPending || !message.trim()}
+                  className="absolute bottom-3 right-3 w-10 h-10 flex items-center justify-center bg-[#000033] text-white rounded-xl hover:bg-blue-700 disabled:opacity-20 transition-all shadow-lg active:scale-90"
+                >
+                  {isPending ? (
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    '➤'
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-4 flex flex-col items-center justify-center text-center space-y-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                This ticket is {ticket.status}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setStatus('in_progress')}
+                  className="px-6 py-2.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95"
+                >
+                  Reopen & Reply
+                </button>
+                {ticket.status === 'resolved' && (
+                  <button
+                    onClick={handleQuickClose}
+                    className="px-6 py-2.5 bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-300 transition-all active:scale-95"
+                  >
+                    Archive
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * HELPERS
+ */
+function StatusBadge({ status }) {
+  const styles = {
+    open: 'bg-rose-50 text-rose-700 border-rose-200',
+    in_progress: 'bg-amber-50 text-amber-700 border-amber-200',
+    waiting_on_student: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    closed: 'bg-slate-50 text-slate-500 border-slate-200',
+  };
+  return (
+    <span
+      className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${styles[status] || styles.closed}`}
+    >
+      {status.replace(/_/g, ' ')}
+    </span>
+  );
+}
+
+function LoadingOverlay() {
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white/60 backdrop-blur-sm">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-[#000033] border-t-transparent rounded-full animate-spin" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+          Retrieving Thread...
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function formatRelativeTime(date) {
+  const diff = new Date() - new Date(date);
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'just now';
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}

@@ -5,16 +5,18 @@ import { getFullViewData } from './actions';
 
 export default function FullViewButton({ onLoad }) {
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState(null);
 
   const handleClick = () => {
+    setError(null);
     startTransition(async () => {
-      setMessage('');
       try {
         const data = await getFullViewData();
-        onLoad(data); // Pass data to parent to toggle the view
+        if (data && onLoad) {
+          onLoad(data);
+        }
       } catch (err) {
-        setMessage(`❌ ${err.message}`);
+        setError(err instanceof Error ? err.message : 'Failed to load');
       }
     });
   };
@@ -24,12 +26,14 @@ export default function FullViewButton({ onLoad }) {
       <button
         onClick={handleClick}
         disabled={isPending}
-        className="px-5 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-purple-700 disabled:bg-gray-400 transition-all active:scale-95 whitespace-nowrap"
+        className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white transition-all bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
       >
         {isPending ? (
           <span className="flex items-center gap-2">
             <svg
-              className="animate-spin h-4 w-4 text-white"
+              className="w-4 h-4 text-white animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
               viewBox="0 0 24 24"
             >
               <circle
@@ -39,26 +43,25 @@ export default function FullViewButton({ onLoad }) {
                 r="10"
                 stroke="currentColor"
                 strokeWidth="4"
-                fill="none"
-              />
+              ></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
+              ></path>
             </svg>
-            Loading...
+            Processing...
           </span>
         ) : (
           'Full View'
         )}
       </button>
 
-      {/* Error message handling that won't disrupt the header layout */}
-      {message && (
-        <div className="relative">
-          <p className="absolute top-1 right-0 md:right-0 whitespace-nowrap text-[11px] font-medium text-red-600">
-            {message}
+      {/* Logic fixed: using standard && instead of a broken ternary */}
+      {error && (
+        <div className="relative h-0 w-full">
+          <p className="absolute right-0 top-1 text-[10px] font-bold uppercase tracking-wider text-red-500 whitespace-nowrap">
+            {error}
           </p>
         </div>
       )}

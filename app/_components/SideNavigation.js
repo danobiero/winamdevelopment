@@ -3,7 +3,8 @@
 import {
   CalendarDaysIcon,
   HomeIcon,
-  UserIcon, LifebuoyIcon
+  UserIcon,
+  LifebuoyIcon,
 } from '@heroicons/react/24/solid';
 import SignOutButton from './SignOutButton';
 import Link from 'next/link';
@@ -68,7 +69,10 @@ function SideNavigation({ isMobile }) {
   // DESKTOP VIEW: Sidebar (Fixed to left side)
   return (
     <nav className="h-full flex flex-col bg-white">
-      <ul className="flex flex-col gap-2 p-4 text-lg flex-1">
+      {/* Updated p-4 to pt-24 px-4 pb-4. 
+          The pt-24 (6rem) lowers the list to line up with your page header. 
+      */}
+      <ul className="flex flex-col gap-2 pt-8 px-4 pb-4 text-lg flex-1">
         {navLinks.map((link) => {
           const isActive = pathname === link.href;
           return (

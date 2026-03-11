@@ -1,13 +1,10 @@
+import gradient from '@/public/office_2.jpg'; // Mobile Image
 import Image from 'next/image';
 import Link from 'next/link';
-import alt_logo_2 from '@/public/office_1.jpg'; // Desktop Image
-import gradient from '@/public/office_2.jpg'; // Mobile Image
 
 export default function Page() {
   return (
-    /* 'fixed inset-0' removes the top gap by starting at 0,0.
-       'h-[100dvh]' handles mobile address bars better than h-screen.
-    */
+    
     <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden">
       <main className="relative h-full w-full">
         {/* MOBILE BACKGROUND: Visible only on small screens */}

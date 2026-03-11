@@ -1,5 +1,8 @@
-import { getStudentSupportTickets } from '../../_lib/actions';
-import StudentSupportTable from './StudentSupportTable';
+import {
+  getStudentSupportTickets,
+  getStudentSupportThread,
+} from '../../_lib/actions';
+import StudentSupportList from './StudentSupportList';
 import Link from 'next/link';
 
 export const metadata = {
@@ -7,64 +10,68 @@ export const metadata = {
 };
 
 export default async function SupportPage() {
-  const tickets = await getStudentSupportTickets();
-  const hasTickets = tickets && tickets.length > 0;
+  const allTickets = (await getStudentSupportTickets()) || [];
+
+  // Fetch messages for all tickets initially so the client can toggle instantly
+  let allMessages = [];
+  if (allTickets.length) {
+    const threads = await Promise.all(
+      allTickets.map((ticket) => getStudentSupportThread(ticket.id))
+    );
+    allMessages = threads.flat();
+  }
 
   return (
-    <div className="min-h-full px-4 py-8 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <div className="w-full">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 md:mb-12 border-b border-slate-100 pb-6">
+        <div className="space-y-1">
+          {/* UPDATED HEADER BRANDING */}
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Support <span className="text-blue-600">Requests</span>
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
+          </h1>
+          <p className="text-sm md:text-base text-slate-500 font-medium">
             View and manage your active help tickets and inquiries.
           </p>
         </div>
 
-        <Link
-          href="/account/support/new"
-          className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 transition-colors focus:outline-none"
-        >
-          Create New Ticket
-        </Link>
+        <div>
+          <Link
+            href="/account/support/new"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95"
+          >
+            + Create New Ticket
+          </Link>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        {hasTickets ? (
-          <div className="overflow-x-auto">
-            <StudentSupportTable tickets={tickets} />
+      {/* Main Content */}
+      {allTickets.length > 0 ? (
+        <StudentSupportList allTickets={allTickets} allMessages={allMessages} />
+      ) : (
+        /* Refined Empty State */
+        <div className="bg-white rounded-2xl border border-slate-200 py-20 text-center shadow-sm">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 text-slate-400 mb-4">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M20 13V6a2-2 0 00-2-2H6a2-2 0 00-2 2v7m16 0v5a2-2 0 01-2 2H6a2-2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
+            </svg>
           </div>
-        ) : (
-          <div className="text-center py-16 px-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4">
-              {/* Corrected SVG Path below */}
-              <svg
-                className="w-8 h-8 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M20 13V6a2-2 0 00-2-2H6a2-2 0 00-2 2v7m16 0v5a2-2 0 01-2 2H6a2-2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-slate-900">
-              No tickets found
-            </h3>
-            <p className="mt-1 text-slate-500">
-              You haven't submitted any support requests yet.
-            </p>
-          </div>
-        )}
-      </div>
+          <h3 className="text-sm font-bold text-slate-900">No tickets yet</h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Submit a request if you need help with your courses.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

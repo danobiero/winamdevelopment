@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  addDays,
   addMonths,
+  eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   format,
@@ -17,27 +17,28 @@ import BookingModal from './BookingModal';
 import { getAdminBookingsForDate } from './actions';
 
 /* ============================================================
-   COLOR PALETTE (PER SESSION_KEY)
+    COLOR PALETTE (PER LESSON_ID)
    ============================================================ */
 const COLOR_POOL = [
-  { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-900' },
-  { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-900' },
-  { bg: 'bg-green-100', border: 'border-green-300', text: 'text-green-900' },
-  { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-900' },
-  { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-900' },
-  { bg: 'bg-teal-100', border: 'border-teal-300', text: 'text-teal-900' },
-  { bg: 'bg-yellow-100', border: 'border-yellow-300', text: 'text-yellow-900' },
+  { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+  { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
+  {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+  },
+  { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
+  { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700' },
+  { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700' },
+  { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
 ];
 
 const FALLBACK_COLOR = {
-  bg: 'bg-gray-100',
-  border: 'border-gray-300',
-  text: 'text-gray-800',
+  bg: 'bg-slate-50',
+  border: 'border-slate-200',
+  text: 'text-slate-600',
 };
 
-/* ============================================================
-   TIME FORMATTER
-   ============================================================ */
 function formatTime(ts) {
   return new Date(ts).toLocaleTimeString('en-US', {
     hour: 'numeric',
@@ -47,36 +48,33 @@ function formatTime(ts) {
 
 export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
-
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-
   const [bookingsForDate, setBookingsForDate] = useState([]);
   const [isLoadingDate, setIsLoadingDate] = useState(false);
   const [dateError, setDateError] = useState(null);
 
   if (!Array.isArray(events)) {
     return (
-      <div className="text-red-600 font-semibold">
-        CalendarGrid Error: Invalid event data
+      <div className="p-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+        <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">
+          Data Error: Invalid Event Stream
+        </p>
       </div>
     );
   }
 
-  /* ===================== MONTH GRID ===================== */
+  /* ===================== MONTH GRID CALCS ===================== */
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const weekStart = startOfWeek(monthStart, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
-  const days = [];
-  let day = weekStart;
-  while (day <= weekEnd) {
-    days.push(day);
-    day = addDays(day, 1);
-  }
+  const days = useMemo(() => {
+    return eachDayOfInterval({ start: weekStart, end: weekEnd });
+  }, [weekStart, weekEnd]);
 
-  /* ===================== EVENTS BY DATE ===================== */
+  /* ===================== EVENT MAPPING ===================== */
   const eventMap = useMemo(() => {
     const map = {};
     events.forEach((ev) => {
@@ -87,21 +85,19 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
     return map;
   }, [events]);
 
-  /* ===================== SESSION_KEY COLORS ===================== */
-  const sessionColorMap = useMemo(() => {
+  const lessonColorMap = useMemo(() => {
     const map = {};
-    const keys = Array.from(
-      new Set(events.map((e) => e.session_key).filter(Boolean))
-    ).sort();
+    const ids = Array.from(
+      new Set(events.map((e) => e.lesson_id).filter(Boolean))
+    ).sort((a, b) => Number(a) - Number(b));
 
-    keys.forEach((key, i) => {
-      map[key] = COLOR_POOL[i % COLOR_POOL.length];
+    ids.forEach((id, i) => {
+      map[id] = COLOR_POOL[i % COLOR_POOL.length];
     });
-
     return map;
   }, [events]);
 
-  /* ===================== CLICK HANDLERS ===================== */
+  /* ===================== HANDLERS ===================== */
   const handleDateClick = (dateKey) => {
     setSelectedEvent(null);
     setSelectedDate(dateKey);
@@ -112,78 +108,93 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const handleEventClick = (e, ev) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // 🔑 close date modal first (prevents overlay conflicts)
     setSelectedDate(null);
-    setBookingsForDate([]);
-    setDateError(null);
-    setIsLoadingDate(false);
-
-    // 🔑 then open event modal
     setSelectedEvent(ev);
   };
 
-  /* ===================== LOAD BOOKINGS AFTER DATE SELECT ===================== */
   useEffect(() => {
     if (!selectedDate) return;
-
     let active = true;
-
     const loadBookings = async () => {
       try {
         setIsLoadingDate(true);
-
         const sessions = await getAdminBookingsForDate(selectedDate);
-
-        if (active) {
-          setBookingsForDate(sessions || []);
-        }
+        if (active) setBookingsForDate(sessions || []);
       } catch (err) {
-        console.error('Failed to load bookings for date:', err);
-        if (active) {
-          setDateError('Unable to load bookings for this date.');
-        }
+        if (active) setDateError('Failed to sync date bookings.');
       } finally {
-        if (active) {
-          setIsLoadingDate(false);
-        }
+        if (active) setIsLoadingDate(false);
       }
     };
-
     loadBookings();
-
     return () => {
       active = false;
     };
   }, [selectedDate]);
 
   return (
-    <div>
-      {/* ===================== HEADER ===================== */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          ← Prev
-        </button>
-
-        <h3 className="text-2xl font-semibold">
+    <div className="w-full">
+      {/* --- GRID HEADER --- */}
+      <div className="flex justify-between items-center px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+        <h3 className="text-[13px] font-black text-[#000033] uppercase tracking-[0.15em]">
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
 
-        <button
-          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          Next →
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
+            className="p-1.5 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 rounded-md transition-all text-slate-400 hover:text-slate-900"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => setCurrentMonth(startOfMonth(new Date()))}
+            className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            Today
+          </button>
+
+          <button
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            className="p-1.5 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 rounded-md transition-all text-slate-400 hover:text-slate-900"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* ===================== CALENDAR GRID ===================== */}
-      <div className="grid grid-cols-7 gap-2 border rounded-lg p-4 bg-white shadow">
+      {/* --- CALENDAR GRID --- */}
+      <div className="grid grid-cols-7 overflow-hidden rounded-b-2xl">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-          <div key={d} className="text-center font-semibold">
+          <div
+            key={d}
+            className="py-2.5 text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-r border-slate-100 last:border-r-0 bg-white"
+          >
             {d}
           </div>
         ))}
@@ -191,67 +202,86 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
         {days.map((dayItem, idx) => {
           const dateKey = format(dayItem, 'yyyy-MM-dd');
           const dayEvents = eventMap[dateKey] || [];
+          const isCurrentMonth = isSameMonth(dayItem, currentMonth);
+          const isTodayDate = isToday(dayItem);
 
           return (
             <div
               key={idx}
               onClick={(e) => {
-                // ✅ DO NOT trigger date modal if clicking on an event button
                 if (e.target.closest('button')) return;
                 handleDateClick(dateKey);
               }}
-              className={`border p-2 rounded min-h-[140px] flex flex-col gap-1 cursor-pointer
-                ${
-                  isSameMonth(dayItem, currentMonth)
-                    ? 'bg-white hover:bg-blue-50'
-                    : 'bg-gray-100 text-gray-400'
-                }
-                ${
-                  isToday(dayItem)
-                    ? 'bg-yellow-100 border-yellow-400 shadow-md'
-                    : ''
-                }
+              className={`
+                relative min-h-[130px] p-2 border-b border-r border-slate-100 last:border-r-0 cursor-pointer transition-colors
+                ${isCurrentMonth ? 'bg-white hover:bg-slate-50/50' : 'bg-slate-50/30 text-slate-300'}
+                ${isTodayDate ? 'bg-amber-50/70 border-l-4 border-l-amber-400 z-10' : ''}
               `}
             >
-              <div className="font-semibold">{format(dayItem, 'd')}</div>
+              <div className="flex justify-between items-start mb-2">
+                <span
+                  className={`
+                  text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm
+                  ${isTodayDate ? 'bg-[#000033] text-white' : 'text-slate-400'}
+                `}
+                >
+                  {format(dayItem, 'd')}
+                </span>
 
-              {dayEvents.map((ev) => {
-                const color = sessionColorMap[ev.session_key] || FALLBACK_COLOR;
+                {isTodayDate && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-[7px] font-black uppercase tracking-tighter text-amber-600">
+                      Live
+                    </span>
+                    <div className="h-1 w-1 rounded-full bg-amber-500 animate-ping" />
+                  </div>
+                )}
+              </div>
 
-                return (
-                  <button
-                    key={ev.id}
-                    type="button"
-                    onClick={(e) => handleEventClick(e, ev)}
-                    className={`text-xs px-2 py-1 rounded text-left
-                      ${color.bg} ${color.text} ${color.border}
-                      hover:opacity-90`}
-                  >
-                    <div className="font-semibold truncate">{ev.title}</div>
-                    <div className="text-[10px] opacity-80">
-                      {formatTime(ev.start_time)} – {formatTime(ev.end_time)}
-                    </div>
-                  </button>
-                );
-              })}
+              <div className="space-y-1">
+                {dayEvents.slice(0, 4).map((ev) => {
+                  const color = lessonColorMap[ev.lesson_id] || FALLBACK_COLOR;
+                  return (
+                    <button
+                      key={ev.id}
+                      type="button"
+                      onClick={(e) => handleEventClick(e, ev)}
+                      className={`
+                        w-full text-left px-2 py-1.5 rounded border border-transparent transition-all
+                        ${color.bg} ${color.text} hover:shadow-sm
+                        ${isTodayDate ? 'border-amber-200/50' : ''}
+                      `}
+                    >
+                      <div className="text-[9px] font-black uppercase leading-tight truncate">
+                        {ev.title}
+                      </div>
+                      <div className="text-[8px] font-bold opacity-70 tracking-tighter">
+                        {formatTime(ev.start_time)}
+                      </div>
+                    </button>
+                  );
+                })}
+                {dayEvents.length > 4 && (
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center pt-1">
+                    + {dayEvents.length - 4} more
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* ===================== MODALS ===================== */}
       <BookingModal
         event={selectedEvent}
         date={selectedDate}
         sessions={bookingsForDate}
         onError={onError}
-        onAddAvailability = { onAddAvailability }
+        onAddAvailability={onAddAvailability}
         onClose={() => {
           setSelectedEvent(null);
           setSelectedDate(null);
           setBookingsForDate([]);
-          
-          
         }}
       />
     </div>

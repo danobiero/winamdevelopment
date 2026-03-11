@@ -1181,11 +1181,17 @@ export async function getStudentSupportThread(supportId) {
     throw new Error('Unauthorized');
   }
 
-  const { data, error } = await supabase
-    .from('support_messages')
-    .select('*')
-    .eq('support_id', supportId)
-    .order('created_at', { ascending: true });
+ const { data, error } = await supabase
+   .from('support_messages')
+   .select(
+     `
+    *,
+    support!inner(student_id)
+  `
+   )
+   .eq('support_id', supportId)
+   .eq('support.student_id', session.user.studentId)
+   .order('created_at', { ascending: true });
 
   if (error) throw error;
 

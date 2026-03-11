@@ -12,26 +12,26 @@ export default async function Page() {
   const student = await getStudent(session.user.email);
 
   return (
-    /* Change 1: Added a container with responsive vertical spacing */
-    <div className="md:pt-4">
-      {/* Change 2: Responsive heading size (text-xl on mobile, 2xl on desktop) */}
-      
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#000033] mb-12 tracking-tight leading-tight text-center md:text-left">
-        Update <span className="text-blue-600">Profile</span>
-      </h2>
+    <div className="w-full">
+      <header className="mb-8 md:mb-12">
+        {/* UPDATED HEADER BRANDING */}
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          Update <span className="text-blue-600">Profile</span>
+        </h1>
 
-      {/* Change 3: Slightly smaller text on mobile to save vertical space */}
-      <p className="text-base md:text-lg mb-8 text-blue-950 text-center md:text-left opacity-90">
-        The following information will make your session access faster.
-      </p>
+        <p className="text-sm md:text-base text-slate-500 font-medium mt-1">
+          Update your profile to get full session access
+        </p>
+      </header>
 
-      {/* Change 4: Wrapped the form to ensure it centers well on larger mobile screens */}
-      <div className="max-w-2xl mx-auto md:mx-0">
+      {/* Form Container */}
+      <div className="max-w-2xl">
         <UpdateProfileForm student={student}>
           <SelectCountry
             name="nationality"
             id="nationality"
-            className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-lg"
+            /* Updated Select styles to match the new slate aesthetic */
+            className="px-5 py-3 bg-slate-100 border border-slate-200 text-slate-700 w-full shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             defaultCountry={student.nationality}
           />
         </UpdateProfileForm>

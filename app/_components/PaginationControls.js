@@ -4,26 +4,32 @@ import Link from 'next/link';
 
 export default function PaginationControls({ page, hasNext }) {
   return (
-    <div className="flex items-center justify-between pt-4">
+    /* w-full ensures the flexbox stretches across the whole container */
+    <div className="flex items-center justify-between w-full pt-4">
+      {/* Using 'invisible' instead of 'hidden' or 'pointer-events-none' 
+         ensures the "Page X" text stays perfectly centered even on Page 1.
+      */}
       <Link
         href={`?page=${page - 1}`}
-        className={`px-4 py-2 rounded-md border text-sm font-medium ${
+        className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
           page <= 1
-            ? 'pointer-events-none text-gray-400 border-gray-200'
-            : 'text-gray-700 border-gray-300 hover:bg-gray-100'
+            ? 'invisible pointer-events-none'
+            : 'text-slate-600 border-slate-200 bg-white hover:border-slate-900 hover:text-slate-900 shadow-sm'
         }`}
       >
         Previous
       </Link>
 
-      <span className="text-sm text-gray-600">Page {page}</span>
+      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+        Page {page}
+      </span>
 
       <Link
         href={`?page=${page + 1}`}
-        className={`px-4 py-2 rounded-md border text-sm font-medium ${
+        className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
           !hasNext
-            ? 'pointer-events-none text-gray-400 border-gray-200'
-            : 'text-gray-700 border-gray-300 hover:bg-gray-100'
+            ? 'invisible pointer-events-none'
+            : 'text-slate-600 border-slate-200 bg-white hover:border-slate-900 hover:text-slate-900 shadow-sm'
         }`}
       >
         Next

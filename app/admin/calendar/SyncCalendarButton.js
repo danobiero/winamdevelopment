@@ -10,17 +10,13 @@ export default function SyncCalendarButton({ onError }) {
 
   const handleSync = () => {
     startTransition(async () => {
-      // 1. Execute the server action
       const result = await syncRecurringRulesToGoogle();
 
-      // 2. Centralized error handling
       if (!result?.ok) {
-        // This passes the normalized error object to the parent's banner
         onError?.(result.error);
         return;
       }
 
-      // 3. Handle the "Nothing to Sync" case as a warning
       if (result.synced === 0) {
         onError?.({
           type: 'NO_OP',
@@ -31,7 +27,6 @@ export default function SyncCalendarButton({ onError }) {
         return;
       }
 
-      // 4. Success path
       onError?.({
         severity: 'success',
         userMessage: `✅ Successfully exported ${result.synced} events to Google.`,
@@ -45,9 +40,40 @@ export default function SyncCalendarButton({ onError }) {
     <button
       onClick={handleSync}
       disabled={isPending}
-      className="px-4 py-2 rounded bg-logo-100 text-white text-sm font-medium hover:bg-logo-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+      className="
+        flex items-center gap-2 
+        px-3 py-2 
+        bg-white border border-slate-200 
+        hover:border-slate-400 hover:bg-slate-50
+        text-slate-600 
+        rounded-lg shadow-sm 
+        transition-all 
+        disabled:opacity-50 disabled:cursor-not-allowed
+        active:scale-95
+      "
     >
-      {isPending ? 'Syncing…' : 'Export'}
+      {/* Loading Spinner or Google Calendar Icon */}
+      {isPending ? (
+        <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+      ) : (
+        <svg
+          className="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={3}
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      )}
+
+      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+        {isPending ? 'Syncing' : 'Export'}
+      </span>
     </button>
   );
 }

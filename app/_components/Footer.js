@@ -1,108 +1,103 @@
+'use client'; // Required for the click toggle logic
+import { useState } from 'react';
 import Link from 'next/link';
+import {
+  InformationCircleIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Footer() {
+  const [isMinimized, setIsMinimized] = useState(true);
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-[#1a2332] text-slate-400 py-12 border-t border-slate-800">
-      <div className="w-full px-6 lg:px-16 xl:px-24">
-        {/* TOP SECTION: Flexbox is often safer than Grid for varying widths */}
-        <div className="flex flex-col md:flex-row flex-wrap justify-between gap-12 pb-12 border-b border-slate-800/60">
-          {/* Brand Column - Always takes full width on small, 40% on medium+ */}
-          <div className="basis-full md:basis-1/3 lg:basis-2/5 space-y-4">
-            <Link
-              href="/"
-              className="text-2xl font-black tracking-tighter text-[#4ade80]"
-            >
-              PRAXIDA
-            </Link>
-            <p className="text-sm leading-relaxed max-w-sm">
-              Building strength through clear, practical financial foundations.
-              We empower you to budget better, save more, and plan for your
-              future with absolute confidence.
-            </p>
-            <div className="h-1 w-12 bg-blue-600 rounded-full" />
-          </div>
+    <footer className="w-full bg-[#1a2332] text-slate-400 border-t border-slate-800 transition-all duration-300">
+      {/* MINIMIZED SYMBOL VIEW */}
+      <div
+        onClick={() => setIsMinimized(!isMinimized)}
+        className="flex items-center justify-between px-6 py-2 cursor-pointer hover:bg-slate-800/50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <InformationCircleIcon className="h-4 w-4 text-[#4ade80]" />
+          <span className="text-[10px] uppercase tracking-widest font-bold">
+            Praxida Info
+          </span>
+        </div>
+        {isMinimized ? (
+          <ChevronUpIcon className="h-4 w-4" />
+        ) : (
+          <ChevronDownIcon className="h-4 w-4" />
+        )}
+      </div>
 
-          {/* Links and Contact Wrapper - This group stays together */}
-          <div className="flex flex-1 flex-wrap justify-between gap-10">
-            {/* Quick Links */}
-            <div className="space-y-4 min-w-[140px]">
-              <h4 className="text-white font-bold uppercase tracking-widest text-[11px]">
-                Explore
-              </h4>
-              <nav className="flex flex-col gap-2 text-sm">
-                <Link
-                  href="/lessons"
-                  className="hover:text-white transition-colors"
-                >
-                  Course Lessons
-                </Link>
-                <Link
-                  href="/about"
-                  className="hover:text-white transition-colors"
-                >
-                  Our Vision
-                </Link>
-                <Link
-                  href="/support"
-                  className="hover:text-white transition-colors"
-                >
-                  Help Center
-                </Link>
-              </nav>
+      {/* FULL FOOTER CONTENT (Your Original Code) */}
+      {!isMinimized && (
+        <div className="w-full px-6 lg:px-16 xl:px-24 py-4 animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex flex-col md:flex-row flex-wrap justify-between gap-6 pb-4 border-b border-slate-800/60">
+            <div className="basis-full md:basis-1/3 lg:basis-2/5 space-y-2">
+              <Link
+                href="/"
+                className="text-xl font-black tracking-tighter text-[#4ade80]"
+              >
+                PRAXIDA
+              </Link>
+              <p className="text-[11px] leading-tight max-w-sm">
+                Building strength through clear, practical financial
+                foundations.
+              </p>
+              <div className="h-1 w-8 bg-blue-600 rounded-full" />
             </div>
 
-            {/* Contact Column */}
-            <div className="space-y-4 md:text-right min-w-[200px]">
-              <h4 className="text-white font-bold uppercase tracking-widest text-[11px]">
-                Get in Touch
-              </h4>
-              <div className="space-y-4 text-sm">
-                <p className="text-slate-300">
-                  P.O. Box 98493, Lakewood, WA 98499
-                </p>
-                <div className="flex flex-col gap-1">
+            <div className="flex flex-1 flex-wrap justify-between gap-6">
+              <div className="space-y-2 min-w-[120px]">
+                <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">
+                  Explore
+                </h4>
+                <nav className="flex flex-col gap-1 text-[11px]">
+                  <Link href="/lessons" className="hover:text-white">
+                    Course Lessons
+                  </Link>
+                  <Link href="/about" className="hover:text-white">
+                    Our Vision
+                  </Link>
+                </nav>
+              </div>
+
+              <div className="space-y-2 md:text-right min-w-[180px]">
+                <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">
+                  Get in Touch
+                </h4>
+                <div className="space-y-1 text-[11px]">
+                  <p className="text-slate-300">
+                    P.O. Box 98493, Lakewood, WA 98499
+                  </p>
                   <a
                     href="tel:+18325342090"
-                    className="text-xl font-bold text-white hover:text-blue-400 transition-colors"
+                    className="text-lg font-bold text-white hover:text-blue-400"
                   >
                     (832) 534-2090
-                  </a>
-                  <a
-                    href="mailto:info@praxidaonline.com"
-                    className="hover:text-blue-400 transition-colors text-xs"
-                  >
-                    info@praxidaonline.com
                   </a>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* BOTTOM SECTION */}
-        <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-medium order-2 sm:order-1">
-            © {currentYear} PRAXIDA. All rights reserved.
-          </p>
-
-          <nav className="flex gap-6 text-[10px] uppercase tracking-[0.2em] font-bold order-1 sm:order-2">
-            <Link
-              href="/terms-of-service"
-              className="hover:text-white transition-colors"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/privacy-policy"
-              className="hover:text-white transition-colors"
-            >
-              Privacy
-            </Link>
-          </nav>
+          <div className="pt-4 flex justify-between items-center gap-2">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+              © {currentYear} PRAXIDA.
+            </p>
+            <nav className="flex gap-4 text-[9px] uppercase tracking-[0.2em] font-bold">
+              <Link href="/terms-of-service" className="hover:text-white">
+                Terms
+              </Link>
+              <Link href="/privacy-policy" className="hover:text-white">
+                Privacy
+              </Link>
+            </nav>
+          </div>
         </div>
-      </div>
+      )}
     </footer>
   );
 }

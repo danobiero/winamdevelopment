@@ -159,8 +159,77 @@ function toLocalDate(dateString) {
 //=============================================================
 //GET ADMIN CALENDAR DATA
 //=============================================================
-
 export async function getAdminCalendarData() {
+  const supabase = createAdminSupabaseClient();
+
+  /* ===================== 1. LOAD CALENDAR + STATUS + LESSON_ID ===================== */
+  // We now pull lesson_id directly from the calendar_events table via the relationship
+  const { data: calendarEvents, error: evErr } = await supabase
+    .from('calendar')
+    .select(
+      `
+      id,
+      title,
+      description,
+      start_time,
+      end_time,
+      meet_link,
+      session_key,
+      source_event_id,
+
+      calendar_events:source_event_id (
+        status,
+        lesson_id 
+      )
+    `
+    )
+    .order('start_time');
+
+  if (evErr) throw new Error(evErr.message);
+
+  /* ===================== 2. LOAD BOOKING LINKS ===================== */
+  const { data: calendarLinks, error: linkErr } = await supabase.from(
+    'calendar_bookings'
+  ).select(`
+      calendar_id,
+      booking_id,
+      bookings:booking_id (
+        id,
+        "lessonId",
+        students:studentId ( fullName ),
+        lessons:lessonId ( name )
+      )
+    `);
+
+  if (linkErr) throw new Error(linkErr.message);
+
+  /* ===================== 3. MERGE & FLATTEN ===================== */
+  const events = calendarEvents.map((ev) => {
+    // Filter bookings linked to this calendar slot (if any)
+    const bookingDetails = calendarLinks
+      .filter((link) => link.calendar_id === ev.id)
+      .map((link) => ({
+        id: link.bookings.id,
+        lessonId: link.bookings.lessonId,
+        studentName: link.bookings.students?.fullName ?? 'Unknown Student',
+        lessonName: link.bookings.lessons?.name ?? 'Unknown Lesson',
+      }));
+
+    return {
+      ...ev,
+      // 🔑 Pull directly from the event source table
+      // This works even if bookingDetails is empty!
+      lesson_id: ev.calendar_events?.lesson_id,
+      status: ev.calendar_events?.status,
+      bookingDetails,
+    };
+  });
+
+  return events;
+}
+
+
+export async function getAdminCalendarData_old() {
   const supabase = createAdminSupabaseClient();
 
   /* ===================== 1. LOAD CALENDAR + STATUS ===================== */
@@ -179,6 +248,7 @@ export async function getAdminCalendarData() {
 
       calendar_events:source_event_id (
         status
+        
       )
     `
     )
