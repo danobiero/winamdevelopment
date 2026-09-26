@@ -1,6 +1,6 @@
 # Praxida Website Main
 
-The app that provides access to students who are regisered to learn financial literacy and to admin who manages the sessions.
+The app that provides access to shareholders who are registered with Winam.
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
