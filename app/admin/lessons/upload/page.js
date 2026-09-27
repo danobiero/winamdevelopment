@@ -11,7 +11,9 @@ export default async function UploadPage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold">Upload Lesson Materials</h1>
+      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        Upload Lesson <span className="text-blue-600">Materials</span>
+      </h1>
 
       <UploadMaterials lessons={lessons} />
       

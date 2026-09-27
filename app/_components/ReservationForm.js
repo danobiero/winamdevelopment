@@ -3,14 +3,19 @@
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useReservation } from './ReservationContext';
-import { UsersIcon } from '@heroicons/react/24/solid';
+import { ChartBarIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 import { createBooking } from '../_lib/actions';
 import { differenceInCalendarWeeks } from 'date-fns';
 import SubmitButton from './SubmitButton';
 
-function ReservationForm({ lesson, user, bookedCounts }) {
-  const { range, resetRange, students, setStudents } = useReservation();
-  const { maxCapacity, regularPrice, discount, id } = lesson;
+function ReservationForm({ opportunity, user, bookedCounts }) {
+  const {
+    range,
+    resetRange,
+    students: shareholders,
+    setStudents: setShareholders,
+  } = useReservation();
+  const { maxCapacity, id } = opportunity;
   const formRef = useRef(null);
 
   const totalWeeks =
@@ -18,6 +23,7 @@ function ReservationForm({ lesson, user, bookedCounts }) {
       ? differenceInCalendarWeeks(range.to, range.from, { weekStartsOn: 1 }) + 1
       : 0;
 
+  // Keeping your 6-week rule for the briefing series
   const isValidSelection = totalWeeks === 6;
 
   useEffect(() => {
@@ -32,42 +38,44 @@ function ReservationForm({ lesson, user, bookedCounts }) {
   const startDate = range.from;
   const endDate = range.to;
 
-  let availableSpots = maxCapacity;
+  // Calculate seat availability for the briefing
+  let availableSeats = maxCapacity;
   if (startDate && bookedCounts) {
     const startKey = new Date(startDate).toISOString().split('T')[0];
-    availableSpots = Math.max(maxCapacity - (bookedCounts[startKey] || 0), 0);
+    availableSeats = Math.max(maxCapacity - (bookedCounts[startKey] || 0), 0);
   }
 
-  const balance = availableSpots - (students || 0);
-  const lessonPrice = regularPrice - discount;
-  const totalPrice = students * lessonPrice;
+  // Attendance data for the action
   const bookingData = {
     startDate,
     endDate,
-    lessonPrice,
-    lessonId: id,
-    totalPrice,
+    opportunityId: id,
+    numShareholders: shareholders,
   };
+
   const createBookingWithData = createBooking.bind(null, bookingData);
 
   return (
-    /* h-full and flex-col allow the container to stretch vertically */
     <div ref={formRef} className="w-full h-full flex flex-col scroll-mt-20">
-      <div className="bg-logo-10 px-4 py-3 flex items-center justify-between rounded-t-xl border-b border-white/20">
+      {/* Header: Profile & Status */}
+      <div className="bg-slate-100 px-6 py-4 flex items-center justify-between rounded-t-2xl border-b border-slate-200">
         <div className="flex items-center gap-3">
-          <div className="relative w-8 h-8">
+          <div className="relative w-10 h-10">
             <Image
               src={user?.image || '/default-avatar.jpg'}
               alt={user?.name}
               fill
-              className="rounded-full object-cover"
+              className="rounded-full border-2 border-white shadow-sm object-cover"
             />
           </div>
-          <span className="font-semibold text-primary-900 text-sm md:text-base">
-            Booking as {user?.name.split(' ')[0]}
-          </span>
+          <div>
+            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+              Investor
+            </p>
+            <p className="font-bold text-slate-900 text-sm">{user?.name}</p>
+          </div>
         </div>
-        <UsersIcon className="h-5 w-5 text-primary-700 opacity-50" />
+        <ShieldCheckIcon className="h-6 w-6 text-primary-600 opacity-20" />
       </div>
 
       <form
@@ -76,65 +84,71 @@ function ReservationForm({ lesson, user, bookedCounts }) {
           await createBookingWithData(formData);
           resetRange();
         }}
-        /* flex-grow here ensures the primary-500 background fills the column */
-        className="bg-primary-500 p-5 md:p-10 flex flex-col gap-5 flex-grow rounded-b-xl text-white"
+        className="bg-slate-900 p-6 md:p-10 flex flex-col gap-6 flex-grow rounded-b-2xl text-white"
       >
-        <div className="space-y-2">
-          <label className="text-sm font-bold uppercase tracking-wide">
-            Number of Students
+        {/* Shareholder Count */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            Attendees / Shareholders
           </label>
           <select
-            name="numStudents"
-            className="w-full px-4 py-3 bg-white text-primary-800 rounded-lg text-base focus:ring-4 focus:ring-logo-100/20 outline-none"
-            value={students}
-            onChange={(e) => setStudents(Number(e.target.value))}
+            name="numShareholders"
+            className="w-full px-4 py-4 bg-slate-800 text-white border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none appearance-none"
+            value={shareholders}
+            onChange={(e) => setShareholders(Number(e.target.value))}
             required
           >
-            <option value="">Select students...</option>
-            {Array.from({ length: availableSpots }, (_, i) => i + 1).map(
-              (x) => (
-                <option value={x} key={x}>
-                  {x} {x === 1 ? 'Student' : 'Students'}
-                </option>
-              )
-            )}
+            <option value="">Select number of seats...</option>
+            {Array.from(
+              { length: Math.min(availableSeats, 5) },
+              (_, i) => i + 1
+            ).map((x) => (
+              <option value={x} key={x}>
+                {x} {x === 1 ? 'Shareholder' : 'Shareholders'}
+              </option>
+            ))}
           </select>
         </div>
 
-        <div className="p-4 bg-white/10 rounded-lg border border-white/10">
-          <p className="text-xs uppercase font-bold opacity-70 mb-1">
-            Capacity Check
-          </p>
-          <p className="text-sm font-medium">
-            {balance >= 0
-              ? `${balance} spots still available after your booking`
-              : 'Waitlist only'}
-          </p>
+        {/* Capacity / Governance Info */}
+        <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-start gap-3">
+          <ChartBarIcon className="h-5 w-5 text-primary-400 shrink-0" />
+          <div>
+            <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
+              Briefing Capacity
+            </p>
+            <p className="text-sm font-medium text-slate-200">
+              {availableSeats > 0
+                ? `${availableSeats} seats remaining for this session series`
+                : 'Session is currently at maximum capacity'}
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold uppercase tracking-wide">
-            Financial Goals
+        {/* Agenda / Observations */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            Agenda Items / Discussion Points
           </label>
           <textarea
             name="observations"
-            className="w-full px-4 py-3 bg-white text-primary-800 rounded-lg text-base focus:ring-4 focus:ring-logo-100/20 outline-none"
-            placeholder="What are you hoping to achieve? (Home, retirement, etc.)"
-            rows={3}
+            className="w-full px-4 py-4 bg-slate-800 text-white border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+            placeholder="List any specific asset metrics or governance topics you wish to discuss..."
+            rows={4}
           />
         </div>
 
-        {/* mt-auto pushes this button section to the bottom of the column */}
-        <div className="mt-auto">
+        {/* Action Button */}
+        <div className="mt-auto pt-4">
           {!isValidSelection ? (
-            <div className="p-4 bg-yellow-400/20 border border-yellow-400/40 rounded-lg text-center">
-              <p className="text-yellow-200 text-xs font-bold uppercase">
-                Step 1: Select 6 Weeks on Calendar
+            <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl text-center">
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                Please select a 6-week briefing window
               </p>
             </div>
           ) : (
-            <SubmitButton pendingLabel="Processing...">
-              Confirm Reservation &rarr;
+            <SubmitButton pendingLabel="Registering Attendance...">
+              Confirm Briefing Attendance &rarr;
             </SubmitButton>
           )}
         </div>

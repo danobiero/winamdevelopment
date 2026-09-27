@@ -13,11 +13,74 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-//---------------------------------------------------
+/////////////////////////////////////////////////////
 //UPDATE PROFILE
-//---------------------------------------------------
+/////////////////////////////////////////////////////
 
 export async function updateProfileAdmin(formData) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.adminId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = createAdminSupabaseClient();
+
+    const fullName = formData.get('fullName')?.trim();
+    const telephone = formData.get('telephone')?.trim();
+    const email = formData.get('email')?.trim();
+
+    // ===============================
+    // VALIDATION
+    // ===============================
+    if (!fullName || !telephone || !email) {
+      return { success: false, error: 'All fields are required' };
+    }
+
+    const phoneRegex = /^[0-9]{9,12}$/;
+    if (!phoneRegex.test(telephone)) {
+      return { success: false, error: 'Invalid Telephone Number' };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { success: false, error: 'Invalid Email Format' };
+    }
+
+    // ===============================
+    // DB UPDATE
+    // ===============================
+    const { error } = await supabase
+      .from('admins')
+      .update({
+        fullName,
+        telephone,
+        email,
+      })
+      .eq('id', session.user.adminId);
+
+    if (error) {
+      return { success: false, error: 'Admin could not be updated' };
+    }
+
+    revalidatePath('/admin/profile');
+
+    // IMPORTANT: DO NOT signOut here (breaks server action flow)
+
+    return {
+      success: true,
+      signOut: true,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err?.message || 'Unexpected server error',
+    };
+  }
+}
+
+export async function updateProfileAdmin_old(formData) {
   
   const session = await auth();
   if (!session?.user?.adminId) throw new Error('Unauthorized');
@@ -102,6 +165,7 @@ export async function sendProfileOtp() {
 
 export async function verifyProfileOtp(code) {
   const session = await auth();
+  
   if (!session?.user?.adminId) throw new Error('Unauthorized');
 
   const supabase = createAdminSupabaseClient();
@@ -120,6 +184,10 @@ export async function verifyProfileOtp(code) {
   }
 
   const otp = rows[0];
+
+  if (new Date(otp.expires_at) < new Date()) {
+    throw new Error('Code expired. Please request a new code.');
+  }
   const inputHash = crypto
     .createHash('sha256')
     .update(normalized)

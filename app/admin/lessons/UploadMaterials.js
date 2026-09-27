@@ -97,15 +97,13 @@ export default function UploadMaterials({ lessons, onUpload }) {
           <span>Back to Lessons</span>
         </Link>
 
-        <div className="pb-6 border-b border-slate-100">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <CloudArrowUpIcon className="h-8 w-8 text-emerald-600" />
-            Upload Materials
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <CloudArrowUpIcon className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+            <span>Upload <span className="text-blue-600">Materials</span></span>
           </h1>
           <p className="text-slate-500 mt-1">
             Attach PDFs, Docs, or Images to a specific lesson.
           </p>
-        </div>
       </div>
 
       <form onSubmit={handleUpload} className="py-6 space-y-6">

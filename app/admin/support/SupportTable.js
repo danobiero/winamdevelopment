@@ -81,7 +81,7 @@ export default function SupportTable({
                 : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
             }`}
           >
-            {s.replace(/_/g, ' ')}
+            {s === 'waiting_on_student' ? 'waiting on client' : s.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
@@ -300,11 +300,11 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
 
         {/* THREAD CONTENT */}
         <div className="flex-1 overflow-y-auto bg-slate-50/30 p-4 sm:p-6 space-y-6 overscroll-contain">
-          {/* Student Info Card */}
+          {/* Client Info Card */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div className="min-w-0">
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                Student Contact
+                Client Contact
               </p>
               <p className="text-sm font-bold text-slate-900 break-words">
                 {ticket.name || 'Anonymous'}
@@ -355,7 +355,7 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
                   }`}
                 >
                   <p className="text-[9px] font-black mb-2 uppercase tracking-widest opacity-60">
-                    {msg.sender_type === 'admin' ? 'Support Lead' : 'Student'}
+                    {msg.sender_type === 'admin' ? 'Support Lead' : 'Client'}
                   </p>
                   <p className="text-[13px] font-medium whitespace-pre-wrap leading-relaxed break-words">
                     {msg.message}
@@ -392,7 +392,7 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
                     <option value="open">Open</option>
                     <option value="in_progress">In Progress</option>
                     <option value="waiting_on_student">
-                      Waiting on Student
+                      Waiting on Client
                     </option>
                     <option value="resolved">Resolved</option>
                     <option value="closed">Closed</option>
@@ -474,7 +474,7 @@ function StatusBadge({ status }) {
         styles[status] || styles.closed
       }`}
     >
-      {status.replace(/_/g, ' ')}
+      {status === 'waiting_on_student' ? 'waiting on client' : status.replace(/_/g, ' ')}
     </span>
   );
 }

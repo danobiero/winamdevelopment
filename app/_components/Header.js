@@ -7,11 +7,8 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    /* REMOVED: mb-2 md:mb-3 
-       This eliminates the gap between the header border and the body content.
-    */
-    <header className="bg-white border-b border-primary-300 px-6 py-2 relative z-50">
-      <div className="max-w-[100vw] flex justify-between items-center mx-auto">
+    <header className="bg-white border-b border-slate-200/80 px-3.5 sm:px-6 lg:px-8 xl:px-10 py-2 sm:py-2.5 relative z-50">
+      <div className="w-full flex justify-between items-center">
         <Logo />
 
         {/* Desktop Nav: Shown only on xl screens */}

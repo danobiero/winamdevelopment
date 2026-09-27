@@ -18,7 +18,9 @@ export default async function CreateLessonPage() {
   return (
     /* Added px-4 for mobile edge spacing and reduced top/bottom space on small screens */
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
-      <h1 className="text-2xl sm:text-3xl font-bold">Create New Lesson</h1>
+      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        Create New <span className="text-blue-600">Lesson</span>
+      </h1>
       <Link
         href="/admin"
         className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"

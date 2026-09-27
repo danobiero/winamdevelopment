@@ -5,7 +5,6 @@ import { auth } from '@/app/_lib/auth';
 import { createAdminSupabaseClient } from '@/app/_lib/supabase-admin';
 import { sendEmail } from './email';
 
-
 export async function sendProfileOtp() {
   const session = await auth();
 
@@ -32,8 +31,8 @@ export async function sendProfileOtp() {
   if (error) throw new Error('Failed to store verification code');
 
   // 4️⃣ Define the Content
-  const subject = 'Praxida Profile Verification Code';
-  const textContent = `Your Praxida verification code is: ${code}. This code expires in 10 minutes.`;
+  const subject = 'WINAM Profile Verification Code';
+  const textContent = `Your WINAM verification code is: ${code}. This code expires in 10 minutes.`;
 
   // Cleaned HTML with more robust CSS for Gmail/Outlook
   const htmlContent = `
@@ -50,7 +49,7 @@ export async function sendProfileOtp() {
               <tr>
                 <td>
                   <div style="text-align:center;margin-bottom:24px;">
-                    <h1 style="margin:0;font-size:28px;color:#0f172a;">Praxida</h1>
+                    <h1 style="margin:0;font-size:28px;color:#0f172a;">WINAM</h1>
                     <p style="margin:4px 0 0;color:#475569;font-size:14px;">Practical Financial Foundation</p>
                   </div>
                   
@@ -64,7 +63,7 @@ export async function sendProfileOtp() {
                   </div>
                   
                   <p style="margin:24px 0 0;color:#64748b;font-size:13px;text-align:center;border-top:1px solid #e5e7eb;padding-top:24px;">
-                    Sent by Praxida
+                    Sent by WINAM
                   </p>
                 </td>
               </tr>
@@ -112,8 +111,8 @@ export async function sendProfileOtp_old_1() {
   // 5️⃣ Send branded email
   await sendEmail({
     to: session.user.email,
-    subject: 'Praxida Profile Verification Code',
-    text: `Praxida Profile Verification
+    subject: 'WINAM Profile Verification Code',
+    text: `WINAM Profile Verification
 
 Your verification code is: ${code}
 
@@ -121,14 +120,14 @@ This code expires in 10 minutes.
 
 If you did not request this code, secure your account immediately.
 
-Praxida
+WINAM
 Practical Financial Foundation`,
     html: `
       <div style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,sans-serif;">
         <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
           <div style="background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e5e7eb;">
             <div style="text-align:center;margin-bottom:24px;">
-              <h1 style="margin:0;font-size:28px;color:#0f172a;">Praxida</h1>
+              <h1 style="margin:0;font-size:28px;color:#0f172a;">WINAM</h1>
               <p style="margin:8px 0 0;color:#475569;font-size:14px;">
                 Practical Financial Foundation
               </p>
@@ -161,7 +160,7 @@ Practical Financial Foundation`,
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
 
             <p style="margin:0;color:#64748b;font-size:13px;text-align:center;">
-              Sent by Praxida
+              Sent by WINAM
             </p>
           </div>
         </div>

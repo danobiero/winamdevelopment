@@ -12,12 +12,12 @@ const transporter = nodemailer.createTransport({
 export async function sendEmail({ to, subject, text, html }) {
   try {
     const info = await transporter.sendMail({
-      from: `"Praxida Support" <${process.env.GMAIL_USER}>`,
+      from: `"WINAM Support" <${process.env.GMAIL_USER}>`,
       replyTo: process.env.GMAIL_USER,
       to,
       subject,
-      text, // The plain text fallback
-      html, // The HTML content
+      text, 
+      html, 
     });
 
     return { success: true, messageId: info.messageId };

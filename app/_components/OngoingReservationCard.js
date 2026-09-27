@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { FormatCurrency } from '@/app/_lib/utils';
 import LessonCard from './LessonCard';
-import LessonCalendar from './LessonCalendar';
+import LessonCalendar from './InvestmentCalendar';
 
 export default function OngoingReservationCard({ booking, calendarEvents }) {
   const { startDate, endDate, lessons, numStudents, status } = booking;

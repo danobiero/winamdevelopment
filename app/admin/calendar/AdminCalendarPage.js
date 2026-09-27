@@ -5,7 +5,7 @@ import { reconcileGoogleCancellations } from './actions';
 
 import SyncCalendarButton from './SyncCalendarButton';
 import PublishCalendarButton from './PublishCalendarButton';
-import AssignBookingsButton from './AssignBookingsButton';
+import AssignInvestmentsButton from './AssignInvestmentsButton';
 import FullViewButton from './FullViewButton';
 import BackToCalendarButton from './BackToCalendarButton';
 import CalendarGrid from './CalendarGrid';
@@ -35,7 +35,7 @@ const SyncIcon = ({ isPending }) => (
 export default function AdminCalendarPage({
   events = [],
   accessToken,
-  lessons = [],
+  opportunities = [],
   adminId,
 }) {
   const [fullViewData, setFullViewData] = useState(null);
@@ -88,30 +88,33 @@ export default function AdminCalendarPage({
       {/* Adjusted padding and background to sit flush within the parent card */}
       <div className="flex flex-wrap items-center gap-2 p-4 border-b border-slate-100 bg-slate-50/50">
         <div className="flex flex-wrap items-center gap-2 flex-1">
-          <Tooltip text="Date and time when sessions are delivered">
+          <Tooltip
+            text="Sessions delivery date and time"
+            position="bottom"
+          >
             <CreateEventButton onClick={() => openCreate()} />
           </Tooltip>
 
-          <Tooltip text="Publish events to calendar">
+          <Tooltip text="Publish events to calendar" position="bottom">
             <PublishCalendarButton onError={setActionError} />
           </Tooltip>
 
-          <Tooltip text="Link bookings to calendar sessions">
-            <AssignBookingsButton onError={setActionError} />
+          <Tooltip text="Link investments to calendar sessions" position="bottom">
+            <AssignInvestmentsButton onError={setActionError} />
           </Tooltip>
 
-          <Tooltip text="Move events to google calendar">
+          <Tooltip text="Move events to google calendar" position="bottom">
             <SyncCalendarButton
               accessToken={accessToken}
               onError={setActionError}
             />
           </Tooltip>
 
-          <Tooltip text="Get Session Meeting Links">
+          <Tooltip text="Get Session Meeting Links" position="bottom">
             <MeetingLinkSync onError={setActionError} />
           </Tooltip>
 
-          <Tooltip text="Sync with Google calendar">
+          <Tooltip text="Sync with Google calendar" position="bottom">
             <button
               onClick={runSync}
               disabled={isSyncing}
@@ -127,7 +130,7 @@ export default function AdminCalendarPage({
 
         <div className="ml-auto pl-4 border-l border-slate-200">
           {!fullViewData ? (
-            <Tooltip text="View session bookings">
+            <Tooltip text="View session investments" position="bottom">
               <FullViewButton onLoad={setFullViewData} />
             </Tooltip>
           ) : (
@@ -160,7 +163,7 @@ export default function AdminCalendarPage({
 
       {showCreate && (
         <CreateEventModal
-          lessons={lessons}
+          opportunities={opportunities}
           adminId={adminId}
           onClose={closeCreate}
           initialDate={showCreate?.initialDate}

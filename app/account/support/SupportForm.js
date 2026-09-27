@@ -5,6 +5,7 @@ import { createSupportTicket } from '../../_lib/actions';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+
   return (
     <button
       type="submit"
@@ -25,12 +26,12 @@ function SubmitButton() {
               r="10"
               stroke="currentColor"
               strokeWidth="4"
-            ></circle>
+            />
             <path
               className="opacity-75"
               fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
+            />
           </svg>
           Processing...
         </span>
@@ -47,6 +48,9 @@ export default function SupportForm() {
       action={createSupportTicket}
       className="mx-auto w-full max-w-2xl space-y-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-10"
     >
+      {/* Hidden Context */}
+      <input type="hidden" name="source" value="dashboard" />
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Subject */}
         <div className="group relative">
@@ -60,7 +64,7 @@ export default function SupportForm() {
             required
             name="subject"
             id="subject"
-            placeholder="Help with my course"
+            placeholder="Help with my investment or account"
             className="w-full border-b-2 border-slate-200 bg-transparent py-2 text-lg font-medium outline-none transition-all focus:border-primary-500 placeholder:text-slate-300"
           />
         </div>
@@ -102,7 +106,7 @@ export default function SupportForm() {
           rows={4}
           placeholder="Tell us more about what you need help with..."
           className="w-full resize-none rounded-xl border border-slate-200 p-4 text-slate-700 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
-        ></textarea>
+        />
       </div>
 
       <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row">

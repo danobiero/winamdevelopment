@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,9 +9,9 @@ module.exports = {
   theme: {
     extend: {
       screens: {
-        // Trigger mobile menu when width < 1600px
         xlShrink: { max: "1600px" },
       },
+
       colors: {
         primary: {
           50: "#E1E8EF",
@@ -25,6 +26,7 @@ module.exports = {
           900: "#1B2631",
           950: "#141C24",
         },
+
         accent: {
           50: "#FAF5F0",
           100: "#F4ECE1",
@@ -38,9 +40,15 @@ module.exports = {
           900: "#4B351B",
           950: "#382814",
         },
+
         logo: {
-          10: "#ABEBC6",
-          100: "#239B56",
+          50: "#E8F8F5", // very light tint
+          100: "#ABEBC6", // light green
+          200: "#48A9C5", // teal
+          300: "#239B56", // main green
+          400: "#F39C12", // orange
+          500: "#6C3483", // purple
+          900: "#5B5B6E", // WINAM text color
         },
       },
     },

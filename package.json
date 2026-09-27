@@ -1,9 +1,10 @@
 {
-  "name": "praxida-website",
+  "name": "WINAM-website",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "server": "next dev",
     "build": "next build",
     "start": "next start",
     "prod": "next build && next start",
@@ -11,23 +12,29 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@stripe/stripe-js": "^9.0.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
+    "framer-motion": "^12.42.2",
+    "git-filter-repo": "^0.0.30",
     "googleapis": "^171.4.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.542.0",
     "luxon": "^3.7.2",
     "next": "14.2.32",
-    "next-auth": "^5.0.0-beta.29",
+    "next-auth": "^5.0.0-beta.30",
     "nodemailer": "^7.0.13",
     "react": "^18",
     "react-day-picker": "^9.9.0",
     "react-dom": "^18",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
-    "stripe": "^19.1.0"
+    "recharts": "^3.8.1",
+    "stripe": "^19.3.0"
   },
   "devDependencies": {
     "eslint": "^8",

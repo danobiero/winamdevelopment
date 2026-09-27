@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from 'react';
 import Toast from './Toast'; // Adjust path
+import { Toaster } from 'react-hot-toast';
 
 const ToastContext = createContext();
 
@@ -20,6 +21,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
+      <Toaster position="top-right" />
       {toast && (
         <Toast
           key={toast.id}

@@ -1,17 +1,23 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import {
+  CheckIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 
-export default function PaymentSuccessPage() {
-  const [status, setStatus] = useState('loading'); // loading, success, error
-  const [message, setMessage] = useState('Recording your payment...');
+function PaymentSuccessContent() {
+  const [status, setStatus] = useState('loading');
+  const [message, setMessage] = useState('Verifying your contribution...');
+  const [paymentType, setPaymentType] = useState(null); // 'FEE' or 'INVESTMENT'
+
   const searchParams = useSearchParams();
-  const hasRecorded = useRef(false); // Prevents double-firing in Strict Mode
+  const hasRecorded = useRef(false);
 
   const sessionId = searchParams.get('session_id');
-  const bookingId = searchParams.get('bookingId');
 
   useEffect(() => {
     if (!sessionId || hasRecorded.current) return;
@@ -24,99 +30,110 @@ export default function PaymentSuccessPage() {
 
         if (res.ok) {
           setStatus('success');
-          setMessage(
-            `Payment recorded successfully for booking #${bookingId || 'ID'}`
-          );
+          // Capture the type from the API response metadata
+          const type = data.payment?.type;
+          setPaymentType(type);
+
+          // Customize message based on type
+          if (type === 'FEE') {
+            setMessage(
+              'Application fee received! Your membership roadmap has been updated.'
+            );
+          } else {
+            setMessage(
+              'Contribution received! Your portfolio has been updated.'
+            );
+          }
         } else {
           setStatus('error');
-          setMessage(data.error || 'Payment recording failed');
+          setMessage(data.error || 'We could not verify this payment.');
         }
       } catch (err) {
         console.error('Payment success error:', err);
         setStatus('error');
-        setMessage('Failed to connect to the server.');
+        setMessage(
+          'Connection error. Please check your dashboard in a few minutes.'
+        );
       }
     };
 
     confirmPayment();
-  }, [sessionId, bookingId]);
+  }, [sessionId]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center animate-in fade-in zoom-in duration-500">
-        {/* Animated Icon Container */}
-        <div className="mb-6 flex justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center border border-slate-100">
+        <div className="mb-8 flex justify-center">
           {status === 'loading' && (
-            <div className="h-16 w-16 border-4 border-logo-100/20 border-t-logo-100 rounded-full animate-spin" />
+            <div className="h-20 w-20 flex items-center justify-center">
+              <ArrowPathIcon className="h-12 w-12 text-primary-600 animate-spin" />
+            </div>
           )}
 
           {status === 'success' && (
-            <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center animate-bounce">
-              <svg
-                className="h-10 w-10 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+            <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center animate-bounce">
+              <CheckIcon className="h-12 w-12 text-emerald-600 stroke-[3]" />
             </div>
           )}
 
           {status === 'error' && (
             <div className="h-20 w-20 bg-red-100 rounded-full flex items-center justify-center">
-              <svg
-                className="h-10 w-10 text-red-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <XMarkIcon className="h-12 w-12 text-red-600 stroke-[3]" />
             </div>
           )}
         </div>
 
-        {/* Text Content */}
-        <h1 className="text-2xl font-black text-blue-950 mb-2">
+        <h1 className="text-3xl font-black text-slate-900 mb-3">
           {status === 'loading'
-            ? 'Verifying...'
+            ? 'Authenticating...'
             : status === 'success'
-              ? 'Thank You!'
-              : 'Payment Issue'}
+              ? 'Confirmed!'
+              : 'Action Required'}
         </h1>
 
-        <p className="text-primary-600 text-sm md:text-base mb-8 leading-relaxed">
+        <p className="text-slate-600 text-base mb-10 leading-relaxed px-4">
           {message}
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
-          <Link
-            href="/account/reservations"
-            className="w-full bg-logo-100 text-white font-bold py-3 rounded-xl hover:bg-logo-100/90 transition-all shadow-md active:scale-95"
-          >
-            View My Lessons
-          </Link>
+        <div className="flex flex-col gap-4">
+          {status === 'success' ? (
+            <Link
+              href="/membership"
+              className="w-full bg-primary-600 text-white font-bold py-4 rounded-2xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200 active:scale-95"
+            >
+              {paymentType === 'FEE' ? 'Continue Onboarding' : 'View Portfolio'}
+            </Link>
+          ) : (
+            <Link
+              href="/membership"
+              className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all active:scale-95"
+            >
+              Back to Roadmap
+            </Link>
+          )}
 
           <Link
             href="/"
-            className="text-sm font-semibold text-primary-400 hover:text-primary-600 transition-colors"
+            className="text-sm font-bold text-slate-400 hover:text-primary-600 transition-colors uppercase tracking-widest"
           >
-            Back to Home
+            Return Home
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">
+          Loading WINAM secure portal...
+        </div>
+      }
+    >
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

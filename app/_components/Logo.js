@@ -6,31 +6,42 @@ function Logo() {
   return (
     <Link
       href="/"
-      className="group flex items-center gap-3 sm:gap-4 z-10 shrink-0"
+      className="group flex items-center gap-2 sm:gap-3.5 z-10 min-w-0"
     >
       {/* Logo Container */}
-      <div className="relative w-10 h-10 sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-105">
+      <div className="relative w-9 h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 shrink-0 transition-transform duration-300 group-hover:scale-105">
         <Image
           src={logo}
           fill
-          alt="FLOW-NET logo"
+          alt="Winam logo"
           className="object-contain"
-          sizes="(max-width: 640px) 40px, 56px"
+          sizes="(max-width: 640px) 36px, (max-width: 768px) 48px, 56px"
+          quality={100}
           priority
         />
       </div>
 
       {/* Brand Text Section */}
-      <div className="flex flex-col">
-        {/* Using the deep navy color from the Praxida logo */}
-        <span className="text-xl sm:text-2xl font-black tracking-tighter text-[#000033] leading-none">
-          <span className="text-[#000033]">PRAXIDA</span>
-        </span>
+      <div className="flex flex-col min-w-0 justify-center">
+        {/* Mobile (<sm): Compact stacked layout to prevent overflow & awkward line wraps */}
+        <div className="sm:hidden flex flex-col">
+          <span className="text-sm font-black tracking-tight text-[#000033] leading-none">
+            WINAM
+          </span>
+          <span className="text-[8.5px] font-bold uppercase tracking-wider text-slate-500 leading-tight mt-0.5">
+            DEVELOPMENT GROUP
+          </span>
+        </div>
 
-        {/* Tagline matching the 'Clarity' text style from the logo image */}
-        <span className="hidden md:inline-block text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mt-1">
-          Practical Financial Foundation
-        </span>
+        {/* Tablet & Desktop (sm+): Full brand title */}
+        <div className="hidden sm:flex flex-col">
+          <span className="text-lg md:text-2xl font-black tracking-tight text-[#000033] leading-none">
+            WINAM DEVELOPMENT GROUP
+          </span>
+          <span className="hidden md:inline-block text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mt-1">
+            Stronger Together
+          </span>
+        </div>
       </div>
     </Link>
   );

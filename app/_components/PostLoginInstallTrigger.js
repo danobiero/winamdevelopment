@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import InstallPraxidaModal from '@/app/_components/InstallPraxidaModal';
+import InstallWINAMModal from '@/app/_components/InstallWINAMModal';
 
 export default function PostLoginInstallTrigger() {
   const [trigger, setTrigger] = useState(false);
@@ -11,5 +11,5 @@ export default function PostLoginInstallTrigger() {
     setTrigger(true);
   }, []);
 
-  return <InstallPraxidaModal trigger={trigger} />;
+  return <InstallWINAMModal trigger={trigger} />;
 }

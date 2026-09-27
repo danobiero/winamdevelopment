@@ -23,7 +23,7 @@ export async function GET(req) {
       );
     }
 
-    // 1️⃣ Retrieve Stripe session
+    // 1. FETCH STRIPE SESSION (Expanded for receipt info)
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent.latest_charge'],
     });
@@ -32,125 +32,112 @@ export async function GET(req) {
     const charge = paymentIntent?.latest_charge;
     const metadata = stripeSession.metadata || {};
 
-    const bookingId = metadata.booking_id || metadata.bookingId;
-    const studentId = metadata.student_id || metadata.studentId;
-
-    if (!bookingId || !studentId) {
+    // 2. VERIFY PAYMENT STATUS
+    if (stripeSession.payment_status !== 'paid') {
       return NextResponse.json(
-        { error: 'Missing bookingId or studentId in metadata' },
+        { error: 'Payment not confirmed' },
         { status: 400 }
       );
     }
 
-    // 2️⃣ Check if pending payment already exists
-    const { data: existingPayment } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('stripe_session_id', sessionId)
-      .maybeSingle();
+    // 3. MAP METADATA
+    const shareholderId = metadata.shareholder_id;
 
-    const paymentData = {
-      stripe_payment_intent_id: paymentIntent.id,
-      stripe_charge_id: charge?.id || null,
-      stripe_customer_id: stripeSession.customer,
-      amount: paymentIntent.amount_received / 100,
-      currency: paymentIntent.currency,
-      status: paymentIntent.status,
-      payment_method_type: paymentIntent.payment_method_types?.[0] || 'card',
-      receipt_url: charge?.receipt_url || null,
-      description:
-        stripeSession.description ||
-        `Booking #${bookingId} for ${metadata.lesson_name || metadata.lessonName || 'Lesson'}`,
-      updated_at: new Date().toISOString(),
-    };
+    // Safely parse IDs based on what was passed in metadata
+    const oppId = metadata.opportunity_id
+      ? Number(metadata.opportunity_id)
+      : null;
+    const feeId = metadata.fee_id ? Number(metadata.fee_id) : null;
 
-    if (existingPayment) {
-      // ✅ Update existing record
-      const { error: updateError } = await supabase
-        .from('payments')
-        .update(paymentData)
-        .eq('stripe_session_id', sessionId);
-      if (updateError) throw updateError;
-    } else {
-      // 🆕 Insert fallback payment record
-      await supabase.from('payments').insert([
-        {
-          student_id: studentId,
-          booking_id: bookingId,
-          stripe_session_id: sessionId,
-          ...paymentData,
-          metadata,
-        },
-      ]);
+    if (!shareholderId) {
+      return NextResponse.json(
+        { error: 'Missing shareholder_id in metadata' },
+        { status: 400 }
+      );
     }
 
-    // 3️⃣ Handle NORMAL vs ADDITIONAL payment types
-    if (metadata.type === 'additional_payment') {
-      // 🟢 Additional Payment Flow
-      const difference = Number(metadata.difference || 0);
-      const oldTotal = Number(metadata.old_total_price || 0);
-      const newTotal = Number(
-        metadata.new_total_price || oldTotal + difference
+    // 4. CONVERT CENTS TO USD
+    const amountUSD = Number((stripeSession.amount_total / 100).toFixed(2));
+
+    // 5. UPSERT PAYMENT
+    const { data, error } = await supabase
+      .from('payments')
+      .upsert(
+        {
+          shareholder_id: Number(shareholderId),
+          stripe_payment_intent_id: paymentIntent.id,
+          stripe_session_id: sessionId,
+          stripe_charge_id: charge?.id || null,
+          stripe_customer_id: stripeSession.customer,
+          amount: amountUSD,
+          currency: stripeSession.currency.toUpperCase(),
+          status: 'succeeded', // Consistent with Webhook 'succeeded'
+          type: metadata.type || 'unknown',
+          payment_method_type:
+            paymentIntent.payment_method_types?.[0] || 'card',
+          receipt_url: charge?.receipt_url || null,
+          description:
+            metadata.type === 'FEE'
+              ? 'Membership Application Fee'
+              : `Investment in Opportunity #${oppId}`,
+          metadata: metadata,
+          opportunity_id: oppId,
+          fee_id: feeId, // <-- NEW ADDITION
+        },
+        { onConflict: 'stripe_payment_intent_id' }
+      )
+      .select()
+      .single();
+
+    if (error) throw new Error(`Payment Upsert Error: ${error.message}`);
+
+    // 6. SYNC BUSINESS LOGIC
+
+    if (metadata.type === 'FEE') {
+      const email = metadata.email;
+
+      if (email) {
+        // Perform the update directly here to ensure Service Role bypasses RLS
+        const { error: updateError } = await supabase
+          .from('membership_applications')
+          .update({
+            status: 'reviewing',
+            application_fee_paid: true,
+          })
+          .eq('email', email);
+
+        if (updateError)
+          throw new Error(`Membership Update Error: ${updateError.message}`);
+      }
+    } else if (metadata.type === 'INVESTMENT') {
+      if (!oppId) {
+        throw new Error('Missing opportunity_id for INVESTMENT transaction.');
+      }
+
+      const sId = Number(shareholderId);
+      const isCore = metadata.is_core === 'true';
+
+      const { error: rpcError } = await supabase.rpc(
+        'upsert_investment_increment',
+        {
+          p_shareholder_id: sId,
+          p_opportunity_id: oppId,
+          p_amount_invested: amountUSD,
+          p_is_core: isCore,
+        }
       );
-      const numStudents = Number(metadata.num_Students);
-      const observations = String(metadata.reason);
 
-      // Update booking totals
-      const { error: bookingUpdateError } = await supabase
-        .from('bookings')
-        .update({
-          totalPrice: newTotal,
-          numStudents: numStudents,
-          observations: observations,
-          status: 'paid',
-          isPaid: true,
-          bookingStatus: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', bookingId)
-        .eq('studentId', studentId);
-
-      if (bookingUpdateError) throw bookingUpdateError;
-
-      // Insert booking change log
-      const { error: changeError } = await supabase
-        .from('booking_changes')
-        .insert([
-          {
-            booking_id: bookingId,
-            student_id: studentId,
-            change_type: 'additional_payment',
-            field_changed: { totalPrice: { old: oldTotal, new: newTotal } },
-            amount_difference: difference,
-            old_total_price: oldTotal,
-            new_total_price: newTotal,
-            stripe_session_id: sessionId,
-          },
-        ]);
-
-      if (changeError) throw changeError;
-
-      `✅ Additional payment recorded for booking ${bookingId}`;
-    } else {
-      // 🟦 Normal Payment Flow
-      await supabase
-        .from('bookings')
-        .update({
-          status: 'paid',
-          isPaid: true,
-          bookingStatus: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', bookingId);
+      if (rpcError) {
+        throw new Error(`Investment Update Failed: ${rpcError.message}`);
+      }
     }
 
     return NextResponse.json({
-      message: '✅ Payment recorded successfully',
-      bookingId,
-      type: metadata.type || 'initial',
+      message: '✅ Payment verified and recorded',
+      payment: data,
     });
   } catch (err) {
-    console.error('❌ record-payment error:', err);
+    console.error('❌ Verification Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

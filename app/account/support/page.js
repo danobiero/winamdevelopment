@@ -1,22 +1,22 @@
 import {
-  getStudentSupportTickets,
-  getStudentSupportThread,
+  getShareholderSupportTickets,
+  getShareholderSupportThread,
 } from '../../_lib/actions';
-import StudentSupportList from './StudentSupportList';
+import ShareholderSupportList from './ShareholderSupportList';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Support | Student Dashboard',
+  title: 'Support | Investor Dashboard',
 };
 
 export default async function SupportPage() {
-  const allTickets = (await getStudentSupportTickets()) || [];
+  const allTickets = (await getShareholderSupportTickets()) || [];
 
   // Fetch messages for all tickets initially so the client can toggle instantly
   let allMessages = [];
   if (allTickets.length) {
     const threads = await Promise.all(
-      allTickets.map((ticket) => getStudentSupportThread(ticket.id))
+      allTickets.map((ticket) => getShareholderSupportThread(ticket.id))
     );
     allMessages = threads.flat();
   }
@@ -24,14 +24,13 @@ export default async function SupportPage() {
   return (
     <div className="w-full">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 md:mb-12 border-b border-slate-100 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 md:mb-12 border-b border-slate-100 dark:border-slate-800 pb-6">
         <div className="space-y-1">
-          {/* UPDATED HEADER BRANDING */}
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Support <span className="text-blue-600">Requests</span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Support <span className="text-blue-600 dark:text-blue-400">Requests</span>
           </h1>
-          <p className="text-sm md:text-base text-slate-500 font-medium">
-            View and manage your active help tickets and inquiries.
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium">
+            View and manage your support tickets and inquiries.
           </p>
         </div>
 
@@ -47,9 +46,11 @@ export default async function SupportPage() {
 
       {/* Main Content */}
       {allTickets.length > 0 ? (
-        <StudentSupportList allTickets={allTickets} allMessages={allMessages} />
+        <ShareholderSupportList
+          allTickets={allTickets}
+          allMessages={allMessages}
+        />
       ) : (
-        /* Refined Empty State */
         <div className="bg-white rounded-2xl border border-slate-200 py-20 text-center shadow-sm">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 text-slate-400 mb-4">
             <svg
@@ -68,7 +69,8 @@ export default async function SupportPage() {
           </div>
           <h3 className="text-sm font-bold text-slate-900">No tickets yet</h3>
           <p className="text-xs text-slate-500 mt-1">
-            Submit a request if you need help with your courses.
+            Submit a request if you need assistance with your account or
+            investments.
           </p>
         </div>
       )}

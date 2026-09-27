@@ -1,6 +1,6 @@
 import { auth } from '@/app/_lib/auth';
 import { redirect } from 'next/navigation';
-import { getAdminCalendarData, getAdminLessons } from './actions';
+import { getAdminCalendarData, getAdminOpportunities } from './actions';
 import AdminCalendarPage from './AdminCalendarPage';
 
 export const metadata = {
@@ -16,9 +16,10 @@ export default async function Page() {
 
   const accessToken = session.accessToken;
   const adminId = session.user.adminId;
-  const [events, lessons] = await Promise.all([
+
+  const [events, opportunities] = await Promise.all([
     getAdminCalendarData(),
-    getAdminLessons(),
+    getAdminOpportunities(),
   ]);
 
   return (
@@ -31,10 +32,10 @@ export default async function Page() {
           </h1>
         </div>
 
-        {/* This paragraph is now pushed to the right by justify-between */}
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-relaxed md:text-right">
-          Managing <span className="text-slate-900">{lessons.length}</span>{' '}
-          Active Lessons
+          Managing{' '}
+          <span className="text-slate-900">{opportunities?.length ?? 0}</span>{' '}
+          Shareholder Meetings
         </p>
       </div>
 
@@ -43,10 +44,11 @@ export default async function Page() {
         <AdminCalendarPage
           events={events}
           accessToken={accessToken}
-          lessons={lessons}
+          opportunities={opportunities}
           adminId={adminId}
         />
       </section>
+      
     </div>
   );
 }

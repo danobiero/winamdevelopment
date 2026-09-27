@@ -21,7 +21,7 @@ export default function Footer() {
         <div className="flex items-center gap-2">
           <InformationCircleIcon className="h-4 w-4 text-[#4ade80]" />
           <span className="text-[10px] uppercase tracking-widest font-bold">
-            Praxida Info
+            WINAM Info
           </span>
         </div>
         {isMinimized ? (
@@ -40,11 +40,10 @@ export default function Footer() {
                 href="/"
                 className="text-xl font-black tracking-tighter text-[#4ade80]"
               >
-                PRAXIDA
+                WINAM
               </Link>
               <p className="text-[11px] leading-tight max-w-sm">
-                Building strength through clear, practical financial
-                foundations.
+                Building wealth through collective growth.
               </p>
               <div className="h-1 w-8 bg-blue-600 rounded-full" />
             </div>
@@ -55,8 +54,8 @@ export default function Footer() {
                   Explore
                 </h4>
                 <nav className="flex flex-col gap-1 text-[11px]">
-                  <Link href="/lessons" className="hover:text-white">
-                    Course Lessons
+                  <Link href="/opportunities" className="hover:text-white">
+                    Opportunities
                   </Link>
                   <Link href="/about" className="hover:text-white">
                     Our Vision
@@ -70,13 +69,13 @@ export default function Footer() {
                 </h4>
                 <div className="space-y-1 text-[11px]">
                   <p className="text-slate-300">
-                    P.O. Box 98493, Lakewood, WA 98499
+                    P.O. Box 690887, Houston, TX 77070
                   </p>
                   <a
-                    href="tel:+18325342090"
+                    href="tel:+1883665872"
                     className="text-lg font-bold text-white hover:text-blue-400"
                   >
-                    (832) 534-2090
+                    (346) 298-4776
                   </a>
                 </div>
               </div>
@@ -85,7 +84,7 @@ export default function Footer() {
 
           <div className="pt-4 flex justify-between items-center gap-2">
             <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-medium">
-              © {currentYear} PRAXIDA.
+              © {currentYear} WINAM.
             </p>
             <nav className="flex gap-4 text-[9px] uppercase tracking-[0.2em] font-bold">
               <Link href="/terms-of-service" className="hover:text-white">

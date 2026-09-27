@@ -5,15 +5,17 @@ import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
 import Footer from './_components/Footer';
 import { headers } from 'next/headers';
+import { ToastProvider } from '@/app/_lib/ToastContext';
 
 export const viewport = { themeColor: '#2563eb' };
 
 export const metadata = {
   title: {
-    template: 'Praxida - %s',
-    default: 'Praxida - Practical Financial Foundation',
+    template: 'WINAM - %s',
+    default:
+      'WINAM -Strategic businesses driven by collective shareholders vision',
   },
-  description: 'Financial Literacy based on practical financial foundations',
+  description: 'Strategic businesses driven by collective shareholders vision',
   manifest: '/manifest.json',
   icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
 };
@@ -43,14 +45,12 @@ export default function RootLayout({ children }) {
 
         <div className="flex-1 flex flex-col w-full overflow-hidden bg-slate-50">
           <main className="w-full flex-1 overflow-y-auto flex flex-col">
+            <ToastProvider> 
             <ReservationProvider>{children}</ReservationProvider>
+            </ToastProvider>
           </main>
         </div>
 
-        {/* 1. hidden: Removes footer on small screens.
-           2. md:block: Brings it back on desktop.
-           3. flex-none: Maintains structural height.
-        */}
         {!isLanding && (
           <div className="hidden md:block flex-none">
             <Footer />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sendProfileOtp, verifyProfileOtp } from './profile_actions';
 import UpdateProfileForm from './UpdateProfileAdminForm';
 
@@ -11,11 +11,30 @@ export default function ProfileGate({ admin }) {
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
+  // =====================================================
+  // OTP COOLDOWN TIMER
+  // =====================================================
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
   const handleSendCode = async () => {
     try {
       setError('');
       setSending(true);
+
       await sendProfileOtp();
+
+      // Start 60-second cooldown
+      setCooldown(60);
     } catch (err) {
       setError(err.message || 'Failed to send code');
     } finally {
@@ -27,8 +46,14 @@ export default function ProfileGate({ admin }) {
     try {
       setError('');
       setVerifying(true);
+
       await verifyProfileOtp(code);
+
+      // Unlock profile
       setVerified(true);
+
+      // Stop cooldown immediately after successful verification
+      setCooldown(0);
     } catch (err) {
       setError(err.message || 'Invalid or expired code');
     } finally {
@@ -60,9 +85,11 @@ export default function ProfileGate({ admin }) {
               />
             </svg>
           </div>
+
           <h3 className="text-2xl font-black text-[#000033] tracking-tight uppercase">
             Verify <span className="text-blue-600">Access</span>
           </h3>
+
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
             Security check required before modifying sensitive admin
             credentials.
@@ -74,10 +101,14 @@ export default function ProfileGate({ admin }) {
           <button
             type="button"
             onClick={handleSendCode}
-            disabled={sending}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97] disabled:opacity-50"
+            disabled={sending || cooldown > 0}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {sending ? 'Processing...' : 'Request Verification Code'}
+            {sending
+              ? 'Processing...'
+              : cooldown > 0
+                ? `Request Again In ${cooldown}s`
+                : 'Request Verification Code'}
           </button>
 
           {/* INPUT: OTP FIELD */}
@@ -85,6 +116,7 @@ export default function ProfileGate({ admin }) {
             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">
               Enter 6-Digit Code
             </label>
+
             <input
               type="text"
               inputMode="numeric"
@@ -94,9 +126,6 @@ export default function ProfileGate({ admin }) {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="000000"
-              /* text-[16px] is critical for iOS to prevent auto-zoom. 
-                 tracking-[0.5em] makes the numbers easily readable.
-              */
               className="w-full px-4 py-4 text-center text-2xl text-[16px] md:text-2xl tracking-[0.7em] font-black border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-slate-200 placeholder:tracking-normal"
             />
           </div>

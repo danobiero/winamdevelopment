@@ -155,26 +155,7 @@ export async function deleteLessonAction(lessonId) {
   // 3️⃣ REDIRECT ON SUCCESS
   redirect(`/admin/lessons?deleted=${lessonId}`);
 }
-export async function deleteLessonAction_old(lessonId) {
-  const session = await auth();
-  if (!session?.user?.adminId) throw new Error('Unauthorized');
 
-  // 1️⃣ CHECK BOOKINGS FIRST
-  const { hasBookings } = await checkLessonHasBookings(lessonId);
-
-  if (hasBookings) {
-    throw new Error('This lesson has active bookings and cannot be deleted.');
-  }
-
-  // 2️⃣ SAFE TO DELETE
-  const supabase = createAdminSupabaseClient();
-
-  const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
-
-  if (error) throw new Error(error.message);
-
-  redirect(`/admin/lessons?deleted=${lessonId}`);
-}
 
 // Check if a lesson has active bookings
 export async function checkLessonHasBookings(lessonId) {
@@ -407,24 +388,6 @@ export async function uploadStandaloneImage(formData) {
   return { success: true };
 }
 
-export async function uploadStandaloneImage_old(formData) {
-  const supabase = createAdminSupabaseClient();
-  const file = formData.get('file');
-  if (!file) return { error: 'No file provided' };
-
-  const fileExt = file.name.split('.').pop();
-  // Unique filename to prevent overwriting
-  const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-
-  const { error } = await supabase.storage
-    .from('lesson-images')
-    .upload(fileName, file);
-
-  if (error) return { error: error.message };
-
-  revalidatePath('/admin/lessons/upload');
-  return { success: true };
-}
 
 // DELETE FROM ROOT
 export async function deleteLibraryImage(fileName) {

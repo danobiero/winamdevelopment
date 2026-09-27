@@ -1,14 +1,18 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createAdminSupabaseClient } from './supabase-admin';
 import { eachDayOfInterval } from 'date-fns';
 import { supabase } from './supabase';
-
-import { cookies } from 'next/headers';
+import { auth } from './auth';
 import { notFound } from 'next/navigation';
 import fs from 'fs/promises';
 import path from 'path';
 
-/////////////
-// GET ADMIN
+import { createSupabaseBuildClient } from './supabase-build';
+import { da } from 'date-fns/locale';
+
+//=================================================
+// GET ADMINISTRATOR (WITH PROFILE DATA)
+//================================= ================
+
 export async function getAdmin(email) {
   const { data, error } = await supabase
     .from('admins')
@@ -50,59 +54,402 @@ export async function getLessonPrice(id) {
 
   return data;
 }
+/////////////////////////////////////////////////////////
+//GET OPPORTUNITIES
+////////////////////////////////////////////////////////
 
-export async function getLessons() {
-  const supabase = createServerComponentClient({ cookies });
+export async function getOpportunities() {
+  try {
+    const adminClient = createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('opportunities')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) return data;
+  } catch (adminErr) {
+    console.warn('createAdminSupabaseClient getOpportunities fallback:', adminErr.message);
+  }
+
   const { data, error } = await supabase
-
-    .from('lessons')
+    .from('opportunities')
     .select('*')
-    .order('id');
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching lessons:', error);
-    throw new Error('lessons could not be loaded');
+    console.error('Error fetching opportunities:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+//////////////////////////////////////////////////////////////
+//GET A SINGLE OPPORTUNITY
+/////////////////////////////////////////////////////////////
+
+export async function getOpportunityById(id) {
+  if (!id || id === 'undefined') notFound();
+
+  const opportunityId = Number(id);
+
+  if (Number.isNaN(opportunityId)) notFound();
+
+  const { data, error } = await supabase
+    .from('opportunities')
+    .select('*')
+    .eq('id', opportunityId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    notFound();
   }
 
   return data;
 }
 
-import { createSupabaseBuildClient } from './supabase-build';
-import { da } from 'date-fns/locale';
 
-// build-time use (generateStaticParams, etc.)
-export async function getLessonsBuild() {
-  const supabase = createSupabaseBuildClient();
+//////////////////////////////////////////////////////////
+// GET USER MEMBERSHIP STATUS
+//////////////////////////////////////////////////////////
 
+export async function getMemberStatusByEmail(email) {
   const { data, error } = await supabase
-    .from('lessons')
-    .select(
-      'id, name, maxCapacity, regularPrice, discount, image, curriculum, category'
-    )
-    .order('name');
+    .from('membership_applications')
+    .select('*')
+    .eq('email', email)
+    .eq('is_archived', false) 
+    .maybeSingle();
 
-  if (error) {
-    throw new Error('Lessons could not be loaded');
-  }
+  if (error) throw new Error(error.message);
+  if (!data) return null;
 
-  return data ?? [];
+  // Attach the computed business logic to the returned record
+  data.isFullyCompleted = 
+    data.status === 'completed' 
+
+  return data;
 }
 
-// Students are uniquely identified by their email address
-export async function getStudent(email) {
+//////////////////////////////////////////////////////////
+//GET USER MEMBERSHIP STATUS
+//////////////////////////////////////////////////////////
+
+export async function getMemberStatusByEmail_old(email) {
   const { data, error } = await supabase
-    .from('students')
+    .from('membership_applications')
+    .select('*')
+    .eq('email', email)
+    .eq('is_archived', false) 
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+//=================================================
+// GET SHAREHOLDER (BY EMAIL)
+//=================================================
+export async function getShareholder(email) {
+  const { data, error } = await supabase
+    .from('shareholders')
     .select('*')
     .eq('email', email)
     .maybeSingle();
 
   if (error) {
-    console.error('⚠️ getStudent error:', error);
-    throw error; // let signIn handle it
+    console.error('⚠️ getShareholder error:', error.message);
+    throw new Error('Could not retrieve shareholder data');
   }
-  // No error here! We handle the possibility of no Student in the sign in callback
+
+  if (!data) return null;
+
+  // Return clean, consistent object
   return data;
 }
+//////////////////////////////////////////////////////////////////
+//GET USER PROFILE
+/////////////////////////////////////////////////////////////////
+
+export async function getUserProfile() {
+  const session = await auth();
+
+  if (!session?.user?.shareholderId) {
+    throw new Error('Unauthorized: No session found');
+  }
+
+  const { data, error } = await supabase
+    .from('shareholders')
+    .select('*')
+    .eq('id', session.user.shareholderId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('⚠️ get user_profile error:', error);
+    throw new Error('User profile could not be loaded');
+  }
+
+  if (!data) {
+    notFound();
+  }
+
+  return data;
+}
+
+//=================================================
+// GET SHAREHOLDER PAYMENT METHOD
+//=================================================
+export async function getShareholderPaymentMethod(shareholderId) {
+  try {
+    const { data, error } = await supabase
+      .from('shareholder_payment_methods')
+      .select('*')
+      .eq('shareholder_id', shareholderId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('⚠️ getShareholderPaymentMethod note:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error fetching shareholder payment method:', err);
+    return null;
+  }
+}
+
+//=================================================
+// GET LEGACY SHAREHOLDERS (ADMIN)
+//=================================================
+export async function getLegacyShareholders() {
+  try {
+    let client = supabase;
+    try {
+      client = createAdminSupabaseClient();
+    } catch (e) {}
+
+    const { data, error } = await client
+      .from('legacy_shareholders')
+      .select(`
+        *,
+        opportunities (
+          id,
+          name,
+          type
+        ),
+        shareholders (
+          id,
+          fullName,
+          email,
+          investments (
+            id,
+            opportunity_id,
+            amount_invested,
+            start_date,
+            opportunities (
+              id,
+              name,
+              type
+            )
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('⚠️ getLegacyShareholders notice:', error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching legacy shareholders:', err);
+    return [];
+  }
+}
+
+//=================================================
+// SYNC LEGACY SHAREHOLDER ON SIGN-IN
+// When an unclaimed legacy shareholder signs in for the first time,
+// auto-populate their portfolio, membership, and payout preferences.
+//=================================================
+export async function syncLegacyShareholderOnSignIn(shareholderId, email) {
+  try {
+    if (!shareholderId || !email) return null;
+
+    // 1. Check if an unclaimed legacy record exists for this email
+    const { data: legacy, error: legacyErr } = await supabase
+      .from('legacy_shareholders')
+      .select('*')
+      .ilike('email', email)
+      .eq('is_claimed', false)
+      .maybeSingle();
+
+    if (legacyErr || !legacy) {
+      return null; // Not a legacy shareholder or already claimed
+    }
+
+    console.log(`[Legacy Sync] Found unclaimed record for ${email}. Migrating to live tables...`);
+
+    // 2. Update the shareholder profile if legacy contains phone or nationality
+    const profileUpdates = {};
+    if (legacy.telephone) profileUpdates.telephone = legacy.telephone;
+    if (legacy.nationality) profileUpdates.nationality = legacy.nationality;
+    if (Object.keys(profileUpdates).length > 0) {
+      profileUpdates.updated_at = new Date().toISOString();
+      await supabase
+        .from('shareholders')
+        .update(profileUpdates)
+        .eq('id', shareholderId);
+    }
+
+    // 3. Auto-populate Membership Application (Completed status so they bypass application fee)
+    const { data: existingApp } = await supabase
+      .from('membership_applications')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (!existingApp) {
+      await supabase.from('membership_applications').insert({
+        full_name: legacy.full_name,
+        email: legacy.email,
+        phone: legacy.telephone || '',
+        shareholder_id: shareholderId,
+        status: 'completed',
+        application_fee_paid: true,
+        has_agreed_to_shareholding: true,
+        has_agreed_to_operating_agreement: true,
+        operating_agreement_signed: true,
+        agreement_signed_at: new Date().toISOString(),
+        primary_interest: 'Legacy Shareholder Portfolio',
+        experience_description: 'Pre-existing shareholder transitioned from legacy records.',
+      });
+    }
+
+    // 4. Auto-populate Investment Portfolio (supports multiple investments)
+    let investmentList = [];
+    if (Array.isArray(legacy.investments) && legacy.investments.length > 0) {
+      investmentList = legacy.investments;
+    } else if (legacy.notes && legacy.notes.includes('[Allocations JSON]:')) {
+      try {
+        const jsonStr = legacy.notes.split('[Allocations JSON]:')[1]?.trim();
+        const parsed = JSON.parse(jsonStr);
+        if (Array.isArray(parsed)) investmentList = parsed;
+      } catch (e) {
+        console.warn('Could not parse allocations from notes fallback:', e);
+      }
+    }
+
+    if (investmentList.length === 0 && legacy.opportunity_id && legacy.amount_invested > 0) {
+      investmentList = [
+        {
+          opportunity_id: legacy.opportunity_id,
+          amount_invested: legacy.amount_invested,
+          start_date: legacy.start_date,
+        },
+      ];
+    }
+
+    const cleanNotes = legacy.notes
+      ? legacy.notes.replace(/\[Allocations JSON\]:[\s\S]*$/, '').trim()
+      : 'Transitioned from legacy records';
+
+    for (const inv of investmentList) {
+      const oppId = Number(inv.opportunity_id);
+      const amount = Number(inv.amount_invested);
+      if (!oppId || amount <= 0) continue;
+
+      const { data: existingInv } = await supabase
+        .from('investments')
+        .select('id')
+        .eq('shareholder_id', shareholderId)
+        .eq('opportunity_id', oppId)
+        .maybeSingle();
+
+      if (!existingInv) {
+        await supabase.from('investments').insert({
+          shareholder_id: shareholderId,
+          opportunity_id: oppId,
+          amount_invested: amount,
+          total_committed: amount,
+          status: 'active',
+          start_date: inv.start_date || new Date().toISOString().split('T')[0],
+          notes: cleanNotes || 'Transitioned from legacy records',
+        });
+      }
+
+      // 4b. Ensure payment entry exists in payments table
+      const syntheticPaymentId = `legacy_${legacy.id}_opp_${oppId}`;
+      await supabase.from('payments').upsert(
+        {
+          shareholder_id: shareholderId,
+          opportunity_id: oppId,
+          amount: amount,
+          currency: 'USD',
+          status: 'succeeded',
+          type: 'legacy_investment',
+          payment_method_type:
+            legacy.payment_type && legacy.payment_type !== 'none'
+              ? legacy.payment_type
+              : 'manual',
+          description: `Legacy investment for Opportunity #${oppId} (${legacy.full_name})`,
+          stripe_payment_intent_id: syntheticPaymentId,
+          metadata: {
+            source: 'legacy_sync_on_signin',
+            legacy_shareholder_id: legacy.id,
+            account_handle: legacy.account_handle,
+            account_name: legacy.account_name,
+            account_number: legacy.account_number,
+          },
+          created_at: inv.start_date
+            ? new Date(inv.start_date).toISOString()
+            : new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'stripe_payment_intent_id' }
+      );
+    }
+
+    // 5. Auto-populate Payout Method (if payout preference was entered)
+    if (legacy.payment_type && legacy.payment_type !== 'none') {
+      await supabase
+        .from('shareholder_payment_methods')
+        .upsert(
+          {
+            shareholder_id: shareholderId,
+            payment_type: legacy.payment_type,
+            account_handle: legacy.account_handle || null,
+            account_number: legacy.account_number || null,
+            account_name: legacy.account_name || legacy.full_name,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'shareholder_id' }
+        );
+    }
+
+    // 6. Mark Legacy Record as Claimed & Link to Shareholder ID
+    await supabase
+      .from('legacy_shareholders')
+      .update({
+        is_claimed: true,
+        claimed_at: new Date().toISOString(),
+        claimed_by_shareholder_id: shareholderId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', legacy.id);
+
+    console.log(`[Legacy Sync] Successfully synced legacy record ID ${legacy.id} to shareholder #${shareholderId}.`);
+    return legacy;
+  } catch (err) {
+    console.error('⚠️ [Legacy Sync] Error syncing legacy shareholder:', err);
+    return null;
+  }
+}
+
+
 
 export async function getBooking(id) {
   const { data, error, count } = await supabase
@@ -114,51 +461,6 @@ export async function getBooking(id) {
   if (error) {
     console.error(error);
     throw new Error(error.message, 'Booking could not get loaded');
-  }
-
-  return data;
-}
-
-export async function getBookings_bad(studentId) {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(
-      `
-      id,
-      studentId,
-      startDate,
-      endDate,
-      numNights,
-      totalPrice,
-      numStudents,
-      status,
-      created_at,
-      cancelled,
-      lessons (
-        name,
-        image,
-        category
-      ),
-      refunds (
-        id,
-        created_at,
-        booking_id,
-        refund_amount,
-        reason,                 -- original request reason
-        status,
-        rejection_notes,
-        rejection_policy_id (
-          title
-         )
-      )
-      `
-    )
-    .eq('studentId', studentId)
-    .order('startDate');
-
-  if (error) {
-    console.error(error);
-    throw new Error('Bookings could not get loaded');
   }
 
   return data;
@@ -213,217 +515,152 @@ export async function getBookings(studentId) {
   return data;
 }
 
-export async function getBookings_working(studentId) {
+////////////////////////////////////////////////////////////
+//GET INVESTOR INVESTMENTS
+///////////////////////////////////////////////////////////
+export async function getInvestments(shareholderId) {
+  // Get today's date in YYYY-MM-DD format (UTC)
+  const today = new Date().toISOString().split('T')[0];
+
   const { data, error } = await supabase
-    .from('bookings')
+    .from('investments')
     .select(
       `
       id,
-      studentId,
-      startDate,
-      endDate,
-      numNights,
-      totalPrice,
-      numStudents,
+      shareholder_id,
+      opportunity_id,
+      amount_invested,
+      total_committed,
       status,
+      start_date,
+      end_date,
       created_at,
-      cancelled,
-      lessons (
-        name,
-        image,
-        category
-      ),
-      refunds (
+      updated_at,
+      opportunities (
         id,
-        created_at,
-        booking_id,
-        refund_amount,
-        reason,
-        status
+        name,
+        description,
+        image_url,
+        type,
+        status,
+        minimum_investment,
+        total_value,
+        expected_return,
+        duration_months,
+        is_featured
       )
-      `
+    `
     )
-    .eq('studentId', studentId)
-    .order('startDate');
+    .eq('shareholder_id', shareholderId)
+    
+    .in('status', ['active', 'pending'])
+    // 2. Filter for investments that haven't ended yet
+    .or(`end_date.is.null,end_date.gte.${today}`)
+    .order('start_date');
 
   if (error) {
-    console.error(error);
-    throw new Error('Bookings could not get loaded');
+    console.error("Database Error Detail:", error.message);
+    //throw new Error('Investments could not be loaded');
+    if (error) {
+      throw new Error(
+        `${error.message} | ${error.details || ''} | ${error.hint || ''}`
+      );
+    }
   }
 
   return data;
 }
 
-// bookings.js
-/**
- * Fetch fully booked dates for a lesson based on lesson.maxCapacity.
- * Returns an array of Date objects suitable for react-day-picker.
- */
-export async function getBookedDatesByLessonId(lessonId, maxCapacity) {
-  // Today in UTC
-  let today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayUTC = today.toISOString(); // UTC string for Supabase query
-
-  // Fetch all future/current bookings for this lesson
-  const { data: bookings, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('lessonId', lessonId)
-    .gte('endDate', todayUTC); // Only bookings ending today or later
-
-  if (error) {
-    console.error(error);
-    throw new Error('Bookings could not be loaded');
-  }
-
-  // Map each booking to individual dates with student count
-  const dateStudentMap = {};
-
-  bookings.forEach((booking) => {
-    const start = new Date(booking.startDate);
-    const end = new Date(booking.endDate);
-
-    const dates = eachDayOfInterval({ start, end });
-
-    dates.forEach((date) => {
-      // Convert each date to UTC midnight for consistent comparison
-      const utcDate = new Date(
-        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-      );
-      const key = utcDate.toISOString(); // string key
-      dateStudentMap[key] = (dateStudentMap[key] || 0) + booking.numStudents;
-    });
-  });
-
-  // Return dates that reached maxCapacity
-  const bookedDates = Object.entries(dateStudentMap)
-    .filter(([_, studentCount]) => studentCount >= maxCapacity)
-    .map(([dateStr]) => new Date(dateStr)); // back to Date object for calendar
-
-  return bookedDates;
-}
-
-export async function getBookedCountsByLessonId(lessonId) {
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayUTC = today.toISOString();
-
-  // Fetch bookings
-  const { data: bookings, error } = await supabase
-    .from('bookings')
-    .select('startDate, endDate, numStudents')
-    .eq('lessonId', lessonId)
-    .gte('endDate', todayUTC);
+export async function getAllInvestments(shareholderId) {
+  const { data, error } = await supabase
+    .from('investments')
+    .select(
+      `
+      id,
+      shareholder_id,
+      opportunity_id,
+      amount_invested,
+      total_committed,
+      status,
+      start_date,
+      end_date,
+      created_at,
+      updated_at,
+      opportunities (
+        id,
+        name,
+        description,
+        image_url,
+        type,
+        status,
+        minimum_investment,
+        total_value,
+        expected_return,
+        duration_months,
+        is_featured
+      ),
+      redemption_requests (
+        id,
+        amount,
+        status,
+        already_redeemed_so_far,
+        reason_code,
+        admin_notes,
+        created_at,
+        updated_at
+      )
+    `
+    )
+    .eq('shareholder_id', shareholderId)
+    .order('start_date', { ascending: false });
 
   if (error) {
-    console.error('Error fetching the number of bookings', error.message);
-    throw new Error('Bookings could not be loaded');
+    console.error("Database Error Detail:", error.message);
+    throw new Error(error.message);
   }
 
-  // Aggregate by startDate
-  const countsByStartDate = {};
-
-  for (const b of bookings || []) {
-    if (!b.startDate) continue;
-
-    const dateKey = new Date(b.startDate).toISOString().split('T')[0];
-    const num = Number(b.numStudents) || 0;
-    countsByStartDate[dateKey] = (countsByStartDate[dateKey] || 0) + num;
-  }
-
-  return countsByStartDate;
+  return data;
 }
 
-export async function getBookedCountByLessonIdEdit(lessonId, excludeBookingId) {
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayUTC = today.toISOString();
+export async function getShareholderDocuments(shareholderId) {
+  const { data: investments, error: invError } = await supabase
+    .from('investments')
+    .select('opportunity_id')
+    .eq('shareholder_id', shareholderId);
 
-  // Build query
-  let query = supabase
-    .from('bookings')
-    .select('id, startDate, numStudents')
-    .eq('lessonId', lessonId)
-    .gte('endDate', todayUTC);
-
-  // Exclude the current booking being edited
-  if (excludeBookingId) query = query.neq('id', excludeBookingId);
-
-  const { data: bookings, error } = await query;
-
-  if (error) {
-    console.error('Error loading booked counts:', error);
-    throw new Error('Bookings could not be loaded');
+  if (invError) {
+    console.error('Error fetching shareholder investments:', invError);
+    return [];
   }
 
-  // Aggregate number of booked students by startDate (YYYY-MM-DD)
-  const countsByStartDate = {};
-  bookings.forEach((b) => {
-    if (!b.startDate) return;
-    const dateKey = new Date(b.startDate).toISOString().split('T')[0];
-    countsByStartDate[dateKey] =
-      (countsByStartDate[dateKey] || 0) + (b.numStudents ?? 0);
-  });
+  const opportunityIds = (investments || []).map((inv) => inv.opportunity_id);
 
-  return countsByStartDate;
+  if (opportunityIds.length === 0) {
+    return [];
+  }
+
+  const { data: documents, error: docError } = await supabase
+    .from('opportunity_documents')
+    .select(`
+      *,
+      opportunities (
+        id,
+        name
+      )
+    `)
+    .in('opportunity_id', opportunityIds)
+    .order('created_at', { ascending: false });
+
+  if (docError) {
+    console.error('Error fetching opportunity documents:', docError);
+    return [];
+  }
+
+  return documents;
 }
 
-/**
- * Returns remaining spots for a given lesson on a given startDate,
- * optionally excluding a bookingId (for editing)
- */
-// ✅ Works correctly for timestampz columns
-// app/_lib/data-service.js
-// app/_lib/data-service.js
-export async function getBookedCountForEdit(lessonId, startDate) {
-  if (!lessonId || !startDate) throw new Error('Missing required parameters');
 
-  // --- Extract only the YYYY-MM-DD part for comparison ---
-  const dateKey = new Date(startDate).toISOString().split('T')[0];
 
-  // --- Fetch all non-cancelled bookings for this lesson ---
-  const { data: bookings, error } = await supabase
-    .from('bookings')
-    .select('id, numStudents, startDate, cancelled')
-    .eq('lessonId', lessonId)
-    .eq('cancelled', false);
-
-  if (error) {
-    console.error('❌ Error fetching bookings:', error.message);
-    throw new Error('Could not load bookings for this lesson/date.');
-  }
-
-  // --- Filter locally by date (ignore time component) ---
-  const sameDateBookings = bookings.filter((b) => {
-    if (!b.startDate) return false;
-    const bDate = new Date(b.startDate).toISOString().split('T')[0];
-    return bDate === dateKey;
-  });
-
-  // --- Calculate total booked students for that date ---
-  const totalBookedForDate = sameDateBookings.reduce(
-    (sum, b) => sum + (b.numStudents ?? 0),
-    0
-  );
-
-  // --- Fetch lesson capacity ---
-  const { data: lessonData, error: lessonError } = await supabase
-    .from('lessons')
-    .select('maxCapacity')
-    .eq('id', lessonId)
-    .single();
-
-  if (lessonError) {
-    console.error('❌ Error fetching lesson capacity:', lessonError.message);
-    throw new Error('Could not load lesson capacity.');
-  }
-
-  const capacity = lessonData?.maxCapacity ?? 0;
-  const remainingSpots = Math.max(capacity - totalBookedForDate, 0);
-
-  return { totalBookedForDate, capacity, remainingSpots };
-}
 
 export async function getSettings() {
   const { data, error } = await supabase.from('settings').select('*').single();
@@ -468,19 +705,68 @@ export async function getCountries() {
   }
 }
 
+
+////////////////////////////////////////////////////////////
+//CREATE SHAREHOLDER
+///////////////////////////////////////////////////////////
 //=================================================
-// CREATE  STUDENT
+// CREATE USER PROFILE (SHAREHOLDER)
 //=================================================
 
-export async function createStudent(newStudent) {
+export async function createUserProfile(newProfile) {
+  // newProfile should contain: { id, full_name, email, avatar_url, role: 'shareholder' }
   const { data, error } = await supabase
-    .from('students')
-    .insert([newStudent])
+    .from('user_profiles')
+    .insert([newProfile])
     .select()
-    .maybeSingle(); // return exactly 1 row
+    .maybeSingle();
+
   if (error) {
-    console.error('❌ Error creating student:', JSON.stringify(error, null, 2));
-    throw new Error('Student could not be created');
+    console.error(
+      '❌ Error creating user profile:',
+      JSON.stringify(error, null, 2)
+    );
+
+    // Check for unique constraint violations (e.g., profile already exists)
+    if (error.code === '23505') {
+      throw new Error('A profile for this user already exists.');
+    }
+
+    throw new Error('User profile could not be established');
+  }
+
+  return data;
+}
+
+////////////////////////////////////////////////////////////
+//CREATE A SHAREHOLDER
+///////////////////////////////////////////////////////////
+export async function createShareholder(newShareholder) {
+  const { data, error } = await supabase
+    .from('shareholders')
+    .insert([
+      {
+        fullName: newShareholder.fullName,
+        email: newShareholder.email,
+        telephone: newShareholder.telephone ?? null,
+        nationality: newShareholder.nationality ?? null,
+        shareholderStatus: 'active',
+        sharePercentage: 0,
+        isDirector: false,
+        auth_user_id: newShareholder.auth_user_id ?? null,
+      },
+    ])
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error('❌ Error creating shareholder:', error);
+
+    if (error.code === '23505') {
+      throw new Error('Shareholder already exists.');
+    }
+
+    throw new Error('Shareholder could not be created');
   }
 
   return data;
@@ -559,4 +845,25 @@ export async function uploadPdf(file) {
 
   if (error) throw error;
   return data;
+}
+
+export async function getOpportunityValuations() {
+  const adminClient = createAdminSupabaseClient();
+  const [{ data: valuations, error: valErr }, { data: opps, error: oppErr }] = await Promise.all([
+    adminClient.from('opportunity_valuations').select('*').order('valuation_date', { ascending: false }),
+    adminClient.from('opportunities').select('id, name')
+  ]);
+
+  if (valErr) {
+    console.error('Error fetching valuations:', valErr);
+    return [];
+  }
+
+  const oppMap = new Map((opps || []).map(o => [o.id, o.name]));
+  return (valuations || []).map(v => ({
+    ...v,
+    opportunities: {
+      name: oppMap.get(v.opportunity_id) || 'Unknown Opportunity'
+    }
+  }));
 }

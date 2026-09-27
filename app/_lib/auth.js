@@ -1,6 +1,11 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
-import { createStudent, getAdmin, getStudent } from './data-service';
+import {
+  createShareholder,
+  getAdmin,
+  getShareholder,
+  syncLegacyShareholderOnSignIn,
+} from './data-service';
 
 const authConfig = {
   providers: [
@@ -13,27 +18,37 @@ const authConfig = {
   callbacks: {
     async signIn({ user, account }) {
       try {
-        // CHECK ADMIN
+        // 1. Check if the user exists in the Admin table
         const admin = await getAdmin(user.email);
+
         if (admin) {
+          // Attach data to the user object for the JWT callback to capture
           user.adminId = admin.id;
           user.id = `admin-${admin.id}`;
-
           return true;
         }
 
-        // CHECK STUDENT
-        const student = await getStudent(user.email);
+        // 2. Check if the user exists in the Shareholder table
+        let shareholder = await getShareholder(user.email);
+        let activeShareholderId;
 
-        if (!student) {
-          const newStudent = await createStudent({
+        if (!shareholder) {
+          // Auto-create shareholder record if they don't exist
+          const newShareholder = await createShareholder({
             email: user.email,
             fullName: user.name,
           });
 
-          user.id = `student-${newStudent.id}`;
+          activeShareholderId = newShareholder.id;
+          user.id = `shareholder-${newShareholder.id}`;
         } else {
-          user.id = `student-${student.id}`;
+          activeShareholderId = shareholder.id;
+          user.id = `shareholder-${shareholder.id}`;
+        }
+
+        // 3. If this user is an unclaimed legacy shareholder, sync their records automatically
+        if (activeShareholderId) {
+          await syncLegacyShareholderOnSignIn(activeShareholderId, user.email);
         }
 
         return true;
@@ -43,19 +58,19 @@ const authConfig = {
       }
     },
 
-    // JWT stores tokens between requests
     async jwt({ token, user, account }) {
-      // First login
-      if (account && user) {
+      // The 'user' object is only available on the initial sign-in
+      if (user) {
         token.email = user.email;
         token.name = user.name;
 
-        // Preserve admin or student identity
-        if (user.adminId) token.adminId = user.adminId;
-        if (user.studentId) token.studentId = user.studentId;
+        // Persist the adminId into the encrypted JWT
+        if (user.adminId) {
+          token.adminId = user.adminId;
+        }
 
-        // Store access token ONLY for admin sessions
-        if (token.adminId && account.access_token) {
+        // Optional: Keep Google tokens only for admins if needed
+        if (user.adminId && account?.access_token) {
           token.accessToken = account.access_token;
           token.scope = account.scope;
         }
@@ -64,22 +79,46 @@ const authConfig = {
       return token;
     },
 
-    // Expose only correct data to the session
     async session({ session, token }) {
       session.user.email = token.email;
       session.user.name = token.name;
 
       if (token.adminId) {
+        // Populate Admin Session
         session.user.adminId = token.adminId;
         session.accessToken = token.accessToken ?? null;
         session.scope = token.scope ?? null;
       } else {
-        // Student session → ensure no admin properties leak
-        const student = await getStudent(token.email);
-        session.user.studentId = student.id;
+        // Populate Shareholder Session
+        const shareholder = await getShareholder(token.email);
+
+        session.user.shareholderId = shareholder?.id;
       }
 
       return session;
+    },
+
+    async authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+
+      // If the token contains an adminId, this is an admin user
+      const isAdmin = !!auth?.user?.adminId;
+
+      if (isLoggedIn && isAdmin) {
+        // Define which paths the admin is allowed to be on
+        const isAtAdminPortal =
+          nextUrl.pathname.startsWith('/admin-login') ||
+          nextUrl.pathname.startsWith('/admin');
+
+        // If the admin is authenticated but trying to access shareholder pages,
+        // silently redirect them to the admin gate.
+        if (!isAtAdminPortal) {
+          return Response.redirect(new URL('/admin-login', nextUrl.url));
+        }
+      }
+
+      // Allow access to protected routes if logged in
+      return isLoggedIn;
     },
   },
 
@@ -87,7 +126,7 @@ const authConfig = {
     signIn: '/login',
   },
 
-  debug: false, 
+  debug: false,
 };
 
 export const {

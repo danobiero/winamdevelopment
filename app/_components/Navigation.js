@@ -4,33 +4,129 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import SignOutButton from './SignOutButton';
+import {
+  SparklesIcon,
+  InformationCircleIcon,
+  LifebuoyIcon,
+  ArrowTopRightOnSquareIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Navigation({ session, isMobile, onClick }) {
   const pathname = usePathname();
   const dashboardLink = session?.user?.adminId ? '/admin' : '/account';
 
-  // Helper for active link styling
+  const navLinks = [
+    {
+      name: 'Opportunities',
+      href: '/opportunities',
+      icon: <SparklesIcon className="h-4 w-4 text-blue-600" />,
+    },
+    {
+      name: 'About',
+      href: '/about',
+      icon: <InformationCircleIcon className="h-4 w-4 text-slate-400" />,
+    },
+    {
+      name: 'Support',
+      href: '/support',
+      icon: <LifebuoyIcon className="h-4 w-4 text-slate-400" />,
+    },
+  ];
+
+  if (isMobile) {
+    return (
+      <nav className="w-full">
+        <ul className="flex flex-col gap-0.5 w-full">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  onClick={onClick}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors w-full font-bold ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="shrink-0">{link.icon}</span>
+                  <span className="truncate">{link.name}</span>
+                  {isActive && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+
+          {/* User Account / Dashboard */}
+          <li className="pt-1.5 mt-1 border-t border-slate-100">
+            {session?.user ? (
+              <Link
+                href={dashboardLink}
+                onClick={onClick}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors w-full"
+              >
+                <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      fill
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                      {session.user.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-xs font-bold text-slate-900 truncate">
+                    {session.user.name?.split(' ')[0] || 'Account'}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">
+                    Dashboard
+                  </span>
+                </div>
+                <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              </Link>
+            ) : (
+              <Link
+                href="/account"
+                onClick={onClick}
+                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl text-center block shadow-xs transition-colors"
+              >
+                Login
+              </Link>
+            )}
+          </li>
+
+          {/* Log Out Button */}
+          {session?.user && (
+            <li className="pt-0.5">
+              <SignOutButton isMobile={true} onSignOut={onClick} />
+            </li>
+          )}
+        </ul>
+      </nav>
+    );
+  }
+
+  // DESKTOP NAVIGATION
   const linkStyles = (path) => `
     relative transition-all duration-300 font-medium
     ${pathname === path ? 'text-blue-600' : 'text-slate-700 hover:text-blue-600'}
-    ${isMobile ? 'text-2xl py-2' : 'text-base lg:text-lg'}
+    text-base lg:text-lg
   `;
 
   return (
     <nav className="z-10">
-      <ul
-        className={`flex ${
-          isMobile
-            ? 'flex-col gap-8 items-start px-4'
-            : 'flex-row gap-10 lg:gap-14 items-center'
-        }`}
-      >
-        {/* Navigation Links with animated underline effect on desktop */}
-        {[
-          { name: 'Lessons', href: '/lessons' },
-          { name: 'About Us', href: '/about' },
-          { name: 'Support', href: '/support' },
-        ].map((link) => (
+      <ul className="flex flex-row gap-10 lg:gap-14 items-center">
+        {navLinks.map((link) => (
           <li key={link.href} className="group">
             <Link
               href={link.href}
@@ -38,27 +134,21 @@ export default function Navigation({ session, isMobile, onClick }) {
               onClick={onClick}
             >
               {link.name}
-              {!isMobile && (
-                <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'}`}
-                />
-              )}
+              <span
+                className={`absolute -bottom-1 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${
+                  pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'
+                }`}
+              />
             </Link>
           </li>
         ))}
 
-        {/* User Account / Login Section */}
-        <li
-          className={`${isMobile ? 'w-full pt-4 border-t border-slate-100' : ''}`}
-        >
+        {/* User Account */}
+        <li>
           {session?.user?.image ? (
             <Link
               href={dashboardLink}
-              className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${
-                isMobile
-                  ? 'bg-slate-50'
-                  : 'hover:bg-blue-50 border border-transparent hover:border-blue-100'
-              }`}
+              className="flex items-center gap-3 px-4 py-2 rounded-full transition-all hover:bg-blue-50 border border-transparent hover:border-blue-100"
               onClick={onClick}
             >
               <div className="relative w-8 h-8 lg:w-9 lg:h-9">
@@ -70,10 +160,12 @@ export default function Navigation({ session, isMobile, onClick }) {
                   referrerPolicy="no-referrer"
                 />
               </div>
+
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-slate-900 leading-none truncate max-w-[120px]">
                   {session.user.name.split(' ')[0]}
                 </span>
+
                 <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                   Dashboard
                 </span>
@@ -82,11 +174,7 @@ export default function Navigation({ session, isMobile, onClick }) {
           ) : (
             <Link
               href="/account"
-              className={`font-bold px-6 py-2.5 rounded-full transition-all ${
-                isMobile
-                  ? 'bg-blue-600 text-white w-full text-center block'
-                  : 'bg-slate-900 text-white hover:bg-blue-600 shadow-md shadow-slate-200'
-              }`}
+              className="font-bold px-6 py-2.5 rounded-full transition-all bg-slate-900 text-white hover:bg-blue-600 shadow-md shadow-slate-200"
               onClick={onClick}
             >
               Login
@@ -95,8 +183,8 @@ export default function Navigation({ session, isMobile, onClick }) {
         </li>
 
         {session?.user && (
-          <li className={isMobile ? 'w-full' : ''}>
-            <SignOutButton isMobile={isMobile} onSignOut={onClick} />
+          <li>
+            <SignOutButton isMobile={false} onSignOut={onClick} />
           </li>
         )}
       </ul>

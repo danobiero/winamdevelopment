@@ -25,8 +25,8 @@ export default async function UploadImage() {
         </Link>
 
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Image Library
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Image <span className="text-blue-600">Library</span>
           </h1>
           <p className="text-slate-500 mt-1">
             Manage global assets stored in the storage root.

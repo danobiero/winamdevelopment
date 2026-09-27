@@ -1,32 +1,34 @@
-'use client';
-
+import { cookies } from 'next/headers';
 import SideNavigation from '@/app/_components/SideNavigation.js';
+import { ThemeProvider } from '@/app/_lib/ThemeContext';
 
 export default function Layout({ children }) {
+  const savedTheme = cookies().get('theme')?.value || 'system';
+
   return (
-    /* We use flex-1 to fill the remaining space provided by the Root Layout's main area.
-       We remove h-screen to avoid layout conflicts with the Root's h-dvh.
-    */
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-50">
-      {/* SIDEBAR: DESKTOP ONLY */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white shrink-0">
-        <SideNavigation isMobile={false} />
-      </aside>
+    <ThemeProvider initialTheme={savedTheme}>
+      <div className="flex-1 flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 h-full overflow-hidden transition-colors duration-200">
+        {/* SIDEBAR: DESKTOP */}
+        <aside className="hidden lg:flex flex-col w-64 lg:w-72 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 z-40 h-full overflow-hidden transition-colors duration-200">
+          <SideNavigation isMobile={false} />
+        </aside>
 
-      {/* MAIN VIEWPORT */}
-      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
-        {/* Internal scrolling for the account content.
-            pb-24 on mobile ensures the bottom nav doesn't cover the last card.
-        */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 scroll-smooth">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
+        {/* MAIN VIEW */}
+        <div className="flex-1 flex flex-col min-w-0 relative h-full overflow-hidden">
+          {/* CONTENT */}
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-5 pb-32 lg:pb-4 scroll-smooth h-full">
+            <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col">{children}</div>
+          </main>
 
-        {/* BOTTOM NAV: MOBILE ONLY */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 pb-safe">
-          <SideNavigation isMobile={true} />
+          {/* MOBILE NAV */}
+          <div
+            className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] transition-colors duration-200"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <SideNavigation isMobile={true} />
+          </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }

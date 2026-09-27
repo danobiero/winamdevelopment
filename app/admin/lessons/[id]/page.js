@@ -33,8 +33,8 @@ export default async function EditLessonPage({ params }) {
     */
     <div className="max-w-3xl mx-auto px-4 py-4 sm:px-0 sm:py-10 antialiased">
       <div className="mb-8 px-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-          Edit Lesson
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Edit <span className="text-blue-600">Lesson</span>
         </h1>
 
         <p className="text-sm sm:text-base text-slate-500 font-medium mt-2 leading-relaxed">

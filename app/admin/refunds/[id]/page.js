@@ -43,8 +43,8 @@ export default async function RefundEditPage({ params }) {
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10 space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          Edit Refund{' '}
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Edit <span className="text-blue-600">Refund</span>{' '}
           <span className="text-gray-400 font-mono text-xl">#{refund.id}</span>
         </h1>
         <Link

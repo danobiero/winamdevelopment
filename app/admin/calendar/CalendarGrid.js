@@ -14,10 +14,10 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 import BookingModal from './BookingModal';
-import { getAdminBookingsForDate } from './actions';
+import { getInvestorsForOpportunity } from './actions';
 
 /* ============================================================
-    COLOR PALETTE (PER LESSON_ID)
+   COLOR PALETTE (PER OPPORTUNITY/LESSON ID)
    ============================================================ */
 const COLOR_POOL = [
   { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
@@ -40,19 +40,18 @@ const FALLBACK_COLOR = {
 };
 
 function formatTime(ts) {
-  return new Date(ts).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return format(new Date(ts), 'h:mm a');
 }
 
 export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [bookingsForDate, setBookingsForDate] = useState([]);
-  const [isLoadingDate, setIsLoadingDate] = useState(false);
-  const [dateError, setDateError] = useState(null);
+
+  // Updated State
+  const [investorsForOpportunity, setInvestorsForOpportunity] = useState([]);
+  const [isLoadingInvestors, setIsLoadingInvestors] = useState(false);
+  const [investorsError, setInvestorsError] = useState(null);
 
   if (!Array.isArray(events)) {
     return (
@@ -78,7 +77,13 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const eventMap = useMemo(() => {
     const map = {};
     events.forEach((ev) => {
-      const key = format(new Date(ev.start_time), 'yyyy-MM-dd');
+      // Use start_time if it exists, otherwise fall back to created_at
+      const targetDate = ev.start_time || ev.created_at;
+
+      // Safety check: if there's no date at all, skip rendering it
+      if (!targetDate) return;
+
+      const key = format(new Date(targetDate), 'yyyy-MM-dd');
       if (!map[key]) map[key] = [];
       map[key].push(ev);
     });
@@ -87,9 +92,10 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
 
   const lessonColorMap = useMemo(() => {
     const map = {};
+    // Using string conversion to ensure stable matching for opportunity IDs
     const ids = Array.from(
-      new Set(events.map((e) => e.lesson_id).filter(Boolean))
-    ).sort((a, b) => Number(a) - Number(b));
+      new Set(events.map((e) => String(e.id)).filter(Boolean))
+    ).sort();
 
     ids.forEach((id, i) => {
       map[id] = COLOR_POOL[i % COLOR_POOL.length];
@@ -101,8 +107,8 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
   const handleDateClick = (dateKey) => {
     setSelectedEvent(null);
     setSelectedDate(dateKey);
-    setBookingsForDate([]);
-    setDateError(null);
+    setInvestorsForOpportunity([]);
+    setInvestorsError(null);
   };
 
   const handleEventClick = (e, ev) => {
@@ -113,24 +119,34 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
   };
 
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!selectedEvent) return;
+
     let active = true;
-    const loadBookings = async () => {
+    const loadInvestors = async () => {
       try {
-        setIsLoadingDate(true);
-        const sessions = await getAdminBookingsForDate(selectedDate);
-        if (active) setBookingsForDate(sessions || []);
+        setIsLoadingInvestors(true);
+        // FIX: Ensure we use the correct ID for the database lookup
+        const targetId = selectedEvent.opportunity_id || selectedEvent.id;
+        const investors = await getInvestorsForOpportunity(targetId);
+
+        if (active) setInvestorsForOpportunity(investors || []);
       } catch (err) {
-        if (active) setDateError('Failed to sync date bookings.');
+        if (active)
+          setInvestorsError('Failed to load investors for this opportunity.');
       } finally {
-        if (active) setIsLoadingDate(false);
+        if (active) setIsLoadingInvestors(false);
       }
     };
-    loadBookings();
+
+    loadInvestors();
+
     return () => {
       active = false;
     };
-  }, [selectedDate]);
+  }, [selectedEvent]);
+
+  // FIX: Compute the events for the clicked date to pass to the modal
+  const selectedDateEvents = selectedDate ? eventMap[selectedDate] || [] : [];
 
   return (
     <div className="w-full">
@@ -208,10 +224,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
           return (
             <div
               key={idx}
-              onClick={(e) => {
-                if (e.target.closest('button')) return;
-                handleDateClick(dateKey);
-              }}
+              onClick={() => handleDateClick(dateKey)}
               className={`
                 relative min-h-[130px] p-2 border-b border-r border-slate-100 last:border-r-0 cursor-pointer transition-colors
                 ${isCurrentMonth ? 'bg-white hover:bg-slate-50/50' : 'bg-slate-50/30 text-slate-300'}
@@ -240,7 +253,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
 
               <div className="space-y-1">
                 {dayEvents.slice(0, 4).map((ev) => {
-                  const color = lessonColorMap[ev.lesson_id] || FALLBACK_COLOR;
+                  const color = lessonColorMap[String(ev.id)] || FALLBACK_COLOR;
                   return (
                     <button
                       key={ev.id}
@@ -253,10 +266,11 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
                       `}
                     >
                       <div className="text-[9px] font-black uppercase leading-tight truncate">
-                        {ev.title}
+                        {ev.title || ev.name}{' '}
+                        {/* Support both naming conventions */}
                       </div>
                       <div className="text-[8px] font-bold opacity-70 tracking-tighter">
-                        {formatTime(ev.start_time)}
+                        {formatTime(ev.start_time || ev.created_at)}
                       </div>
                     </button>
                   );
@@ -275,13 +289,17 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
       <BookingModal
         event={selectedEvent}
         date={selectedDate}
-        sessions={bookingsForDate}
+        dayOpportunities={selectedDateEvents} // <-- NEW: Passes the day's events to the modal
+        investors={investorsForOpportunity}
+        isLoading={isLoadingInvestors}
+        error={investorsError}
         onError={onError}
         onAddAvailability={onAddAvailability}
         onClose={() => {
           setSelectedEvent(null);
           setSelectedDate(null);
-          setBookingsForDate([]);
+          setInvestorsForOpportunity([]);
+          setInvestorsError(null);
         }}
       />
     </div>

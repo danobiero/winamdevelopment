@@ -117,8 +117,10 @@ export default function ServicesSection() {
     <section className="max-w-6xl mx-auto px-4 py-16">
       {/* Heading */}
       <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold text-slate-800 mb-4">Our Services</h2>
-        <div className="w-16 h-1 bg-blue-400 mx-auto rounded-full"></div>
+        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
+          Our <span className="text-blue-600">Services</span>
+        </h1>
+        <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Grid */}

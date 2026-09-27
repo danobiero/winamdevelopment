@@ -46,6 +46,53 @@ export const getCalendar = async () => {
 /**
  * PUSH RECURRING RULE
  */
+export async function pushRecurringRuleToGoogle_changed({
+  calendarId, 
+  title,
+  startDateTime,
+  endDateTime,
+  timezone,
+  weekday,
+  repeatEveryWeeks,
+  endsOn,
+}) {
+  // Validate that a calendarId was supplied by the sync loop orchestrator
+  if (!calendarId) {
+    throw new Error('Missing required parameters: calendarId inside pushRecurringRuleToGoogle.');
+  }
+
+  const calendar = await getCalendar();
+  const weekdayCode = WEEKDAY_MAP[weekday];
+
+  // RFC5545 UNTIL must be UTC
+  const untilUTC =
+    new Date(`${endsOn}T23:59:59Z`)
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .split('.')[0] + 'Z';
+
+  const event = {
+    summary: title,
+    description: 'FLOW-NET Managed Opportunity Series',
+    start: { dateTime: startDateTime, timeZone: timezone },
+    end: { dateTime: endDateTime, timeZone: timezone },
+    recurrence: [
+      `RRULE:FREQ=WEEKLY;INTERVAL=${repeatEveryWeeks};BYDAY=${weekdayCode};UNTIL=${untilUTC}`,
+    ],
+  };
+
+  const { data } = await calendar.events.insert({
+    calendarId: calendarId, 
+    requestBody: event,
+  });
+
+  return { master_id: data.id };
+}
+
+
+/**
+ * PUSH RECURRING RULE
+ */
 export async function pushRecurringRuleToGoogle({
   title,
   startDateTime,
@@ -67,7 +114,7 @@ export async function pushRecurringRuleToGoogle({
 
   const event = {
     summary: title,
-    description: 'FLOW-NET Managed Lesson Series',
+    description: 'FLOW-NET Managed Opportunity Series',
     start: { dateTime: startDateTime, timeZone: timezone },
     end: { dateTime: endDateTime, timeZone: timezone },
     recurrence: [

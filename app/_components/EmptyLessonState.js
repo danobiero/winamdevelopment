@@ -30,7 +30,7 @@ export default function EmptyLessonState({
      <div>
        <p className="text-xl font-bold text-[#000033] mb-4">{message}</p>
        <Link
-         href="/lessons"
+         href="/opportunities"
          className="inline-flex items-center gap-2 bg-logo-100 text-white px-8 py-4 rounded-2xl font-black hover:bg-[#000033] transition-all active:scale-95 shadow-lg shadow-blue-200"
        >
          Explore Premium Lessons

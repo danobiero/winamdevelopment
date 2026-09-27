@@ -51,7 +51,7 @@ export default async function SupportDetailPage({ params }) {
             }`}
           >
             <div className="text-sm opacity-80 mb-1">
-              {msg.sender_type === 'admin' ? 'Admin' : 'Student'}
+              {msg.sender_type === 'admin' ? 'Admin' : 'Client'}
             </div>
             <div className="whitespace-pre-wrap">{msg.message}</div>
             <div className="text-xs opacity-60 mt-2">
@@ -114,7 +114,7 @@ export default async function SupportDetailPage({ params }) {
         >
           <option value="open">Open</option>
           <option value="in_progress">In Progress</option>
-          <option value="waiting_on_student">Waiting on Student</option>
+          <option value="waiting_on_student">Waiting on Client</option>
           <option value="resolved">Resolved</option>
           <option value="closed">Closed</option>
         </select>

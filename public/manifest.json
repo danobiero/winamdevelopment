@@ -1,7 +1,7 @@
 {
-  "name": "Praxida",
-  "short_name": "Praxida",
-  "description": "Praxida Financial Learning Platform",
+  "name": "WINAM",
+  "short_name": "WINAM",
+  "description": "WINAM Financial Learning Platform",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

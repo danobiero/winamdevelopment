@@ -2,20 +2,28 @@ import { auth } from '@/app/_lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-import { getPayments, getPaymentById } from './payment-actions';
+import { getPayments, getPaymentById, getPaymentModeAction } from './payment-actions';
+import { getOpportunities } from '../opportunities/actions';
 import PaymentViewModal from './PaymentViewModal';
+import PaymentModeToggle from './PaymentModeToggle';
 import PaginationControls from '@/app/_components/PaginationControls';
+import FilterPanel from '@/app/_components/FilterPanel';
 
 const PAGE_SIZE = 10;
 
-const formatCurrency = (value) =>
+/* =========================
+   HELPERS
+========================= */
+
+const formatCurrency = (value, currency = 'USD') =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
-  }).format(value);
+    currency,
+  }).format(Number(value || 0));
 
 const formatDate = (dateString) => {
   if (!dateString) return '—';
+
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -23,177 +31,271 @@ const formatDate = (dateString) => {
   });
 };
 
+/* =========================
+   STATUS NORMALIZER
+========================= */
+
+function getPaymentStatus(status) {
+  const s = (status || '').toLowerCase().trim();
+
+  if (['succeeded', 'success', 'paid', 'complete', 'completed'].includes(s)) {
+    return 'success';
+  }
+
+  if (['failed', 'canceled', 'cancelled', 'error'].includes(s)) {
+    return 'failed';
+  }
+
+  if (['pending', 'processing', 'incomplete'].includes(s)) {
+    return 'pending';
+  }
+
+  return 'unknown';
+}
+
+/* =========================
+   PAGE
+========================= */
+
 export default async function PaymentsPage({ searchParams }) {
   const session = await auth();
-  if (!session?.user?.adminId) redirect('/admin-login');
+
+  if (!session?.user?.adminId) {
+    redirect('/admin-login');
+  }
 
   const params = await searchParams;
+
   const page = Number(params?.page ?? 1);
   const viewId = params?.view || null;
+  const searchShareholder = params?.searchShareholder || null;
+  const filterOpportunity = params?.filterOpportunity || null;
+  const startDate = params?.startDate || null;
+  const endDate = params?.endDate || null;
 
   let viewedPayment = null;
-  if (viewId) viewedPayment = await getPaymentById(viewId);
+
+  if (viewId) {
+    viewedPayment = await getPaymentById(viewId);
+  }
 
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
-  const payments = await getPayments({ from, to });
+
+  const [payments, opportunities, paymentMode] = await Promise.all([
+    getPayments({
+      from,
+      to,
+      searchShareholder,
+      filterOpportunity,
+      startDate,
+      endDate,
+    }),
+    getOpportunities(),
+    getPaymentModeAction(),
+  ]);
 
   return (
-    /* Refitted for wide-screen utility */
     <div className="space-y-6 px-2 py-4 sm:px-4 lg:px-6 max-w-[1600px] mx-auto h-full">
       {viewedPayment && <PaymentViewModal payment={viewedPayment} />}
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="flex flex-col gap-4 border-b border-slate-100 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Payments <span className="text-blue-600">Ledger</span>
           </h1>
+
           <div className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {payments.length} Records
           </div>
         </div>
-
-        {/* Status Key */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-            Payment Status:
-          </span>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-bold text-slate-600">
-              Succeeded
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-[10px] font-bold text-slate-600">
-              Failed
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* --- MOBILE CARD VIEW --- */}
+      {/* PAYMENT GATEWAY CONTROL */}
+      <PaymentModeToggle initialMode={paymentMode} />
+
+      <FilterPanel
+        basePath="/admin/payments"
+        opportunities={opportunities}
+        showDateRange={true}
+        initialSearchValue={searchShareholder || ''}
+        initialFilterOpportunity={filterOpportunity || ''}
+        initialStartDate={startDate || ''}
+        initialEndDate={endDate || ''}
+      />
+
+      {/* MOBILE */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
-        {payments.map((pay) => (
-          <div
-            key={pay.id}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col space-y-4"
-          >
-            <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
-                ID: {pay.id?.slice(0, 8)}...
-              </span>
-              <span className="text-lg font-black text-slate-900">
-                {formatCurrency(pay.amount)}
-              </span>
-            </div>
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                Client
-              </p>
-              <h3 className="text-sm font-bold text-slate-900">
-                {pay.students?.fullName || 'Unknown Student'}
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+        {payments.map((pay) => {
+          const status = getPaymentStatus(pay.status);
+
+          return (
+            <div
+              key={pay.id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col space-y-4"
+            >
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <span className="text-[9px] font-mono text-slate-400 font-bold">
+                  ID: {pay.id?.slice(0, 8)}...
+                </span>
+
+                <span className="text-lg font-black text-slate-900">
+                  {formatCurrency(pay.amount, pay.currency)}
+                </span>
+              </div>
+
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                  Booking
+                  Shareholder
                 </p>
-                <Link
-                  href={`/admin/bookings?view=${pay.booking_id}`}
-                  className="text-xs font-bold text-blue-600 hover:underline"
-                >
-                  #{pay.booking_id}
-                </Link>
+
+                <h3 className="text-sm font-bold text-slate-900">
+                  {pay.shareholders?.fullName || 'Unknown Shareholder'}
+                </h3>
               </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                  Status
-                </p>
-                <PaymentStatusBadge pay={pay} />
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                    Opportunity
+                  </p>
+
+                  <div className="text-xs font-bold text-blue-600">
+                    {pay.opportunities?.name || 'N/A'}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                    Status
+                  </p>
+
+                  <PaymentStatusBadge status={status} raw={pay.status} />
+                </div>
+              </div>
+
+              <div className="pt-4 mt-auto border-t border-slate-50 flex gap-2">
+                {status === 'pending' ? (
+                  <>
+                    <Link
+                      href={`/admin/payments?view=${pay.id}&page=${page}`}
+                      className="flex-1 text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition"
+                    >
+                      Confirm Payment
+                    </Link>
+                    <Link
+                      href={`/admin/payments?view=${pay.id}&page=${page}`}
+                      className="px-4 text-center py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest transition"
+                    >
+                      Details
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href={`/admin/payments?view=${pay.id}&page=${page}`}
+                    className="block w-full text-center py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                  >
+                    Details
+                  </Link>
+                )}
               </div>
             </div>
-            <div className="pt-4 mt-auto border-t border-slate-50">
-              <Link
-                href={`/admin/payments?view=${pay.id}&page=${page}`}
-                className="block w-full text-center py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
-              >
-                Details
-              </Link>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* --- DESKTOP TABLE VIEW --- */}
-      <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-100 text-xs table-fixed">
+      <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table className="min-w-[850px] w-full divide-y divide-slate-100 text-xs">
           <thead className="bg-slate-50">
             <tr>
-              <th className="w-32 px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
-                ID
-              </th>
-              <th className="w-24 px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
-                Booking
-              </th>
               <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
-                Client
+                Payment ID
               </th>
-              <th className="w-32 px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+
+              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+                Shareholder
+              </th>
+
+              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+                Opportunity
+              </th>
+
+              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
                 Amount
               </th>
-              <th className="w-40 px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+
+              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
                 Status
               </th>
-              <th className="w-32 px-6 py-4 text-right font-black text-slate-400 uppercase tracking-widest">
+
+              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+                Date
+              </th>
+
+              {/* ✅ RESTORED ACTIONS COLUMN */}
+              <th className="px-6 py-4 text-right font-black text-slate-400 uppercase tracking-widest">
                 Actions
               </th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-slate-100">
-            {payments.map((pay) => (
-              <tr
-                key={pay.id}
-                className="hover:bg-blue-50/30 transition-colors group"
-              >
-                <td className="px-6 py-4 font-mono text-[10px] text-slate-400 font-bold truncate">
-                  {pay.id}
-                </td>
-                <td className="px-6 py-4 font-bold text-blue-600">
-                  <Link
-                    href={`/admin/bookings?view=${pay.booking_id}`}
-                    className="hover:underline"
-                  >
-                    #{pay.booking_id}
-                  </Link>
-                </td>
-                <td className="px-6 py-4 font-medium text-slate-700 truncate">
-                  {pay.students?.fullName}
-                </td>
-                <td className="px-6 py-4 font-black text-slate-900">
-                  {formatCurrency(pay.amount)}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <PaymentStatusIndicator pay={pay} />
-                    <span className="font-bold text-slate-600 capitalize">
-                      {pay.refunded ? 'Refunded' : pay.status}
+            {payments.map((pay) => {
+              const status = getPaymentStatus(pay.status);
+
+              return (
+                <tr key={pay.id} className="hover:bg-blue-50/30">
+                  <td className="px-6 py-4 font-mono text-[10px] text-slate-400">
+                    {pay.id}
+                  </td>
+
+                  <td className="px-6 py-4 font-semibold text-slate-800">
+                    {pay.shareholders?.fullName}
+                  </td>
+
+                  <td className="px-6 py-4 text-slate-700">
+                    {pay.opportunities?.name}
+                  </td>
+
+                  <td className="px-6 py-4 font-black text-slate-900">
+                    {formatCurrency(pay.amount, pay.currency)}
+                  </td>
+
+                  <td className="px-6 py-4 flex items-center gap-2">
+                    <PaymentStatusIndicator status={status} />
+                    <span className="capitalize font-semibold text-slate-600">
+                      {pay.status}
                     </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link
-                    href={`/admin/payments?view=${pay.id}&page=${page}`}
-                    className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase text-slate-600 hover:border-slate-900 transition-colors"
-                  >
-                    Details
-                  </Link>
-                </td>
-              </tr>
-            ))}
+                  </td>
+
+                  <td className="px-6 py-4 text-slate-600 font-medium">
+                    {formatDate(pay.created_at)}
+                  </td>
+
+                  {/* ✅ ACTIONS COLUMN */}
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {status === 'pending' && (
+                        <Link
+                          href={`/admin/payments?view=${pay.id}&page=${page}`}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm"
+                        >
+                          Confirm
+                        </Link>
+                      )}
+                      <Link
+                        href={`/admin/payments?view=${pay.id}&page=${page}`}
+                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase text-slate-600 hover:border-slate-900 transition-colors"
+                      >
+                        Details
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -208,20 +310,34 @@ export default async function PaymentsPage({ searchParams }) {
   );
 }
 
-function PaymentStatusBadge({ pay }) {
-  const styles = pay.refunded
-    ? 'text-rose-600 bg-rose-50 border-rose-100'
-    : 'text-emerald-600 bg-emerald-50 border-emerald-100';
+/* =========================
+   UI COMPONENTS
+========================= */
+
+function PaymentStatusBadge({ status, raw }) {
+  const map = {
+    success: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    pending: 'text-amber-600 bg-amber-50 border-amber-100',
+    failed: 'text-rose-600 bg-rose-50 border-rose-100',
+    unknown: 'text-slate-600 bg-slate-50 border-slate-100',
+  };
+
   return (
     <span
-      className={`text-[9px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${styles}`}
+      className={`text-[9px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${map[status]}`}
     >
-      {pay.refunded ? 'Refunded' : pay.status}
+      {raw}
     </span>
   );
 }
 
-function PaymentStatusIndicator({ pay }) {
-  const color = pay.refunded ? 'bg-rose-500' : 'bg-emerald-500';
-  return <div className={`h-2 w-2 rounded-full ${color}`} />;
+function PaymentStatusIndicator({ status }) {
+  const map = {
+    success: 'bg-emerald-500',
+    pending: 'bg-amber-500',
+    failed: 'bg-rose-500',
+    unknown: 'bg-slate-400',
+  };
+
+  return <div className={`h-2 w-2 rounded-full ${map[status]}`} />;
 }

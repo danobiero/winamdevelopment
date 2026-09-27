@@ -46,7 +46,7 @@ export async function sendAdminOtp() {
   // 6️⃣ Dispatch Email
   await sendEmail({
     to: adminRecord.email,
-    subject: 'PRAXIDA | Admin Access Code',
+    subject: 'WINAM | Admin Access Code',
     text: `Your one-time access code is: ${code}. This code expires in 10 minutes.`,
   });
 

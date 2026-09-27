@@ -15,11 +15,11 @@ export default function SubmitButton({ children, pendingLabel }) {
         
         /* Typography & Style */
         text-white font-bold uppercase tracking-wide text-sm
-        rounded-lg bg-logo-100 
+        rounded-lg bg-blue-900
         
         /* Transitions & Interactions */
         transition-all duration-200 
-        hover:bg-logo-100/90 hover:shadow-lg
+        hover:bg-logo-10 hover:shadow-lg
         active:scale-[0.98]
         
         /* Disabled State */

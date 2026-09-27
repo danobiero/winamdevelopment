@@ -78,7 +78,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
         <div className="flex-1 overflow-y-auto bg-slate-50/50 p-4 sm:p-6 space-y-6 overscroll-contain">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-sm">
             <div>
-              <p className="text-slate-400 text-xs mb-0.5">Student</p>
+              <p className="text-slate-400 text-xs mb-0.5">Client</p>
               <p className="font-medium text-slate-900">
                 {ticket.name || 'Anonymous'}
               </p>
@@ -113,7 +113,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
                   className={`p-4 rounded-2xl shadow-sm ${msg.sender_type === 'admin' ? 'bg-slate-900 text-slate-50 rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}
                 >
                   <p className="text-[10px] font-bold mb-1 uppercase opacity-70">
-                    {msg.sender_type === 'admin' ? 'Support Agent' : 'Student'}
+                    {msg.sender_type === 'admin' ? 'Support Agent' : 'Client'}
                   </p>
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
                     {msg.message}
@@ -147,7 +147,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
                     <option value="open">Keep Open</option>
                     <option value="in_progress">Mark In Progress</option>
                     <option value="waiting_on_student">
-                      Waiting on Student
+                      Waiting on Client
                     </option>
                     <option value="resolved">Mark as Resolved</option>
                     <option value="closed">Close Ticket</option>

@@ -1,6 +1,7 @@
 import { auth } from '@/app/_lib/auth';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { FormatCurrency } from '@/app/_lib/utils';
 
 import AdminDeleteLesson from './_components/AdminDeleteLesson';
 import AdminToggleStatus from './_components/AdminToggleStatus';
@@ -118,7 +119,7 @@ export default async function LessonsPage({ searchParams }) {
                 ID: {lesson.id}
               </span>
               <span className="text-sm font-black text-blue-600">
-                ${Number(lesson.regularPrice ?? 0).toFixed(2)}
+                {FormatCurrency(lesson.regularPrice)}
               </span>
             </div>
 
@@ -214,7 +215,7 @@ export default async function LessonsPage({ searchParams }) {
                   {lesson.name}
                 </td>
                 <td className="px-6 py-4 text-center font-black text-slate-900">
-                  ${Number(lesson.regularPrice ?? 0).toFixed(2)}
+                  {FormatCurrency(lesson.regularPrice)}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-3">

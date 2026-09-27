@@ -27,7 +27,7 @@ export async function createAdminEvent(eventDetails) {
   const { title, description, startTime, endTime, userEmail } = eventDetails;
 
   const event = {
-    summary: `Praxida: ${title}`,
+    summary: `WINAM: ${title}`,
     description: description,
     start: {
       dateTime: startTime,
