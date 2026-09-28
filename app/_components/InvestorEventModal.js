@@ -83,14 +83,22 @@ export default function EventModal({ events = [], date, onClose }) {
           ) : (
             events.map((event) => {
               const startDt = getEventDate(event.start_time || event.time);
-              const endDt = getEventDate(event.endTime || event.end_time);
+              const rawEndDt = getEventDate(event.endTime || event.end_time);
+              const endDt =
+                rawEndDt ||
+                (startDt ? new Date(startDt.getTime() + 60 * 60 * 1000) : null);
 
-              const isPast = endDt ? isBefore(endDt, now) : false;
-              const isLive =
+              const isPast = endDt
+                ? isBefore(endDt, now)
+                : startDt
+                  ? isBefore(startDt, now)
+                  : false;
+              const isLive = Boolean(
                 startDt &&
                 endDt &&
                 isAfter(now, startDt) &&
-                isBefore(now, endDt);
+                isBefore(now, endDt)
+              );
 
               return (
                 <div
@@ -105,7 +113,7 @@ export default function EventModal({ events = [], date, onClose }) {
                 >
                   {/* LIVE INDICATOR */}
                   {isLive && (
-                    <div className="absolute -top-2 -right-2 flex items-center gap-1.5 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter animate-pulse">
+                    <div className="absolute -top-2 -right-2 flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-tight animate-pulse shadow-sm">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-100"></span>
@@ -133,7 +141,7 @@ export default function EventModal({ events = [], date, onClose }) {
                     {isPast && (
                       <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
                         <CheckCircleIcon className="h-5 w-5" />
-                        <span className="text-[10px] font-bold uppercase">
+                        <span className="text-xs font-bold uppercase">
                           Ended
                         </span>
                       </div>

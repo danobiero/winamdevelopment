@@ -39,7 +39,7 @@ export default function ApplicationProcessModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center shrink-0">
+        <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold text-gray-800">
             {isPending ? 'Process Application' : 'Application Details'}
           </h2>
@@ -65,24 +65,24 @@ export default function ApplicationProcessModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5">
           <div className="flex justify-between items-start border-b pb-4">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 App ID
               </p>
               <p className="font-mono text-sm text-gray-700">
                 #{String(application.id).slice(0, 8)}
               </p>
             </div>
-            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-blue-100 text-blue-700 border border-blue-200">
+            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-blue-100 text-blue-700 border border-blue-200">
               {application.status || 'applied'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Applicant
               </p>
               <p className="font-semibold text-gray-800">
@@ -93,7 +93,7 @@ export default function ApplicationProcessModal({
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Primary Interest
               </p>
               <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded border mt-1">
@@ -105,7 +105,7 @@ export default function ApplicationProcessModal({
 
         {/* Footer Actions */}
         {isPending ? (
-          <div className="px-6 py-4 bg-gray-50 border-t space-y-4 shrink-0">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t space-y-4 shrink-0">
             {/* IDLE STATE */}
             {actionState === 'idle' && (
               <div className="flex gap-3">
@@ -142,7 +142,7 @@ export default function ApplicationProcessModal({
                 className="space-y-4 animate-in slide-in-from-bottom-2"
               >
                 <div>
-                  <label className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-1">
                     Approval Authority *
                   </label>
                   <select
@@ -204,7 +204,7 @@ export default function ApplicationProcessModal({
                 className="space-y-4 animate-in slide-in-from-bottom-2"
               >
                 <div>
-                  <label className="text-[10px] font-bold text-red-600 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-red-600 uppercase tracking-widest block mb-1">
                     Select Rejection Policy *
                   </label>
                   <select
@@ -222,7 +222,7 @@ export default function ApplicationProcessModal({
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
                     Internal Notes (Optional)
                   </label>
                   <textarea

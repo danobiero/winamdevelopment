@@ -16,36 +16,59 @@ async function OpportunityList({ filter }) {
       </div>
     );
 
-  // Map filter values to opportunity types
-  const typeMap = {
-    real_estate: 'real_estate',
-    stocks: 'Private Equity',
-    ventures: 'Venture Capital',
-  };
+  const normalize = (str) =>
+    (str || '').toLowerCase().replace(/[\s_-]+/g, '');
 
   const displayOpportunities = opportunities.filter((opportunity) => {
     // Exclude non-active opportunities (hidden, closed, inactive, etc.)
-    if (opportunity.status !== 'active') return false;
+    if (opportunity.status?.toLowerCase() !== 'active') return false;
+
+    const opTypeNorm = normalize(opportunity.type);
 
     // Exclude Fees
-    if (
-      opportunity.type?.toLowerCase() === 'fees' ||
-      opportunity.type?.toLowerCase() === 'fee'
-    )
-      return false;
+    if (opTypeNorm === 'fees' || opTypeNorm === 'fee') return false;
 
     // Show all
-    if (filter === 'all') return true;
+    if (!filter || filter === 'all') return true;
 
-    // Apply filter
-    if (filter === 'ventures') {
+    const filterNorm = normalize(filter);
+
+    // Real Estate
+    if (filterNorm === 'realestate') {
+      return opTypeNorm === 'realestate';
+    }
+
+    // Private Equity / Stocks
+    if (
+      filterNorm === 'stocks' ||
+      filterNorm === 'privateequity' ||
+      filterNorm === 'equity'
+    ) {
       return (
-        opportunity.type === 'Venture Capital' ||
-        opportunity.type === 'Business Venture'
+        opTypeNorm === 'privateequity' ||
+        opTypeNorm === 'equity' ||
+        opTypeNorm === 'stocks' ||
+        opTypeNorm === 'stock' ||
+        opTypeNorm === 'debtfund'
       );
     }
 
-    return opportunity.type === typeMap[filter];
+    // Ventures
+    if (
+      filterNorm === 'ventures' ||
+      filterNorm === 'venture' ||
+      filterNorm === 'venturecapital'
+    ) {
+      return (
+        opTypeNorm === 'venturecapital' ||
+        opTypeNorm === 'businessventure' ||
+        opTypeNorm === 'ventures' ||
+        opTypeNorm === 'venture'
+      );
+    }
+
+    // Fallback exact normalized match
+    return opTypeNorm === filterNorm;
   });
 
   if (!displayOpportunities.length)

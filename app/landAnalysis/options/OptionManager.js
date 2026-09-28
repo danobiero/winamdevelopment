@@ -91,7 +91,7 @@ export default function OptionManager({
 
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">
+              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">
                 Parent Category
               </label>
               <select
@@ -111,7 +111,7 @@ export default function OptionManager({
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">
+              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">
                 Option Label
               </label>
               <input
@@ -123,7 +123,7 @@ export default function OptionManager({
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">
+              <label className="text-xs font-black uppercase text-gray-400 mb-1 block">
                 Weighted Score
               </label>
               <input
@@ -171,7 +171,7 @@ export default function OptionManager({
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] uppercase tracking-widest text-gray-400 font-black border-b border-gray-100">
+                <tr className="text-xs uppercase tracking-widest text-gray-400 font-black border-b border-gray-100">
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Option Name</th>
                   <th className="px-6 py-4">Weight</th>
@@ -240,7 +240,7 @@ export default function OptionManager({
                       /* 🔹 DISPLAY MODE */
                       <>
                         <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-500 uppercase">
+                          <span className="px-2 py-1 bg-gray-100 rounded text-xs font-bold text-gray-500 uppercase">
                             {o.categories?.name}
                           </span>
                         </td>

@@ -73,7 +73,7 @@ export default function AssignInvestmentsButton({ onError }) {
         </svg>
       )}
 
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+      <span className="text-xs font-black uppercase tracking-[0.2em] leading-none">
         {isPending ? 'Assigning' : 'Assign'}
       </span>
     </button>

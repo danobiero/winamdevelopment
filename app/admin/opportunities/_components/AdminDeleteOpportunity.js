@@ -44,7 +44,7 @@ export default function AdminDeleteOpportunity({
       {/* Delete link styled like View/Edit */}
       <button
         onClick={() => setConfirming(true)}
-        className="text-red-600 font-black uppercase text-[10px] hover:underline"
+        className="text-red-600 font-black uppercase text-xs hover:underline"
       >
         Delete
       </button>

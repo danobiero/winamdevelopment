@@ -3,6 +3,7 @@ import { Roboto } from 'next/font/google';
 import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
+import InstallPrompt from './_components/InstallPrompt';
 import Footer from './_components/Footer';
 import { headers } from 'next/headers';
 import { ToastProvider } from '@/app/_lib/ToastContext';
@@ -17,7 +18,23 @@ export const metadata = {
   },
   description: 'Strategic businesses driven by collective shareholders vision',
   manifest: '/manifest.json',
-  icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'WINAM',
+  },
 };
 
 const roboto = Roboto({
@@ -36,6 +53,7 @@ export default function RootLayout({ children }) {
         className={`${roboto.className} antialiased text-primary-950 h-dvh flex flex-col overflow-hidden`}
       >
         <PWARegister />
+        <InstallPrompt />
 
         {!isLanding && (
           <div className="flex-none">

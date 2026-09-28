@@ -202,13 +202,13 @@ export default function PaymentForm({ paymentMethod, user }) {
                     <h3 className="text-xs sm:text-sm font-black tracking-tight truncate">
                       {accountName || paymentMethod?.account_name || user?.fullName || 'Shareholder'}
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      <ShieldCheckIcon className="h-3 w-3" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <ShieldCheckIcon className="h-3.5 w-3.5" />
                       Active Rail
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-300 truncate">
+                  <p className="text-xs text-slate-300 truncate">
                     Rail: <strong className="text-white capitalize">{selectedType || paymentMethod?.payment_type}</strong>
                     {(accountHandle || paymentMethod?.account_handle) && (
                       <span className="text-blue-300 font-mono ml-1.5">
@@ -218,7 +218,7 @@ export default function PaymentForm({ paymentMethod, user }) {
                   </p>
 
                   {(accountNumber || paymentMethod?.account_number) && (
-                    <p className="text-[10px] text-slate-400 font-mono">
+                    <p className="text-xs text-slate-400 font-mono">
                       Acct: •••• {(accountNumber || paymentMethod?.account_number).slice(-4)}
                     </p>
                   )}
@@ -227,7 +227,7 @@ export default function PaymentForm({ paymentMethod, user }) {
             ) : (
               <div className="p-3 bg-slate-100/80 border border-slate-200 rounded-2xl text-xs text-slate-500 flex items-center gap-2.5 shrink-0">
                 <CreditCardIcon className="h-5 w-5 text-slate-400 shrink-0" />
-                <p className="font-medium text-[11px]">No disbursement rail configured yet. Select a method below.</p>
+                <p className="font-medium text-xs">No disbursement rail configured yet. Select a method below.</p>
               </div>
             )}
 
@@ -245,7 +245,7 @@ export default function PaymentForm({ paymentMethod, user }) {
                   <span className="text-xs font-black text-slate-900 dark:text-white truncate block">
                     Transaction Ledger & Dividends
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium truncate block">
+                  <span className="text-xs text-slate-400 font-medium truncate block">
                     View payouts, capital investments & statements
                   </span>
                 </div>
@@ -260,11 +260,11 @@ export default function PaymentForm({ paymentMethod, user }) {
                   <h3 className="text-xs font-black text-[#000033] dark:text-white uppercase tracking-wider">
                     1. Select Payout Method
                   </h3>
-                  <p className="text-[11px] text-slate-400 font-medium">
+                  <p className="text-xs text-slate-400 font-medium">
                     Choose your preferred disbursement rail
                   </p>
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md">
                   Step 1
                 </span>
               </div>
@@ -301,12 +301,12 @@ export default function PaymentForm({ paymentMethod, user }) {
                               {opt.title}
                             </span>
                             <span
-                              className={`text-[8px] font-black uppercase px-1.5 py-0.2 rounded border ${opt.badgeColor}`}
+                              className={`text-xs font-black uppercase px-2 py-0.5 rounded border ${opt.badgeColor}`}
                             >
                               {opt.badge}
                             </span>
                           </div>
-                          <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
                             {opt.subtitle}
                           </p>
                         </div>
@@ -317,7 +317,7 @@ export default function PaymentForm({ paymentMethod, user }) {
               </div>
 
               {/* SECURITY & POLICY CALLOUT */}
-              <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-[10px] text-slate-500 dark:text-slate-400 shrink-0">
+              <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 shrink-0">
                 <InformationCircleIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="leading-tight font-medium">
                   Encrypted storage with audit logging before dividends or redemptions are released.
@@ -335,11 +335,11 @@ export default function PaymentForm({ paymentMethod, user }) {
                       <h3 className="text-xs font-black text-[#000033] dark:text-white uppercase tracking-wider">
                         2. Account Details
                       </h3>
-                      <p className="text-[11px] text-slate-400 font-medium">
+                      <p className="text-xs text-slate-400 font-medium">
                         Parameters for {currentOption.title} disbursements
                       </p>
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                       Step 2
                     </span>
                   </div>
@@ -349,11 +349,11 @@ export default function PaymentForm({ paymentMethod, user }) {
                     <div className="flex items-center justify-between text-xs">
                       <label
                         htmlFor="accountName"
-                        className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-[11px]"
+                        className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
                       >
                         Account Name <span className="text-rose-500">*</span>
                       </label>
-                      <span className="text-[10px] text-slate-400 font-medium">Official beneficiary</span>
+                      <span className="text-xs text-slate-400 font-medium">Official beneficiary</span>
                     </div>
                     <input
                       id="accountName"
@@ -376,11 +376,11 @@ export default function PaymentForm({ paymentMethod, user }) {
                       <div className="flex items-center justify-between text-xs">
                         <label
                           htmlFor="accountHandle"
-                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-[11px]"
+                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
                         >
                           Account Handle
                         </label>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                        <span className="text-xs font-bold text-slate-400 uppercase">
                           {selectedType === 'zelle'
                             ? 'Email / Phone'
                             : selectedType === 'cashapp'
@@ -406,11 +406,11 @@ export default function PaymentForm({ paymentMethod, user }) {
                       <div className="flex items-center justify-between text-xs">
                         <label
                           htmlFor="accountNumber"
-                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-[11px]"
+                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
                         >
                           Account / Routing #
                         </label>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Digits Only</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase">Digits Only</span>
                       </div>
                       <input
                         id="accountNumber"
@@ -440,7 +440,7 @@ export default function PaymentForm({ paymentMethod, user }) {
                         <span className="truncate">{errorMessage}</span>
                       </div>
                     ) : (
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-medium">
+                      <p className="text-xs text-slate-400 dark:text-slate-400 font-medium">
                         Updated payment settings apply to all upcoming distributions.
                       </p>
                     )}

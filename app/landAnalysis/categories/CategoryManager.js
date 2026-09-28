@@ -71,7 +71,7 @@ export default function CategoryManager({
 
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 mb-1.5 block tracking-widest">
+              <label className="text-xs font-black uppercase text-gray-400 mb-1.5 block tracking-widest">
                 Category Name
               </label>
               <input
@@ -100,7 +100,7 @@ export default function CategoryManager({
             <span className="text-sm font-bold text-gray-700">
               {categories?.length || 0} Total Categories
             </span>
-            <span className="text-[10px] font-mono text-gray-400 uppercase">
+            <span className="text-xs font-mono text-gray-400 uppercase">
               FLOW-NET / CONFIG
             </span>
           </div>
@@ -150,7 +150,7 @@ export default function CategoryManager({
                         <span className="text-sm font-bold text-gray-800 block mb-0.5">
                           {c.name}
                         </span>
-                        <p className="text-[10px] font-mono text-gray-400 uppercase">
+                        <p className="text-xs font-mono text-gray-400 uppercase">
                           System ID: {displayId}
                         </p>
                       </div>

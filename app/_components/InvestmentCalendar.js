@@ -47,7 +47,7 @@ export default function InvestmentCalendar({ eventsByDate }) {
           <h4 className="text-2xl font-black tracking-tight">
             {format(currentMonth, 'MMMM yyyy')}
           </h4>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">
             Shareholder Briefing Schedule
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function InvestmentCalendar({ eventsByDate }) {
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
             <div
               key={d}
-              className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest py-2"
+              className="text-center text-xs font-black text-slate-400 uppercase tracking-widest py-2"
             >
               {d}
             </div>
@@ -145,15 +145,15 @@ function InvestmentEvent({ evt, isToday }) {
   return (
     <div
       className={`
-      p-2 rounded-lg border text-[10px] leading-tight transition-all
+      p-2 rounded-lg border text-xs leading-tight transition-all
       ${isEnded ? 'bg-slate-100 border-slate-200 opacity-50' : 'bg-white border-slate-200 shadow-sm hover:border-primary-300'}
     `}
     >
       <div className="flex items-center gap-1 mb-1">
         {evt.type === 'governance' ? (
-          <ShieldCheckIcon className="h-3 w-3 text-amber-600" />
+          <ShieldCheckIcon className="h-3.5 w-3.5 text-amber-600" />
         ) : (
-          <ChartBarIcon className="h-3 w-3 text-primary-600" />
+          <ChartBarIcon className="h-3.5 w-3.5 text-primary-600" />
         )}
         <span className="font-black text-slate-900 truncate uppercase">
           {evt.title || 'Briefing'}
@@ -168,9 +168,9 @@ function InvestmentEvent({ evt, isToday }) {
         <a
           href={evt.meet_link}
           target="_blank"
-          className="flex items-center justify-center gap-1 w-full bg-slate-900 text-white py-1.5 rounded-md font-bold hover:bg-primary-600 transition-all text-[9px] uppercase tracking-wider"
+          className="flex items-center justify-center gap-1 w-full bg-slate-900 text-white py-1.5 rounded-md font-bold hover:bg-primary-600 transition-all text-xs uppercase tracking-wider"
         >
-          <VideoCameraIcon className="h-3 w-3" />
+          <VideoCameraIcon className="h-3.5 w-3.5" />
           Join Room
         </a>
       )}

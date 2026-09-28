@@ -42,7 +42,7 @@ export default function ViewInvestmentModal({ investment }) {
       {/* Container */}
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90dvh] flex flex-col relative overflow-hidden">
         {/* Header - Sticky */}
-        <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+        <div className="px-4 sm:px-6 py-4 border-b flex justify-between items-center bg-gray-50">
           <h2 className="text-lg md:text-xl font-bold text-gray-800">
             Investment Details
           </h2>
@@ -69,7 +69,7 @@ export default function ViewInvestmentModal({ investment }) {
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 overflow-y-auto space-y-4 text-gray-700">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-gray-700">
           {/* Top Status Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
             <div>
@@ -118,7 +118,7 @@ export default function ViewInvestmentModal({ investment }) {
                 {investment.end_date ? (
                   formatDate(investment.end_date)
                 ) : (
-                  <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[10px] uppercase font-black">
+                  <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-xs uppercase font-black">
                     OPEN
                   </span>
                 )}
@@ -169,11 +169,11 @@ export default function ViewInvestmentModal({ investment }) {
                         </span>
                         <div className="flex flex-col items-end gap-1">
                           <span
-                            className={`capitalize px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}`}
+                            className={`capitalize px-2 py-0.5 rounded text-xs font-bold border ${colorClass}`}
                           >
                             {redemption.status}
                           </span>
-                          <span className="text-[9px] text-gray-400 font-medium">
+                          <span className="text-xs text-gray-400 font-medium">
                             {formatDate(redemption.created_at)}
                           </span>
                         </div>

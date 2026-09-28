@@ -44,7 +44,7 @@ export default function DeleteReservation({
       */}
       <button
         onClick={() => setConfirming(true)}
-        className="group flex items-center justify-center md:justify-start gap-2 uppercase text-[10px] sm:text-xs font-bold flex-grow px-3 py-2 transition-colors min-w-0"
+        className="group flex items-center justify-center md:justify-start gap-2 uppercase text-xs font-bold flex-grow px-3 py-2 transition-colors min-w-0"
       >
         <TrashIcon className="h-5 w-5 text-primary-600 group-hover:text-red-600 transition-colors shrink-0" />
         <span className="truncate">{isPending ? '...' : buttonLabel}</span>

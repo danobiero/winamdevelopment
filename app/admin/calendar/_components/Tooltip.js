@@ -31,7 +31,7 @@ export default function Tooltip({ text, children, position = 'top' }) {
         <div
           className="
             bg-[#000033] text-white 
-            text-[9px] font-black uppercase tracking-[0.15em]
+            text-xs font-black uppercase tracking-[0.15em]
             px-2.5 py-1.5 rounded-md shadow-xl border border-white/10
             whitespace-nowrap
           "

@@ -129,17 +129,23 @@ export async function generateCoreQuarterlyStatementPDF(
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
-  let filename = `Core_Financial_Statements_${period?.year}_${period?.quarter}.pdf`;
+  const isCompanyScope =
+    statementData.scope === 'COMPANY' ||
+    opportunity?.name?.toLowerCase().includes('whole company') ||
+    opportunity?.id === 'COMPANY';
+
+  const scopePrefix = isCompanyScope ? 'Company' : 'Opportunity';
+  let filename = `${scopePrefix}_Financial_Statements_${period?.year}_${period?.quarter}.pdf`;
 
   // =========================================================================
   // 1. INDIVIDUAL: INCOME STATEMENT
   // =========================================================================
   if (statementType === 'INCOME_STATEMENT') {
-    filename = `Core_Income_Statement_${period?.year}_${period?.quarter}.pdf`;
+    filename = `${scopePrefix}_Income_Statement_${period?.year}_${period?.quarter}.pdf`;
     let startY = await renderHeader(doc, {
       settings,
-      title: 'INCOME STATEMENT',
-      subtitle: 'Statement of Operations & Comprehensive Income',
+      title: isCompanyScope ? 'CONSOLIDATED STATEMENT OF OPERATIONS' : 'INCOME STATEMENT',
+      subtitle: isCompanyScope ? 'Comprehensive Operations & Capital Inflows' : 'Statement of Operations & Comprehensive Income',
       period,
       opportunity,
       margin,
@@ -192,11 +198,11 @@ export async function generateCoreQuarterlyStatementPDF(
   // 2. INDIVIDUAL: BALANCE SHEET
   // =========================================================================
   else if (statementType === 'BALANCE_SHEET') {
-    filename = `Core_Balance_Sheet_${period?.year}_${period?.quarter}.pdf`;
+    filename = `${scopePrefix}_Balance_Sheet_${period?.year}_${period?.quarter}.pdf`;
     let startY = await renderHeader(doc, {
       settings,
-      title: 'BALANCE SHEET',
-      subtitle: 'Statement of Financial Position',
+      title: isCompanyScope ? 'CONSOLIDATED BALANCE SHEET' : 'BALANCE SHEET',
+      subtitle: isCompanyScope ? 'Whole Company Assets & Financial Position' : 'Statement of Financial Position',
       period,
       opportunity,
       margin,
@@ -209,6 +215,7 @@ export async function generateCoreQuarterlyStatementPDF(
       ['Total Current Assets', formatUSD(balanceSheet?.totalCurrentAssets)],
       ['NON-CURRENT / PORTFOLIO ASSETS', ''],
       ...(balanceSheet?.nonCurrentAssets || []).map((a) => [`   ${a.label}`, formatUSD(a.amount)]),
+      ['Total Non-Current Portfolio Assets', formatUSD(balanceSheet?.totalNonCurrentAssets)],
       ['TOTAL ASSETS', formatUSD(balanceSheet?.totalAssets)],
       ['CURRENT LIABILITIES', ''],
       ...(balanceSheet?.currentLiabilities || []).map((l) => [`   ${l.label}`, formatUSD(l.amount)]),
@@ -255,11 +262,11 @@ export async function generateCoreQuarterlyStatementPDF(
   // 3. INDIVIDUAL: STATEMENT OF CASH FLOWS
   // =========================================================================
   else if (statementType === 'CASH_FLOW') {
-    filename = `Core_Cash_Flow_Statement_${period?.year}_${period?.quarter}.pdf`;
+    filename = `${scopePrefix}_Cash_Flow_Statement_${period?.year}_${period?.quarter}.pdf`;
     let startY = await renderHeader(doc, {
       settings,
-      title: 'STATEMENT OF CASH FLOWS',
-      subtitle: 'Cash Flows from Operating, Investing, and Financing Activities',
+      title: isCompanyScope ? 'CONSOLIDATED STATEMENT OF CASH FLOWS' : 'STATEMENT OF CASH FLOWS',
+      subtitle: isCompanyScope ? 'Whole Company Cash Flows from Operating, Investing, and Financing' : 'Cash Flows from Operating, Investing, and Financing Activities',
       period,
       opportunity,
       margin,
@@ -317,11 +324,11 @@ export async function generateCoreQuarterlyStatementPDF(
   // 4. INDIVIDUAL: STATEMENT OF SHAREHOLDERS' EQUITY
   // =========================================================================
   else if (statementType === 'SHAREHOLDERS_EQUITY') {
-    filename = `Core_Shareholders_Equity_${period?.year}_${period?.quarter}.pdf`;
+    filename = `${scopePrefix}_Shareholders_Equity_${period?.year}_${period?.quarter}.pdf`;
     let startY = await renderHeader(doc, {
       settings,
-      title: "STATEMENT OF SHAREHOLDERS' EQUITY",
-      subtitle: 'Statement of Changes in Equity & Capital Schedule',
+      title: isCompanyScope ? "CONSOLIDATED STATEMENT OF SHAREHOLDERS' EQUITY" : "STATEMENT OF SHAREHOLDERS' EQUITY",
+      subtitle: isCompanyScope ? 'Consolidated Equity Schedule & Rollforward' : 'Statement of Changes in Equity & Rollforward',
       period,
       opportunity,
       margin,
@@ -351,7 +358,7 @@ export async function generateCoreQuarterlyStatementPDF(
         fontStyle: 'bold',
         fontSize: 9,
       },
-      styles: { fontSize: 8.5, cellPadding: 2.5 },
+      styles: { fontSize: 8.5, cellPadding: 3 },
       columnStyles: {
         0: { cellWidth: 125 },
         1: { cellWidth: 'auto', halign: 'right', fontStyle: 'bold' },
@@ -365,27 +372,45 @@ export async function generateCoreQuarterlyStatementPDF(
       },
       margin: { left: margin, right: margin },
     });
+  }
 
-    // Schedule of individual shareholders
-    let capY = doc.lastAutoTable.finalY + 8;
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text('Shareholder Ownership Register & Capital Allocations', margin, capY);
-    capY += 4;
+  // =========================================================================
+  // 5. INDIVIDUAL: SHAREHOLDER OWNERSHIP REGISTER & ALLOCATION SCHEDULE
+  // =========================================================================
+  else if (statementType === 'SHAREHOLDER_REGISTER') {
+    filename = `${scopePrefix}_Shareholder_Register_${period?.year}_${period?.quarter}.pdf`;
+    let startY = await renderHeader(doc, {
+      settings,
+      title: isCompanyScope
+        ? 'CONSOLIDATED SHAREHOLDER OWNERSHIP REGISTER & ALLOCATIONS'
+        : 'SHAREHOLDER OWNERSHIP REGISTER & ALLOCATION SCHEDULE',
+      subtitle: isCompanyScope
+        ? `Consolidated Shareholder Register Across All Opportunities (${shareholdersEquity?.shareholderSchedule?.length || 0} Investors)`
+        : `Active Core Shareholders & Allocations (${shareholdersEquity?.shareholderSchedule?.length || 0} Investors)`,
+      period,
+      opportunity,
+      margin,
+      pageWidth,
+    });
+
+    const shHeaders = isCompanyScope
+      ? [['#', 'Shareholder', 'Participated Holdings', 'Quarter Inflow', 'Contributed Capital', 'Ownership %']]
+      : [['#', 'Shareholder', 'Email', 'Quarter Inflow', 'Total Contributed', 'Ownership %']];
 
     const shRows = (shareholdersEquity?.shareholderSchedule || []).map((sh, i) => [
       i + 1,
       sh.name || 'Anonymous',
-      sh.email || 'N/A',
+      isCompanyScope
+        ? (sh.participatedOpportunities || []).map((o) => o.name).join(', ') || 'None'
+        : sh.email || 'N/A',
       formatUSD(sh.periodContributions),
       formatUSD(sh.endingBalance),
       `${sh.ownershipPercent}%`,
     ]);
 
     autoTable(doc, {
-      startY: capY,
-      head: [['#', 'Shareholder', 'Email', 'Quarter Inflow', 'Total Contributed', 'Ownership %']],
+      startY,
+      head: shHeaders,
       body: shRows,
       theme: 'striped',
       headStyles: {
@@ -394,14 +419,14 @@ export async function generateCoreQuarterlyStatementPDF(
         fontStyle: 'bold',
         fontSize: 8,
       },
-      styles: { fontSize: 7.5, cellPadding: 2 },
+      styles: { fontSize: 7.5, cellPadding: 2.5 },
       columnStyles: {
         0: { cellWidth: 8, halign: 'center' },
-        1: { cellWidth: 46, fontStyle: 'bold' },
+        1: { cellWidth: 38, fontStyle: 'bold' },
         2: { cellWidth: 50 },
         3: { cellWidth: 26, halign: 'right' },
-        4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
-        5: { cellWidth: 22, halign: 'right' },
+        4: { cellWidth: 32, halign: 'right', fontStyle: 'bold' },
+        5: { cellWidth: 20, halign: 'right' },
       },
       margin: { left: margin, right: margin },
     });
@@ -411,13 +436,13 @@ export async function generateCoreQuarterlyStatementPDF(
   // 5. ALL / COMPLETE FINANCIAL STATEMENTS PACKAGE
   // =========================================================================
   else {
-    filename = `Core_Complete_Financial_Statements_${period?.year}_${period?.quarter}.pdf`;
+    filename = `${scopePrefix}_Complete_Financial_Statements_${period?.year}_${period?.quarter}.pdf`;
 
     // PAGE 1: COVER & EXECUTIVE SUMMARY + INCOME STATEMENT + BALANCE SHEET
     let currentY = await renderHeader(doc, {
       settings,
-      title: 'CORE QUARTERLY FINANCIAL STATEMENTS',
-      subtitle: 'Comprehensive 4-Statement Financial Reporting Package',
+      title: isCompanyScope ? 'COMPANY-WIDE QUARTERLY FINANCIAL STATEMENTS' : 'CORE QUARTERLY FINANCIAL STATEMENTS',
+      subtitle: isCompanyScope ? 'Consolidated 4-Statement Financial Reporting Package' : 'Comprehensive 4-Statement Financial Reporting Package',
       period,
       opportunity,
       margin,
@@ -432,12 +457,19 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.roundedRect(margin, currentY, pageWidth - margin * 2, boxHeight, 2, 2, 'S');
 
     const colWidth = (pageWidth - margin * 2) / 4;
-    const kpis = [
-      { label: 'TARGET CAPITAL', value: formatUSD(metrics?.targetCapitalization) },
-      { label: 'CUMULATIVE RAISED', value: formatUSD(metrics?.cumulativeCapitalRaised) },
-      { label: 'QUARTER INFLOWS', value: formatUSD(metrics?.periodInflows) },
-      { label: 'ACTIVE SHAREHOLDERS', value: String(metrics?.activeShareholderCount || 0) },
-    ];
+    const kpis = isCompanyScope
+      ? [
+          { label: 'TOTAL COMPANY ASSETS', value: formatUSD(balanceSheet?.totalAssets) },
+          { label: 'CASH & EQUIVALENTS', value: formatUSD(balanceSheet?.totalCurrentAssets) },
+          { label: 'PORTFOLIO HOLDINGS', value: formatUSD(balanceSheet?.totalNonCurrentAssets) },
+          { label: 'ACTIVE SHAREHOLDERS', value: String(metrics?.activeShareholderCount || 0) },
+        ]
+      : [
+          { label: 'TARGET CAPITAL', value: formatUSD(metrics?.targetCapitalization) },
+          { label: 'CUMULATIVE RAISED', value: formatUSD(metrics?.cumulativeCapitalRaised) },
+          { label: 'QUARTER INFLOWS', value: formatUSD(metrics?.periodInflows) },
+          { label: 'ACTIVE SHAREHOLDERS', value: String(metrics?.activeShareholderCount || 0) },
+        ];
 
     kpis.forEach((kpi, idx) => {
       const x = margin + idx * colWidth + 4;
@@ -458,7 +490,13 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('1. Income Statement (Statement of Operations)', margin, currentY);
+    doc.text(
+      isCompanyScope
+        ? '1. Consolidated Statement of Operations (Income Statement)'
+        : '1. Income Statement (Statement of Operations)',
+      margin,
+      currentY
+    );
     currentY += 3;
 
     const incomeRows = [
@@ -487,18 +525,36 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('2. Balance Sheet (Statement of Financial Position)', margin, currentY);
+    doc.text(
+      isCompanyScope
+        ? '2. Consolidated Balance Sheet (Statement of Financial Position)'
+        : '2. Balance Sheet (Statement of Financial Position)',
+      margin,
+      currentY
+    );
     currentY += 3;
 
-    const bsRows = [
-      ['Cash & Cash Equivalents (Core Vault)', formatUSD(balanceSheet?.totalCurrentAssets)],
-      ['Total Assets', formatUSD(balanceSheet?.totalAssets)],
-      ['Total Liabilities (Pending Redemptions)', formatUSD(balanceSheet?.totalLiabilities)],
-      ["Contributed Share Capital", formatUSD(balanceSheet?.equity?.[0]?.amount)],
-      ["Retained Operating Surplus", formatUSD(balanceSheet?.equity?.[1]?.amount)],
-      ["Total Shareholders' Equity", formatUSD(balanceSheet?.totalShareholderEquity)],
-      ["Total Liabilities & Shareholders' Equity", formatUSD(balanceSheet?.totalLiabilitiesAndEquity)],
-    ];
+    const bsRows = isCompanyScope
+      ? [
+          ['Current Assets: Cash & Equivalents across Funds', formatUSD(balanceSheet?.totalCurrentAssets)],
+          ['Non-Current Assets: Portfolio Ventures & Projects', formatUSD(balanceSheet?.totalNonCurrentAssets)],
+          ['TOTAL COMPANY ASSETS', formatUSD(balanceSheet?.totalAssets)],
+          ['Total Liabilities (Pending Redemptions)', formatUSD(balanceSheet?.totalLiabilities)],
+          ["Contributed Share Capital (All Investments)", formatUSD(balanceSheet?.equity?.[0]?.amount)],
+          [balanceSheet?.equity?.[1]?.label || "Valuation Surplus & Retained Reserves", formatUSD(balanceSheet?.equity?.[1]?.amount)],
+          ["Total Shareholders' Equity", formatUSD(balanceSheet?.totalShareholderEquity)],
+          ["TOTAL LIABILITIES & SHAREHOLDERS' EQUITY", formatUSD(balanceSheet?.totalLiabilitiesAndEquity)],
+        ]
+      : [
+          ['Cash & Cash Equivalents (Vault)', formatUSD(balanceSheet?.totalCurrentAssets)],
+          ['Non-Current Assets (NAV)', formatUSD(balanceSheet?.totalNonCurrentAssets || 0)],
+          ['TOTAL ASSETS', formatUSD(balanceSheet?.totalAssets)],
+          ['Total Liabilities (Pending Redemptions)', formatUSD(balanceSheet?.totalLiabilities)],
+          ["Contributed Share Capital", formatUSD(balanceSheet?.equity?.[0]?.amount)],
+          [balanceSheet?.equity?.[1]?.label || "Valuation Surplus & Retained Reserves", formatUSD(balanceSheet?.equity?.[1]?.amount)],
+          ["Total Shareholders' Equity", formatUSD(balanceSheet?.totalShareholderEquity)],
+          ["TOTAL LIABILITIES & SHAREHOLDERS' EQUITY", formatUSD(balanceSheet?.totalLiabilitiesAndEquity)],
+        ];
 
     autoTable(doc, {
       startY: currentY,
@@ -511,6 +567,14 @@ export async function generateCoreQuarterlyStatementPDF(
         0: { cellWidth: 130 },
         1: { cellWidth: 'auto', halign: 'right', fontStyle: 'bold' },
       },
+      didParseCell: (data) => {
+        const text = data.cell.raw;
+        if (text === 'TOTAL COMPANY ASSETS' || text === 'TOTAL ASSETS' || text === "TOTAL LIABILITIES & SHAREHOLDERS' EQUITY") {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [254, 243, 199];
+          data.cell.styles.textColor = [120, 53, 15];
+        }
+      },
       margin: { left: margin, right: margin },
     });
 
@@ -521,7 +585,13 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('3. Statement of Cash Flows', margin, p2Y);
+    doc.text(
+      isCompanyScope
+        ? '3. Consolidated Statement of Cash Flows'
+        : '3. Statement of Cash Flows',
+      margin,
+      p2Y
+    );
     p2Y += 3;
 
     const cfRows = [
@@ -552,7 +622,13 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text("4. Statement of Shareholders' Equity", margin, p2Y);
+    doc.text(
+      isCompanyScope
+        ? "4. Consolidated Statement of Shareholders' Equity"
+        : "4. Statement of Shareholders' Equity",
+      margin,
+      p2Y
+    );
     p2Y += 3;
 
     const rf = shareholdersEquity?.rollforward;
@@ -586,18 +662,36 @@ export async function generateCoreQuarterlyStatementPDF(
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('5. Shareholder Ownership Schedule', margin, p3Y);
+    doc.text(
+      isCompanyScope
+        ? '5. Consolidated Shareholder Ownership Schedule'
+        : '5. Shareholder Ownership Schedule',
+      margin,
+      p3Y
+    );
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 116, 139);
-    doc.text(`Active Core Shareholders (${shareholdersEquity?.shareholderSchedule?.length || 0} Investors)`, margin, p3Y + 5);
+    doc.text(
+      isCompanyScope
+        ? `Consolidated Shareholder Register Across All Opportunities (${shareholdersEquity?.shareholderSchedule?.length || 0} Investors)`
+        : `Active Core Shareholders (${shareholdersEquity?.shareholderSchedule?.length || 0} Investors)`,
+      margin,
+      p3Y + 5
+    );
     p3Y += 8;
+
+    const shHeaders = isCompanyScope
+      ? [['#', 'Shareholder', 'Participated Holdings', 'Quarter Inflow', 'Contributed Capital', 'Ownership %']]
+      : [['#', 'Shareholder', 'Email', 'Quarter Inflow', 'Total Contributed', 'Ownership %']];
 
     const shRows = (shareholdersEquity?.shareholderSchedule || []).map((sh, i) => [
       i + 1,
       sh.name || 'Anonymous',
-      sh.email || 'N/A',
+      isCompanyScope
+        ? (sh.participatedOpportunities || []).map((o) => o.name).join(', ') || 'None'
+        : sh.email || 'N/A',
       formatUSD(sh.periodContributions),
       formatUSD(sh.endingBalance),
       `${sh.ownershipPercent}%`,
@@ -605,18 +699,18 @@ export async function generateCoreQuarterlyStatementPDF(
 
     autoTable(doc, {
       startY: p3Y,
-      head: [['#', 'Shareholder', 'Email', 'Quarter Inflow', 'Total Contributed', 'Ownership %']],
+      head: shHeaders,
       body: shRows,
       theme: 'striped',
       headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
       styles: { fontSize: 7.5, cellPadding: 2 },
       columnStyles: {
         0: { cellWidth: 8, halign: 'center' },
-        1: { cellWidth: 46, fontStyle: 'bold' },
+        1: { cellWidth: 38, fontStyle: 'bold' },
         2: { cellWidth: 50 },
         3: { cellWidth: 26, halign: 'right' },
-        4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
-        5: { cellWidth: 22, halign: 'right' },
+        4: { cellWidth: 32, halign: 'right', fontStyle: 'bold' },
+        5: { cellWidth: 20, halign: 'right' },
       },
       margin: { left: margin, right: margin },
     });

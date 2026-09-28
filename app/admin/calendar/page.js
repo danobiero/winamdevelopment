@@ -32,7 +32,7 @@ export default async function Page() {
           </h1>
         </div>
 
-        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-relaxed md:text-right">
+        <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-relaxed md:text-right">
           Managing{' '}
           <span className="text-slate-900">{opportunities?.length ?? 0}</span>{' '}
           Shareholder Meetings

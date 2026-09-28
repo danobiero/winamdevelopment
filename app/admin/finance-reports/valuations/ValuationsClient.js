@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createOpportunityValuation } from '@/app/_lib/actions';
 import { useToast } from '@/app/_lib/ToastContext';
 import {
@@ -40,7 +41,11 @@ function SubmitButton() {
   );
 }
 
-export default function ValuationsClient({ opportunities = [], initialValuations = [] }) {
+export default function ValuationsClient({
+  opportunities = [],
+  initialValuations = [],
+  investments = [],
+}) {
   const { showToast } = useToast();
   const router = useRouter();
   const formRef = useRef(null);
@@ -62,6 +67,14 @@ export default function ValuationsClient({ opportunities = [], initialValuations
 
   // Map opportunities to their latest current valuation
   const currentValuations = useMemo(() => {
+    // Calculate total shareholder investments grouped by opportunity_id
+    const investmentsByOpp = {};
+    (investments || []).forEach((inv) => {
+      const oppId = Number(inv.opportunity_id);
+      const amount = Number(inv.amount_invested ?? inv.total_committed ?? 0);
+      investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amount;
+    });
+
     return opportunities.map((opp) => {
       const oppVals = initialValuations
         .filter((v) => Number(v.opportunity_id) === Number(opp.id))
@@ -72,11 +85,12 @@ export default function ValuationsClient({ opportunities = [], initialValuations
         );
 
       const latest = oppVals[0];
+      const sumInvestments = investmentsByOpp[Number(opp.id)] || 0;
       const currentValue = latest
         ? Number(latest.total_asset_value)
-        : Number(opp.total_value || 0);
+        : sumInvestments;
 
-      const lastValuedDate = latest ? latest.valuation_date : opp.created_at;
+      const lastValuedDate = latest ? latest.valuation_date : null;
 
       return {
         opportunityId: opp.id,
@@ -84,12 +98,13 @@ export default function ValuationsClient({ opportunities = [], initialValuations
         type: opp.type || 'Standard',
         status: opp.status || 'Active',
         currentValue,
+        sumInvestments,
         lastValuedDate,
         hasValuationRecord: Boolean(latest),
         historyCount: oppVals.length,
       };
     });
-  }, [opportunities, initialValuations]);
+  }, [opportunities, initialValuations, investments]);
 
   const selectedOpp = useMemo(() => {
     if (!selectedOppId) return null;
@@ -97,6 +112,13 @@ export default function ValuationsClient({ opportunities = [], initialValuations
       (o) => String(o.opportunityId) === String(selectedOppId)
     );
   }, [selectedOppId, currentValuations]);
+
+  const totalPortfolioNAV = useMemo(() => {
+    return currentValuations.reduce(
+      (sum, opp) => sum + (Number(opp.currentValue) || 0),
+      0
+    );
+  }, [currentValuations]);
 
   return (
     <div className="space-y-8">
@@ -117,10 +139,21 @@ export default function ValuationsClient({ opportunities = [], initialValuations
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl">
-              {opportunities.length} Opportunities
-            </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-left sm:text-right bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200">
+              <span className="text-xs font-black text-slate-400 uppercase tracking-wider block">
+                Total Portfolio NAV
+              </span>
+              <span className="text-base font-black text-emerald-700 font-mono">
+                {formatCurrency(totalPortfolioNAV)}
+              </span>
+            </div>
+            <Link
+              href="/admin/finance-reports"
+              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            >
+              ← Financial Reports
+            </Link>
           </div>
         </div>
       </div>
@@ -170,7 +203,7 @@ export default function ValuationsClient({ opportunities = [], initialValuations
               {selectedOpp && (
                 <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex items-center justify-between animate-in fade-in duration-200">
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-500 block">
                       Current Valuation
                     </span>
                     <span className="text-sm font-black text-blue-900">
@@ -178,7 +211,7 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-500 block">
                       Effective Date
                     </span>
                     <span className="text-xs font-semibold text-slate-700">
@@ -187,7 +220,7 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                             'en-US',
                             { month: 'short', day: 'numeric', year: 'numeric' }
                           )
-                        : 'None'}
+                        : 'Total Invested'}
                     </span>
                   </div>
                 </div>
@@ -315,7 +348,7 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                             <div className="font-bold text-slate-900">
                               {opp.name}
                             </div>
-                            <div className="text-[11px] text-slate-400 font-medium">
+                            <div className="text-xs text-slate-400 font-medium">
                               Type: {opp.type}
                             </div>
                           </td>
@@ -339,12 +372,12 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-slate-400">Initial</span>
+                              <span className="text-slate-400">Total Invested</span>
                             )}
                           </td>
 
                           <td className="px-4 py-4 text-center">
-                            <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
                               {opp.status}
                             </span>
                           </td>
@@ -358,7 +391,7 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                                   behavior: 'smooth',
                                 });
                               }}
-                              className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider bg-white border border-slate-200 hover:border-blue-600 hover:text-blue-600 text-slate-700 rounded-lg transition-colors cursor-pointer"
+                              className="px-3 py-1.5 text-xs font-black uppercase tracking-wider bg-white border border-slate-200 hover:border-blue-600 hover:text-blue-600 text-slate-700 rounded-lg transition-colors cursor-pointer"
                             >
                               Update
                             </button>
@@ -367,6 +400,21 @@ export default function ValuationsClient({ opportunities = [], initialValuations
                       ))
                     )}
                   </tbody>
+                  {currentValuations.length > 0 && (
+                    <tfoot className="border-t-2 border-slate-200 bg-slate-50/90 font-bold">
+                      <tr>
+                        <td className="px-4 py-3.5 text-xs text-slate-800 uppercase tracking-wider">
+                          Total Company Portfolio NAV
+                        </td>
+                        <td className="px-4 py-3.5 text-sm font-black text-emerald-700 text-right font-mono whitespace-nowrap">
+                          {formatCurrency(totalPortfolioNAV)}
+                        </td>
+                        <td colSpan="3" className="px-4 py-3.5 text-xs text-slate-500 font-medium italic">
+                          Feeds directly into Total Company Assets on Financial Reports
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             </div>

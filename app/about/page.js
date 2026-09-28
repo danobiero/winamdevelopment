@@ -136,11 +136,11 @@ export default function Page() {
 
             {/* Motto Box */}
             <div className="relative border-l-4 border-blue-600 bg-blue-50/70 pl-3.5 pr-3 py-2.5 rounded-r-2xl">
-              <p className="text-xs xl:text-sm font-semibold text-blue-950 italic leading-snug">
+              <p className="text-xs sm:text-sm font-semibold text-blue-950 italic leading-snug">
                 "Building strength through diversified, community-driven
                 investment foundations."
               </p>
-              <p className="text-[10px] xl:text-[11px] uppercase tracking-wider mt-1.5 text-blue-600 font-black">
+              <p className="text-xs uppercase tracking-wider mt-1.5 text-blue-600 font-black">
                 The WINAM Development Motto
               </p>
             </div>
@@ -168,7 +168,7 @@ export default function Page() {
               <h2 className="text-lg xl:text-xl font-black text-slate-900 tracking-tight">
                 Investment Pillars
               </h2>
-              <p className="text-[11px] text-slate-500">Core strategic asset classes</p>
+              <p className="text-xs text-slate-500">Core strategic asset classes</p>
             </div>
             <div className="w-8 h-1 bg-blue-600 rounded-full" />
           </div>
@@ -186,11 +186,11 @@ export default function Page() {
                   >
                     {service.icon}
                   </div>
-                  <h3 className="text-xs xl:text-sm font-bold text-slate-900 mb-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 mb-1">
                     {service.title}
                   </h3>
                 </div>
-                <p className="text-[11px] xl:text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-slate-500 leading-relaxed">
                   {service.description}
                 </p>
               </div>
@@ -207,7 +207,7 @@ export default function Page() {
               <h2 className="text-lg xl:text-xl font-black text-slate-900 tracking-tight">
                 Governance & Trust
               </h2>
-              <p className="text-[11px] text-slate-500">Investor protection & security</p>
+              <p className="text-xs text-slate-500">Investor protection & security</p>
             </div>
             <div className="w-8 h-1 bg-blue-600 rounded-full" />
           </div>
@@ -227,11 +227,11 @@ export default function Page() {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   </svg>
                 </div>
-                <h3 className="text-xs xl:text-sm font-bold text-slate-900">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900">
                   Shareholder Agreement
                 </h3>
               </div>
-              <p className="text-[11px] xl:text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Governed by our Shareholder Operating Agreement. We provide
                 detailed quarterly reports to give all partners complete visibility into
                 asset performance and capital allocations.
@@ -256,11 +256,11 @@ export default function Page() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xs xl:text-sm font-bold text-slate-900">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900">
                   Confidentiality & Privacy
                 </h3>
               </div>
-              <p className="text-[11px] xl:text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Shareholder data and proprietary investment strategies are
                 strictly protected using enterprise-grade security across our
                 digital equity platforms.

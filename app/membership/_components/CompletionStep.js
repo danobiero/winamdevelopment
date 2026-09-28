@@ -37,8 +37,8 @@ export default function CompletionStep({ session }) {
               <ShieldCheckIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Shareholding</p>
-              <p className="text-xs font-bold text-slate-900 mt-0.5">$2,000 Core Met</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Shareholding</p>
+              <p className="text-sm font-bold text-slate-900 mt-0.5">$2,000 Core Met</p>
             </div>
           </div>
 
@@ -47,8 +47,8 @@ export default function CompletionStep({ session }) {
               <ChartBarIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Venture Access</p>
-              <p className="text-xs font-bold text-slate-900 mt-0.5">Selective Deals</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Venture Access</p>
+              <p className="text-sm font-bold text-slate-900 mt-0.5">Selective Deals</p>
             </div>
           </div>
 
@@ -57,8 +57,8 @@ export default function CompletionStep({ session }) {
               <SparklesIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</p>
-              <p className="text-xs font-bold text-emerald-700 mt-0.5">Full Member</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Status</p>
+              <p className="text-sm font-bold text-emerald-700 mt-0.5">Full Member</p>
             </div>
           </div>
         </div>

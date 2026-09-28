@@ -3,10 +3,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
   BookOpenIcon,
-  CalendarDaysIcon,
   CreditCardIcon,
   ArrowUturnLeftIcon,
-  UserIcon,
+  ClipboardDocumentListIcon,
   CalendarIcon,
   ChevronRightIcon,
   ChartBarIcon,
@@ -59,10 +58,10 @@ const adminCards = [
     textColor: 'text-rose-700',
   },
   {
-    name: 'Profile',
-    href: '/admin/profile',
-    icon: UserIcon,
-    description: 'Update your administrative settings',
+    name: 'Reports',
+    href: '/admin/finance-reports',
+    icon: ClipboardDocumentListIcon,
+    description: 'View financial statements and reports',
     color: 'bg-amber-500',
     lightColor: 'bg-amber-50',
     textColor: 'text-amber-700',
@@ -73,7 +72,7 @@ export default async function AdminHomePage() {
   const session = await auth();
 
   if (!session?.user?.adminId) {
-    redirect('/admin/login');
+    redirect('/admin-login');
   }
 
   return (
@@ -90,7 +89,7 @@ export default async function AdminHomePage() {
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 Admin <span className="text-blue-600">Console</span>
               </h1>
-              <p className="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-bold mt-1">
+              <p className="text-slate-500 text-xs uppercase tracking-[0.2em] font-bold mt-1">
                 Management Dashboard
               </p>
             </div>
@@ -150,7 +149,7 @@ export default async function AdminHomePage() {
                   </p>
                 </div>
 
-                <div className="hidden sm:flex mt-5 pt-4 border-t border-slate-50 items-center text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">
+                <div className="hidden sm:flex mt-5 pt-4 border-t border-slate-50 items-center text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">
                   Go to {name}
                 </div>
               </Link>

@@ -72,31 +72,31 @@ export default async function RefundsPage({ searchParams }) {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Refund <span className="text-blue-600">Requests</span>
           </h1>
-          <div className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {refunds.length} Total Records
           </div>
         </div>
 
         {/* STATUS KEY / LEGEND */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               Pending
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               Approved
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-indigo-500" />
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               Completed
             </span>
           </div>
@@ -111,7 +111,7 @@ export default async function RefundsPage({ searchParams }) {
             className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col space-y-4"
           >
             <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
+              <span className="text-xs font-mono text-slate-400 font-bold">
                 #{String(ref.id).slice(0, 8)}
               </span>
               <span className="text-sm font-black text-slate-900">
@@ -120,7 +120,7 @@ export default async function RefundsPage({ searchParams }) {
             </div>
 
             <div className="w-full">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Linked Booking
               </p>
               <Link
@@ -132,7 +132,7 @@ export default async function RefundsPage({ searchParams }) {
             </div>
 
             <div className="w-full">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Client
               </p>
               <p className="text-sm font-medium text-slate-700">
@@ -142,7 +142,7 @@ export default async function RefundsPage({ searchParams }) {
 
             <div className="grid grid-cols-1 gap-3 pt-2">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   Status
                 </p>
                 <StatusBadge status={ref.status} />
@@ -152,14 +152,14 @@ export default async function RefundsPage({ searchParams }) {
             <div className="flex flex-wrap gap-2 pt-4 mt-auto border-t border-slate-50">
               <Link
                 href={`/admin/refunds?view=${ref.id}&page=${page}`}
-                className="px-3 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
+                className="px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap"
               >
                 View Details
               </Link>
               {ref.status === 'pending' && (
                 <Link
                   href={`/admin/refunds?approved=${ref.id}&page=${page}`}
-                  className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
+                  className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
                 >
                   Approve Refund
                 </Link>
@@ -170,7 +170,7 @@ export default async function RefundsPage({ searchParams }) {
       </div>
 
       {/* --- DESKTOP TABLE VIEW --- */}
-      <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-100 text-xs table-fixed">
           <thead className="bg-slate-50">
             <tr>
@@ -200,7 +200,7 @@ export default async function RefundsPage({ searchParams }) {
                 key={ref.id}
                 className="hover:bg-blue-50/30 transition-colors group"
               >
-                <td className="px-4 py-4 font-mono text-[10px] text-slate-400 font-bold truncate">
+                <td className="px-4 py-4 font-mono text-xs text-slate-400 font-bold truncate">
                   #{String(ref.id).slice(0, 8)}
                 </td>
                 <td className="px-4 py-4">
@@ -227,7 +227,7 @@ export default async function RefundsPage({ searchParams }) {
                   <div className="flex justify-end items-center gap-3">
                     <Link
                       href={`/admin/refunds?view=${ref.id}&page=${page}`}
-                      className="text-blue-600 hover:underline font-bold uppercase text-[10px]"
+                      className="text-blue-600 hover:underline font-bold uppercase text-xs"
                     >
                       View
                     </Link>
@@ -236,7 +236,7 @@ export default async function RefundsPage({ searchParams }) {
                         <span className="text-slate-200">|</span>
                         <Link
                           href={`/admin/refunds?approved=${ref.id}&page=${page}`}
-                          className="bg-emerald-600 text-white px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm"
+                          className="bg-emerald-600 text-white px-2 py-1 rounded text-xs font-black uppercase shadow-sm"
                         >
                           Approve
                         </Link>
@@ -270,7 +270,7 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className={`px-2 py-0.5 rounded border text-[9px] font-black uppercase tracking-widest ${styles[status] || styles.pending}`}
+      className={`px-2 py-0.5 rounded border text-xs font-black uppercase tracking-widest ${styles[status] || styles.pending}`}
     >
       {status || 'pending'}
     </span>

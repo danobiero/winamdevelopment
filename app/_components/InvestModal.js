@@ -172,7 +172,7 @@ export default function InvestModal({
           </button>
         </div>
 
-        <div className="p-8 max-h-[85vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 md:p-8 max-h-[85vh] overflow-y-auto">
           {step === 1 ? (
             <form onSubmit={handleInvest} className="space-y-6">
               {/* AMOUNT INPUT - ORIGINAL STRIPE MODAL INPUT */}
@@ -302,7 +302,7 @@ export default function InvestModal({
                     <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-[11px] font-bold text-emerald-800 uppercase block">
+                          <span className="text-xs font-bold text-emerald-800 uppercase block">
                             Cash App Handle
                           </span>
                           <span className="text-lg font-mono font-black text-emerald-900">
@@ -328,7 +328,7 @@ export default function InvestModal({
                         </button>
                       </div>
 
-                      <div className="text-[11px] text-emerald-900/80 flex items-center justify-between pt-2 border-t border-emerald-200/60">
+                      <div className="text-xs text-emerald-900/80 flex items-center justify-between pt-2 border-t border-emerald-200/60">
                         <span>Associated Phone:</span>
                         <span className="font-mono font-bold">3463143469</span>
                       </div>
@@ -337,7 +337,7 @@ export default function InvestModal({
                     <div className="bg-purple-50/60 border border-purple-200/80 rounded-2xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-[11px] font-bold text-purple-900 uppercase block">
+                          <span className="text-xs font-bold text-purple-900 uppercase block">
                             Zelle Phone
                           </span>
                           <span className="text-base font-mono font-black text-purple-950">
@@ -365,7 +365,7 @@ export default function InvestModal({
 
                       <div className="flex items-center justify-between pt-2 border-t border-purple-200/60">
                         <div className="overflow-hidden">
-                          <span className="text-[11px] font-bold text-purple-900 uppercase block">
+                          <span className="text-xs font-bold text-purple-900 uppercase block">
                             Zelle Email
                           </span>
                           <span className="text-xs font-semibold text-purple-950 truncate block">
@@ -408,7 +408,7 @@ export default function InvestModal({
                       <button
                         type="button"
                         onClick={() => handleCopy(memoText, 'memo')}
-                        className="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm"
+                        className="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
                       >
                         {copiedField === 'memo' ? (
                           <>
@@ -428,7 +428,7 @@ export default function InvestModal({
                       {memoText}
                     </div>
 
-                    <p className="text-[11px] text-amber-900/80 leading-relaxed">
+                    <p className="text-xs text-amber-900/80 leading-relaxed">
                       Please enter this exact memo when making the transfer so our team can immediately credit your investment.
                     </p>
                   </div>

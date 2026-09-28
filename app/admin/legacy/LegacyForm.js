@@ -129,7 +129,7 @@ export default function LegacyForm({ opportunities = [] }) {
               Personal & contact credentials to match on Google sign-in
             </p>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
             Required For Match
           </span>
         </div>
@@ -172,7 +172,7 @@ export default function LegacyForm({ opportunities = [] }) {
               placeholder="e.g. investor@gmail.com"
               className="w-full px-4 py-3 sm:py-3.5 bg-slate-50/70 border border-slate-200 text-slate-900 font-medium text-sm sm:text-base rounded-xl shadow-2xs hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400"
             />
-            <p className="text-[11px] text-slate-400 font-medium">
+            <p className="text-xs text-slate-400 font-medium">
               The exact email the investor will use to sign in via Google.
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function LegacyForm({ opportunities = [] }) {
               Historical allocation(s) to transfer into live investments. One legacy shareholder can hold multiple opportunities.
             </p>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg self-start sm:self-auto">
+          <span className="text-xs font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg self-start sm:self-auto">
             Direct Credit
           </span>
         </div>
@@ -275,7 +275,7 @@ export default function LegacyForm({ opportunities = [] }) {
               >
                 <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black flex items-center justify-center">
+                    <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 text-xs font-black flex items-center justify-center">
                       {index + 1}
                     </span>
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -296,9 +296,9 @@ export default function LegacyForm({ opportunities = [] }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                   {/* Opportunity Selection */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
                       <span>Allocated Opportunity</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Required</span>
+                      <span className="text-xs text-slate-400 font-normal">Required</span>
                     </label>
                     <select
                       value={item.opportunityId}
@@ -316,7 +316,7 @@ export default function LegacyForm({ opportunities = [] }) {
 
                   {/* Invested Amount */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
                       <BanknotesIcon className="h-3.5 w-3.5 text-emerald-600" />
                       <span>Invested Amount ($)</span>
                     </label>
@@ -342,7 +342,7 @@ export default function LegacyForm({ opportunities = [] }) {
 
                   {/* Start Date */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
                       <CalendarDaysIcon className="h-3.5 w-3.5 text-blue-600" />
                       <span>Investment Start Date</span>
                     </label>

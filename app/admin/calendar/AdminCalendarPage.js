@@ -121,7 +121,7 @@ export default function AdminCalendarPage({
               className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 rounded-lg shadow-sm transition-all disabled:opacity-50 active:scale-95"
             >
               <SyncIcon isPending={isSyncing} />
-              <span className="text-[9px] font-black uppercase tracking-widest">
+              <span className="text-xs font-black uppercase tracking-widest">
                 {isSyncing ? 'Syncing' : 'Reconcile'}
               </span>
             </button>

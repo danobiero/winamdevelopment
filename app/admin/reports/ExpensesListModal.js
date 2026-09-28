@@ -227,7 +227,7 @@ export default function ExpensesListModal({
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 text-slate-700 uppercase font-black text-[10px] tracking-wider border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 uppercase font-black text-xs tracking-wider border-b border-slate-200">
                   <tr>
                     <th className="px-3.5 py-2.5">Date</th>
                     <th className="px-3.5 py-2.5">Opportunity</th>
@@ -248,7 +248,7 @@ export default function ExpensesListModal({
                           {exp.opportunities?.name || `Opportunity #${exp.opportunity_id || 'N/A'}`}
                         </span>
                         {exp.opportunities?.type && (
-                          <span className="text-[10px] text-slate-400 block">
+                          <span className="text-xs text-slate-500 block">
                             {exp.opportunities.type}
                           </span>
                         )}
@@ -257,7 +257,7 @@ export default function ExpensesListModal({
                         {exp.vendor || '—'}
                       </td>
                       <td className="px-3.5 py-2.5 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
                           {exp.category}
                         </span>
                       </td>

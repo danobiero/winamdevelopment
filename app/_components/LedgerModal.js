@@ -35,17 +35,17 @@ function LedgerModal({ shareholderId, onClose }) {
    * -------------------------------------------------------------
    */
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4 md:p-6">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-xl p-4 sm:p-6 max-h-[90vh] flex flex-col">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-blue-950">
+        <div className="flex justify-between items-center mb-4 sm:mb-6 shrink-0">
+          <h2 className="text-lg sm:text-xl font-bold text-blue-950">
             Transaction Ledger
           </h2>
 
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-slate-100 transition"
+            className="p-1 rounded-md hover:bg-slate-100 transition cursor-pointer"
           >
             <XMarkIcon className="h-5 w-5 text-slate-500" />
           </button>
@@ -61,7 +61,7 @@ function LedgerModal({ shareholderId, onClose }) {
             No transactions found.
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[500px] border border-slate-200 rounded-xl">
+          <div className="overflow-x-auto max-h-[500px] border border-slate-200 rounded-xl flex-1">
             <table className="min-w-full text-sm">
               {/* HEADER */}
               <thead className="bg-slate-100 text-xs uppercase text-slate-600 sticky top-0 z-10">

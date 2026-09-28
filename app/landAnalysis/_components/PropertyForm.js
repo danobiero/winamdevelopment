@@ -53,7 +53,7 @@ export default function PropertyForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-6xl mx-auto p-10 bg-white rounded-3xl shadow-xl border border-gray-100"
+      className="max-w-6xl mx-auto p-4 sm:p-6 md:p-10 bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100"
     >
       {/* 🔹 SECTION 1: FULL WIDTH IDENTITY */}
       <div className="mb-12">
@@ -65,7 +65,7 @@ export default function PropertyForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">
+          <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
             Official Address or Parcel ID
           </label>
           <input
@@ -88,7 +88,7 @@ export default function PropertyForm({
               </label>
 
               {MULTI_SELECT.includes(cat.name) && (
-                <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md border border-blue-100 uppercase tracking-tighter">
+                <span className="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md border border-blue-100 uppercase tracking-tighter">
                   Multi-Select
                 </span>
               )}
@@ -112,7 +112,7 @@ export default function PropertyForm({
                       <span className="text-sm font-medium text-gray-600">
                         {opt.name}
                       </span>
-                      <span className="text-[10px] font-mono text-blue-500">
+                      <span className="text-xs font-mono text-blue-500">
                         Weight: +{opt.weight}
                       </span>
                     </div>
@@ -156,7 +156,7 @@ export default function PropertyForm({
       </div>
 
       {/* 🔹 SUBMIT DRAWER */}
-      <div className="mt-16 pt-8 border-t border-gray-100 flex items-center justify-between">
+      <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-xs text-gray-400 max-w-xs italic">
           Data entries for <b>FLOW-NET</b> are processed in real-time. Please
           verify all weights before submission.

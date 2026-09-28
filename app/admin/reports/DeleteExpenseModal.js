@@ -31,7 +31,7 @@ export default function DeleteExpenseModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-5"
+        className="bg-white rounded-3xl p-4 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Warning Icon Badge */}
@@ -59,7 +59,7 @@ export default function DeleteExpenseModal({
               </span>
             </div>
             {expense.category && (
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200/80 text-slate-700">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700">
                 {expense.category}
               </span>
             )}

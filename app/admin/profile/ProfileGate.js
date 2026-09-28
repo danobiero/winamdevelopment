@@ -102,7 +102,7 @@ export default function ProfileGate({ admin }) {
             type="button"
             onClick={handleSendCode}
             disabled={sending || cooldown > 0}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {sending
               ? 'Processing...'
@@ -113,7 +113,7 @@ export default function ProfileGate({ admin }) {
 
           {/* INPUT: OTP FIELD */}
           <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
               Enter 6-Digit Code
             </label>
 
@@ -132,7 +132,7 @@ export default function ProfileGate({ admin }) {
 
           {error && (
             <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl animate-shake">
-              <p className="text-[10px] font-black text-rose-600 text-center uppercase tracking-wider">
+              <p className="text-xs font-black text-rose-600 text-center uppercase tracking-wider">
                 {error}
               </p>
             </div>
@@ -143,7 +143,7 @@ export default function ProfileGate({ admin }) {
             type="button"
             onClick={handleVerifyCode}
             disabled={verifying || code.length < 4}
-            className="w-full py-4 bg-[#000033] hover:bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl transition-all active:scale-[0.97] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+            className="w-full py-4 bg-[#000033] hover:bg-black text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-xl transition-all active:scale-[0.97] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
           >
             {verifying ? 'Verifying...' : 'Unlock Profile Settings'}
           </button>
@@ -151,7 +151,7 @@ export default function ProfileGate({ admin }) {
       </div>
 
       {/* SECURE FOOTER */}
-      <p className="mt-6 text-center text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+      <p className="mt-6 text-center text-xs font-bold text-slate-300 uppercase tracking-widest">
         Secure Admin Gateway • Encrypted Session
       </p>
     </div>

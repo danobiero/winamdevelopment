@@ -60,7 +60,7 @@ export default function FullViewButton({ onLoad }) {
       {/* Logic fixed: using standard && instead of a broken ternary */}
       {error && (
         <div className="relative h-0 w-full">
-          <p className="absolute right-0 top-1 text-[10px] font-bold uppercase tracking-wider text-red-500 whitespace-nowrap">
+          <p className="absolute right-0 top-1 text-xs font-bold uppercase tracking-wider text-red-500 whitespace-nowrap">
             {error}
           </p>
         </div>

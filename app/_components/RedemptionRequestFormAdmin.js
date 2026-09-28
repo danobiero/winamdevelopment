@@ -51,9 +51,9 @@ export default function RedemptionRequestFormAdmin({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative border border-gray-100">
-        <h2 className="text-2xl font-black mb-2 text-center text-blue-900">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-3 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 max-h-[90vh] overflow-y-auto relative border border-gray-100">
+        <h2 className="text-xl sm:text-2xl font-black mb-2 text-center text-blue-900">
           Admin Redemption
         </h2>
         <p className="text-sm text-gray-500 text-center mb-6">
@@ -98,7 +98,7 @@ export default function RedemptionRequestFormAdmin({
                 maxLength={500}
                 className="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
               />
-              <p className="text-[10px] text-gray-400 text-right mt-1">
+              <p className="text-xs text-gray-400 text-right mt-1">
                 {reason.length}/500
               </p>
             </div>

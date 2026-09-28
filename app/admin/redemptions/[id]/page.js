@@ -65,7 +65,7 @@ export default async function RedemptionEditPage({ params }) {
             <span>Redemption Information</span>
             {/* ADDED: Current Status Badge */}
             <span
-              className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
+              className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest ${
                 redemption.status === 'approved'
                   ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                   : redemption.status === 'completed'

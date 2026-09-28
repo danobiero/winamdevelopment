@@ -261,7 +261,7 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
       </nav>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 px-2 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)] transition-colors duration-200">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t-2 border-slate-200/90 dark:border-slate-800 z-50 px-2 pb-safe shadow-[0_-4px_12px_rgba(0,0,0,0.08)] transition-colors duration-200">
         <ul className="flex justify-around items-center h-16">
           {allNavLinks.slice(0, 5).map((link) => {
             const isActive =
@@ -273,23 +273,23 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
                   href={link.href}
                   className={`flex flex-col items-center justify-center gap-1 h-full transition-all duration-300 ${
                     isActive
-                      ? 'text-primary-900 dark:text-blue-400 scale-105 font-bold'
-                      : 'text-primary-400 dark:text-slate-400 hover:text-primary-900 dark:hover:text-slate-200'
+                      ? 'text-blue-600 dark:text-blue-400 scale-105 font-bold'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold'
                   }`}
                 >
                   <div
                     className={`p-1.5 rounded-lg transition-colors duration-300 relative ${
-                      isActive ? 'bg-primary-50 dark:bg-slate-800' : ''
+                      isActive ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-bold shadow-sm shadow-blue-500/20' : ''
                     }`}
                   >
                     {link.icon}
                     {link.badge > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full">
+                      <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-xs font-bold px-1.5 rounded-full shadow-sm">
                         {link.badge}
                       </span>
                     )}
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-tighter truncate max-w-[55px]">
+                  <span className="text-xs font-bold uppercase tracking-tight truncate max-w-[65px]">
                     {link.name}
                   </span>
                 </Link>
@@ -301,17 +301,17 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
           <li className="flex-1 relative">
             <button
               onClick={() => setIsMoreOpen(true)}
-              className="flex flex-col items-center justify-center gap-1 w-full h-full text-primary-400 dark:text-slate-400 hover:text-primary-900 dark:hover:text-slate-200 transition-all cursor-pointer"
+              className="flex flex-col items-center justify-center gap-1 w-full h-full text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-all cursor-pointer"
             >
               <div className="p-1.5 rounded-lg relative">
                 <Bars3Icon className="h-5 w-5" />
                 {supportCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full">
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-xs font-bold px-1.5 rounded-full shadow-sm">
                     {supportCount}
                   </span>
                 )}
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-tighter">
+              <span className="text-xs font-bold uppercase tracking-tight">
                 More
               </span>
             </button>
@@ -360,7 +360,7 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
                       </div>
                       <div className="flex items-center gap-2">
                         {groupBadge > 0 && !isOpen && (
-                          <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                          <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
                             {groupBadge}
                           </span>
                         )}
@@ -384,16 +384,22 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
                               key={`drawer-${group.category}-${link.name}`}
                               href={link.href}
                               onClick={() => setIsMoreOpen(false)}
-                              className={`flex items-center gap-2.5 p-2.5 rounded-xl font-bold text-xs transition-all ${
+                              className={`flex items-center gap-2.5 p-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
                                 isActive
-                                  ? 'bg-primary-900 dark:bg-blue-600 text-white shadow-md'
-                                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
                               }`}
                             >
-                              <span>{link.icon}</span>
+                              <span
+                                className={
+                                  isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'
+                                }
+                              >
+                                {link.icon}
+                              </span>
                               <span className="truncate">{link.name}</span>
                               {link.badge > 0 && (
-                                <span className="ml-auto bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                                <span className="ml-auto bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                                   {link.badge}
                                 </span>
                               )}

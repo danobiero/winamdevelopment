@@ -133,7 +133,7 @@ export default function EditLessonFormClient({ lesson, images, onSaved }) {
         <div className="flex flex-col md:flex-row gap-6 items-start mt-3">
           {/* Live Preview */}
           <div className="flex-shrink-0">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
               Selected Preview
             </p>
             <div className="relative h-40 w-40 rounded-2xl overflow-hidden border-2 border-blue-100 shadow-inner bg-slate-50">
@@ -150,7 +150,7 @@ export default function EditLessonFormClient({ lesson, images, onSaved }) {
 
           {/* Gallery Grid */}
           <div className="flex-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
               Change Image
             </p>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-40 overflow-y-auto p-2 border border-slate-100 rounded-xl bg-slate-50/50">

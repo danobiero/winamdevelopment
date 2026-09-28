@@ -119,7 +119,7 @@ export default function RefundRequestForm({
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Refund Amount Display - Uses displayRefund helper */}
             <div className="bg-primary-50 p-4 rounded-xl border border-primary-100">
-              <label className="block text-[10px] uppercase tracking-widest font-bold text-primary-400 mb-1">
+              <label className="block text-xs uppercase tracking-widest font-bold text-primary-400 mb-1">
                 Estimated Refund
               </label>
               <span className="text-2xl font-black text-logo-100">
@@ -144,7 +144,7 @@ export default function RefundRequestForm({
                   text-sm leading-relaxed
                 "
               />
-              <p className="text-[10px] text-primary-300 mt-2 italic">
+              <p className="text-xs text-primary-400 mt-2 italic">
                 * This reason is calculated based on your booking changes.
               </p>
             </div>

@@ -61,13 +61,13 @@ export default function TicketList({ tickets }) {
         <table className="hidden md:table w-full min-w-[640px]">
           <thead className="bg-slate-50 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+              <th className="px-6 py-3 text-left text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+              <th className="px-6 py-3 text-left text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
                 Ticket Info
               </th>
-              <th className="px-6 py-3 text-right text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+              <th className="px-6 py-3 text-right text-xs font-black text-slate-400 uppercase tracking-[0.15em]">
                 Action
               </th>
             </tr>
@@ -86,13 +86,13 @@ export default function TicketList({ tickets }) {
 
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 font-mono tracking-tighter">
+                      <span className="text-xs font-bold text-slate-400 font-mono tracking-tighter">
                         #{ticket.id}
                       </span>
                       <span className="text-sm font-bold text-slate-900 truncate max-w-[200px] lg:max-w-md">
                         {ticket.subject}
                       </span>
-                      <span className="text-[11px] font-medium text-slate-500 italic">
+                      <span className="text-xs font-medium text-slate-500 italic">
                         {ticket.student_name}
                       </span>
                     </div>
@@ -101,7 +101,7 @@ export default function TicketList({ tickets }) {
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/admin/support/${ticket.id}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg transition-transform active:scale-95"
+                      className="inline-flex items-center px-3 py-1.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-lg transition-transform active:scale-95"
                     >
                       Manage
                     </Link>
@@ -133,7 +133,7 @@ export default function TicketList({ tickets }) {
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
                   <StatusIndicator status={ticket.status} />
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
+                  <span className="text-xs font-mono font-bold text-slate-400 uppercase">
                     #{ticket.id}
                   </span>
                 </div>
@@ -142,7 +142,7 @@ export default function TicketList({ tickets }) {
               <h3 className="text-sm font-bold text-slate-900 mb-1 leading-snug">
                 {ticket.subject}
               </h3>
-              <p className="text-[11px] font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500">
                 {ticket.student_name}
               </p>
             </Link>
@@ -161,7 +161,7 @@ export default function TicketList({ tickets }) {
         <div className="px-4 py-3 bg-white border-t border-slate-100 flex items-center justify-between sm:px-6">
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 Showing{' '}
                 <span className="text-slate-900">{indexOfFirstTicket + 1}</span>{' '}
                 to{' '}
@@ -177,7 +177,7 @@ export default function TicketList({ tickets }) {
               <button
                 onClick={() => paginate(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-all"
+                className="px-3 py-1.5 text-xs font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-all"
               >
                 Prev
               </button>
@@ -185,7 +185,7 @@ export default function TicketList({ tickets }) {
               <button
                 onClick={() => paginate(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-all"
+                className="px-3 py-1.5 text-xs font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-all"
               >
                 Next
               </button>
@@ -200,7 +200,7 @@ export default function TicketList({ tickets }) {
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
               {currentPage} / {totalPages}
             </span>
             <button
@@ -229,7 +229,7 @@ function StatusIndicator({ status }) {
   return (
     <div className="flex items-center gap-2">
       <div className={`h-2 w-2 rounded-full ${color}`} />
-      <span className="hidden lg:inline text-[10px] font-black uppercase text-slate-500 tracking-tighter">
+      <span className="hidden lg:inline text-xs font-black uppercase text-slate-500 tracking-tighter">
         {label}
       </span>
     </div>

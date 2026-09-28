@@ -112,7 +112,7 @@ export default function FilterPanel({
       <div className={`p-4 flex flex-wrap gap-4 items-end transition-opacity duration-200 ${isPending ? 'opacity-70 pointer-events-none' : 'opacity-100'}`}>
         {/* Generic Search Input */}
         <div className="flex-1 min-w-[200px]">
-          <label htmlFor="genericSearchInput" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+          <label htmlFor="genericSearchInput" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
             {searchLabel}
           </label>
           <div className="relative">
@@ -138,7 +138,7 @@ export default function FilterPanel({
         {/* Opportunity Filter (Conditional) */}
         {opportunities && (
           <div className="w-full sm:w-56">
-            <label htmlFor="filterOpportunity" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+            <label htmlFor="filterOpportunity" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
               Filter by Opportunity
             </label>
             <select
@@ -161,7 +161,7 @@ export default function FilterPanel({
         {showDateRange && (
           <>
             <div className="w-full sm:w-40">
-              <label htmlFor="startDate" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+              <label htmlFor="startDate" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
                 Start Date
               </label>
               <input
@@ -174,7 +174,7 @@ export default function FilterPanel({
             </div>
 
             <div className="w-full sm:w-40">
-              <label htmlFor="endDate" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+              <label htmlFor="endDate" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
                 End Date
               </label>
               <input

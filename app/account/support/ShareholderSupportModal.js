@@ -78,7 +78,7 @@ export default function ShareholderSupportModal({ ticket, messages, onClose }) {
         {/* Header */}
         <div className="px-5 py-4 border-b flex justify-between items-center bg-white shrink-0">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+            <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">
               Ticket Discussion
             </span>
             <h2 className="text-lg font-black text-[#000033] leading-tight truncate">
@@ -122,7 +122,7 @@ export default function ShareholderSupportModal({ ticket, messages, onClose }) {
                     {msg.message}
                   </div>
 
-                  <span className="text-[10px] text-slate-400 mt-1 px-1">
+                  <span className="text-xs text-slate-400 mt-1 px-1">
                     {isAdmin ? 'Support Team' : 'You'}
                   </span>
                 </div>

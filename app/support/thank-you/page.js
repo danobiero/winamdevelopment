@@ -50,7 +50,7 @@ export default function ThankYouPage() {
         </div>
 
         {/* Subtle Footer */}
-        <p className="text-[11px] sm:text-xs text-slate-400 italic">
+        <p className="text-xs sm:text-xs text-slate-400 italic">
           Typical response time: Under 24 hours.
         </p>
       </div>

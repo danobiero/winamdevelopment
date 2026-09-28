@@ -82,7 +82,7 @@ export default function FullViewDisplay({ data }) {
                     {end ? format(end, 'h:mm a') : 'TBD'}
                   </p>
                 )}
-                <p className="text-[10px] font-bold text-slate-400 uppercase mt-3">
+                <p className="text-xs font-bold text-slate-400 uppercase mt-3">
                   Committed Investors ({row.investments?.length || 0})
                 </p>
               </div>

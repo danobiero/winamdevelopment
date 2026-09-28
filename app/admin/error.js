@@ -27,7 +27,7 @@ export default function AdminError({ error, reset }) {
           </p>
           {error?.message && (
             <div className="mt-3 p-3 bg-rose-50 border border-rose-200/80 rounded-xl text-left">
-              <span className="text-[10px] font-mono font-bold text-rose-700 uppercase tracking-wider block">
+              <span className="text-xs font-mono font-bold text-rose-700 uppercase tracking-wider block">
                 Diagnostics:
               </span>
               <span className="text-xs font-mono text-rose-800 break-words block mt-0.5">

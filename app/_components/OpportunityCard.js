@@ -55,19 +55,19 @@ export default function OpportunityCard({ opportunity }) {
         {/* Floating Badges */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 pointer-events-none">
           {is_featured && (
-            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-black text-[9px] xl:text-[10px] font-black uppercase tracking-wider shadow-sm">
-              <StarIcon className="h-2.5 w-2.5 xl:h-3 xl:w-3" />
+            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-black text-xs font-black uppercase tracking-wider shadow-sm">
+              <StarIcon className="h-3 w-3" />
               Featured
             </div>
           )}
-          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-sm text-slate-900 text-[9px] xl:text-[10px] font-black uppercase tracking-wider shadow-sm border border-white">
-            <ShieldCheckIcon className="h-2.5 w-2.5 xl:h-3 xl:w-3 text-blue-600" />
+          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-sm text-slate-900 text-xs font-black uppercase tracking-wider shadow-sm border border-white">
+            <ShieldCheckIcon className="h-3 w-3 text-blue-600" />
             {typeLabel}
           </div>
         </div>
 
         <div
-          className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[9px] xl:text-[10px] font-black uppercase tracking-widest ${
+          className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${
             statusStyles[status] || statusStyles.inactive
           }`}
         >
@@ -95,7 +95,7 @@ export default function OpportunityCard({ opportunity }) {
               <div className="p-1 xl:p-1.5 bg-emerald-50 rounded-lg">
                 <CurrencyDollarIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-emerald-600" />
               </div>
-              <span className="font-medium text-[11px] xl:text-xs text-slate-500">
+              <span className="font-medium text-xs text-slate-500">
                 Minimum
               </span>
             </div>
@@ -109,7 +109,7 @@ export default function OpportunityCard({ opportunity }) {
               <div className="p-1 xl:p-1.5 bg-blue-50 rounded-lg">
                 <ArrowTrendingUpIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-blue-600" />
               </div>
-              <span className="font-medium text-[11px] xl:text-xs text-slate-500">
+              <span className="font-medium text-xs text-slate-500">
                 Expected Return
               </span>
             </div>
@@ -123,7 +123,7 @@ export default function OpportunityCard({ opportunity }) {
               <div className="p-1 xl:p-1.5 bg-purple-50 rounded-lg">
                 <ClockIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4 text-purple-600" />
               </div>
-              <span className="font-medium text-[11px] xl:text-xs text-slate-500">
+              <span className="font-medium text-xs text-slate-500">
                 Term
               </span>
             </div>
@@ -140,7 +140,7 @@ export default function OpportunityCard({ opportunity }) {
           type="button"
           onClick={() => setShowDetails(true)}
           onMouseEnter={() => router.prefetch(`/opportunities/${id}`)}
-          className="flex items-center justify-center gap-1.5 xl:gap-2 w-full py-2 xl:py-2.5 rounded-xl text-[11px] xl:text-xs font-black uppercase tracking-[0.12em] bg-slate-900 text-white hover:bg-blue-600 transition-all duration-300 shadow-xs group-hover:shadow-blue-200 active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-1.5 xl:gap-2 w-full py-2 xl:py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] bg-slate-900 text-white hover:bg-blue-600 transition-all duration-300 shadow-xs group-hover:shadow-blue-200 active:scale-95 cursor-pointer"
         >
           <span>View Details</span>
           <ArrowRightIcon className="h-3.5 w-3.5" />

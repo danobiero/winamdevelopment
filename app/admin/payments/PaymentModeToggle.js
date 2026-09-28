@@ -46,7 +46,7 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
               Payment Gateway Mode
             </span>
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                 currentMode === 'stripe'
                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
@@ -123,7 +123,7 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
             <span className="text-slate-400 font-medium block">Zelle Recipient</span>
             <span className="font-bold text-slate-800 font-mono">
               346-314-3469 <br />
-              <span className="text-[11px] text-slate-600 font-sans">winamdevelopmentgroup@gmail.com</span>
+              <span className="text-xs text-slate-600 font-sans">winamdevelopmentgroup@gmail.com</span>
             </span>
           </div>
         </div>

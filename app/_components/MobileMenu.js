@@ -12,13 +12,13 @@ export default function MobileMenu({ session }) {
       {/* HAMBURGER BUTTON */}
       <button
         onClick={() => setOpen(!open)}
-        className="p-1.5 sm:p-2 border rounded-xl border-slate-200 bg-white/90 backdrop-blur-sm shadow-xs transition-all active:scale-95 cursor-pointer hover:bg-slate-50"
+        className="p-2 sm:p-2.5 border-2 rounded-xl border-blue-600 bg-blue-50/50 text-blue-700 shadow-sm transition-all active:scale-95 cursor-pointer hover:bg-blue-100/60 hover:border-blue-700"
         aria-label="Toggle Menu"
       >
         {open ? (
-          <XMarkIcon className="w-5 h-5 text-slate-900" />
+          <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700" />
         ) : (
-          <Bars3Icon className="w-5 h-5 text-slate-900" />
+          <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700" />
         )}
       </button>
 
@@ -27,11 +27,11 @@ export default function MobileMenu({ session }) {
         <>
           {/* Backdrop to close menu when clicking outside */}
           <div
-            className="fixed inset-0 z-40 bg-black/10 backdrop-blur-2xs"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-2xs"
             onClick={() => setOpen(false)}
           />
 
-          <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 rounded-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+          <div className="absolute right-0 mt-2 w-60 sm:w-64 bg-white shadow-2xl border-2 border-blue-100 rounded-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
             <Navigation
               session={session}
               isMobile

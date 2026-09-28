@@ -199,7 +199,7 @@ export default function DocumentsClient({ initialDocuments = [] }) {
 
           {/* Quick Date Display & Reset */}
           <div className="flex items-center gap-3">
-            <div className="text-[11px] text-slate-500 font-mono bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
+            <div className="text-xs text-slate-500 font-mono bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
               Period: <span className="font-bold text-slate-800">{periodDisplay.start}</span> to{' '}
               <span className="font-bold text-slate-800">{periodDisplay.end}</span>
             </div>
@@ -208,7 +208,7 @@ export default function DocumentsClient({ initialDocuments = [] }) {
               <button
                 type="button"
                 onClick={handleResetFilter}
-                className="text-[11px] font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
+                className="text-xs font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
               >
                 Reset
               </button>
@@ -284,7 +284,7 @@ export default function DocumentsClient({ initialDocuments = [] }) {
                     <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider truncate">
                       {doc.opportunities?.name || 'Investment Opportunity'}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] text-slate-400 font-medium">
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-400 font-medium">
                       <span className="font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
                         {periodInfo.year} {periodInfo.quarter}
                       </span>

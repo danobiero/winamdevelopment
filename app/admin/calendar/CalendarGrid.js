@@ -56,7 +56,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
   if (!Array.isArray(events)) {
     return (
       <div className="p-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-        <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">
+        <p className="text-xs font-black uppercase tracking-widest text-rose-500">
           Data Error: Invalid Event Stream
         </p>
       </div>
@@ -178,7 +178,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
 
           <button
             onClick={() => setCurrentMonth(startOfMonth(new Date()))}
-            className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
+            className="px-3 py-1 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
           >
             Today
           </button>
@@ -209,7 +209,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
           <div
             key={d}
-            className="py-2.5 text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-r border-slate-100 last:border-r-0 bg-white"
+            className="py-2.5 text-center text-xs font-black uppercase tracking-[0.2em] text-slate-400 border-b border-r border-slate-100 last:border-r-0 bg-white"
           >
             {d}
           </div>
@@ -234,7 +234,7 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
               <div className="flex justify-between items-start mb-2">
                 <span
                   className={`
-                  text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm
+                  text-xs font-black px-1.5 py-0.5 rounded-md shadow-sm
                   ${isTodayDate ? 'bg-[#000033] text-white' : 'text-slate-400'}
                 `}
                 >
@@ -265,18 +265,18 @@ export default function CalendarGrid({ events, onError, onAddAvailability }) {
                         ${isTodayDate ? 'border-amber-200/50' : ''}
                       `}
                     >
-                      <div className="text-[9px] font-black uppercase leading-tight truncate">
+                      <div className="text-xs font-black uppercase leading-tight truncate">
                         {ev.title || ev.name}{' '}
                         {/* Support both naming conventions */}
                       </div>
-                      <div className="text-[8px] font-bold opacity-70 tracking-tighter">
+                      <div className="text-xs font-bold opacity-70 tracking-tighter">
                         {formatTime(ev.start_time || ev.created_at)}
                       </div>
                     </button>
                   );
                 })}
                 {dayEvents.length > 4 && (
-                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center pt-1">
+                  <div className="text-xs font-black text-slate-400 uppercase tracking-widest text-center pt-1">
                     + {dayEvents.length - 4} more
                   </div>
                 )}

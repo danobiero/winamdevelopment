@@ -102,7 +102,7 @@ export default function OpportunityDetailsModal({ opportunity, isOpen, onClose }
               <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">
                 {name}
               </h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 {typeLabel} Opportunity
               </p>
             </div>
@@ -154,7 +154,7 @@ export default function OpportunityDetailsModal({ opportunity, isOpen, onClose }
             <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100/80">
               <div className="flex items-center gap-1.5 text-slate-500 mb-1">
                 <CurrencyDollarIcon className="h-4 w-4 text-emerald-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Min. Investment
                 </span>
               </div>
@@ -166,7 +166,7 @@ export default function OpportunityDetailsModal({ opportunity, isOpen, onClose }
             <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100/80">
               <div className="flex items-center gap-1.5 text-slate-500 mb-1">
                 <ArrowTrendingUpIcon className="h-4 w-4 text-blue-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Target Return
                 </span>
               </div>
@@ -178,7 +178,7 @@ export default function OpportunityDetailsModal({ opportunity, isOpen, onClose }
             <div className="col-span-2 sm:col-span-1 bg-slate-50 p-3.5 rounded-2xl border border-slate-100/80">
               <div className="flex items-center gap-1.5 text-slate-500 mb-1">
                 <ClockIcon className="h-4 w-4 text-purple-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Duration
                 </span>
               </div>

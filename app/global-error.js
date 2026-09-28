@@ -57,7 +57,7 @@ export default function GlobalError({ error, reset }) {
             </button>
           </div>
 
-          <p className="text-[11px] text-slate-400 font-mono pt-2 border-t border-slate-100">
+          <p className="text-xs text-slate-400 font-mono pt-2 border-t border-slate-100">
             If this persists, please contact WINAM Support.
           </p>
         </div>

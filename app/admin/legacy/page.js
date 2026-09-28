@@ -39,7 +39,7 @@ export default async function LegacyPage() {
             <h1 className="text-xl sm:text-2xl font-black text-[#000033] tracking-tight uppercase">
               Legacy <span className="text-blue-600">Registry</span>
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-200">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-200">
               <UserGroupIcon className="h-3 w-3 text-blue-600" />
               Pre-Platform Onboarding
             </span>
@@ -53,11 +53,11 @@ export default async function LegacyPage() {
         {/* Quick Stats Pill & Staged Shareholders Modal Button */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
-            <span className="text-[10px] uppercase font-bold text-amber-700 block">Pending</span>
+            <span className="text-xs uppercase font-bold text-amber-700 block">Pending</span>
             <span className="text-sm font-black text-amber-900">{pendingCount}</span>
           </div>
           <div className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-            <span className="text-[10px] uppercase font-bold text-emerald-700 block">Live & Claimed</span>
+            <span className="text-xs uppercase font-bold text-emerald-700 block">Live & Claimed</span>
             <span className="text-sm font-black text-emerald-900">{claimedCount}</span>
           </div>
 

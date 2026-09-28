@@ -13,7 +13,7 @@ async function SelectCountry({
     <div className="space-y-1">
       <label
         htmlFor={id}
-        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600"
+        className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600"
       >
         <GlobeAmericasIcon className="h-3.5 w-3.5 text-blue-600" />
         <span>Country / Nationality</span>

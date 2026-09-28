@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
 
         {/* Footer Hint: Adjusted tracking and size for mobile readability */}
         <footer className="mt-8 md:mt-10 w-full">
-          <p className="text-[9px] md:text-[10px] text-slate-400 font-medium uppercase tracking-[0.1em] md:tracking-[0.2em] bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100 inline-block max-w-full truncate">
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100 inline-block max-w-full truncate">
             Secure sign-in with your Gmail
           </p>
         </footer>

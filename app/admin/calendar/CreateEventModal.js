@@ -249,7 +249,7 @@ function handleCreate() {
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden border border-slate-200">
         {/* Modal Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h2 className="text-xl font-bold text-slate-800">Create Schedule</h2>
           <button
             onClick={safeOnClose}
@@ -260,11 +260,11 @@ function handleCreate() {
         </div>
 
         {/* Modal Body Forms */}
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[70vh]">
           <div className="grid grid-cols-2 gap-5 text-sm">
             {/* Opportunity Selector */}
             <label className="col-span-2">
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Investment Opportunity
               </span>
               <select
@@ -282,7 +282,7 @@ function handleCreate() {
 
             {/* Repeat Cadence Selector */}
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Repeat Every
               </span>
               <select
@@ -300,7 +300,7 @@ function handleCreate() {
 
             {/* Target Day Selector */}
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Day of Week
               </span>
               <select
@@ -318,7 +318,7 @@ function handleCreate() {
 
             {/* Time Configuration Slots */}
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Start Time
               </span>
               <input
@@ -330,7 +330,7 @@ function handleCreate() {
             </label>
 
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 End Time
               </span>
               <input
@@ -343,7 +343,7 @@ function handleCreate() {
 
             {/* Active Running Window Constraints */}
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Date Range Start
               </span>
               <input
@@ -356,7 +356,7 @@ function handleCreate() {
             </label>
 
             <label>
-              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-[11px] tracking-wider">
+              <span className="block mb-1.5 font-bold text-slate-700 uppercase text-xs tracking-wider">
                 Date Range End
               </span>
               <input
@@ -379,17 +379,17 @@ function handleCreate() {
           {/* Expanded Dynamic Stream Occurrence Previews */}
           {!validationError && preview.length > 0 && (
             <div className="mt-6">
-              <p className="text-[10px] font-black mb-3 text-slate-400 uppercase tracking-widest">
+              <p className="text-xs font-black mb-3 text-slate-400 uppercase tracking-widest">
                 Calculated Occurrences
               </p>
               <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-1">
                 {preview.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-[11px] text-slate-600 flex justify-between items-center"
+                    className="bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-xs text-slate-600 flex justify-between items-center"
                   >
                     <span>{p}</span>
-                    <span className="text-slate-300 font-mono">#{i + 1}</span>
+                    <span className="text-slate-400 font-mono">#{i + 1}</span>
                   </div>
                 ))}
               </div>
@@ -398,8 +398,8 @@ function handleCreate() {
         </div>
 
         {/* Modal Action Control Footer Block */}
-        <div className="p-6 bg-slate-50 border-t flex justify-between items-center">
-          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+        <div className="p-4 sm:p-6 bg-slate-50 border-t flex justify-between items-center">
+          <span className="text-xs text-slate-400 font-mono uppercase tracking-wider">
             TZ: {timezone}
           </span>
           <div className="flex gap-3">

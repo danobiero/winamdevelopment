@@ -26,7 +26,7 @@ export default function AdminSignInButton() {
         <AdminGate onVerified={() => setStep('verified')} />
         <button
           onClick={() => setStep('entry')}
-          className="mt-4 w-full text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+          className="mt-4 w-full text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
         >
           ← Return to Shareholder Portal
         </button>

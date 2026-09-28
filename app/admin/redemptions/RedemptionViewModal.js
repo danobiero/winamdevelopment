@@ -28,7 +28,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+        <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
             Redemption Details
           </h2>
@@ -56,10 +56,10 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
         {/* Scrollable Container */}
         <div className="overflow-y-auto max-h-[70vh]">
           {/* Content */}
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             <div className="flex justify-between items-start border-b pb-3">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                   Request ID
                 </p>
                 <p className="font-mono text-sm text-gray-700">
@@ -67,7 +67,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
                 </p>
               </div>
               <span
-                className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase ${
                   redemption.status === 'approved'
                     ? 'bg-green-100 text-green-700'
                     : redemption.status === 'completed'
@@ -91,7 +91,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
                   {redemption.investments?.opportunities?.name ||
                     'Unknown Opportunity'}
                 </p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                   Investment
                 </p>
                 <p className="font-semibold text-blue-600">
@@ -99,7 +99,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                   Amount
                 </p>
                 <p className="font-bold text-gray-900">
@@ -109,7 +109,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
             </div>
 
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Shareholder
               </p>
               <p className="text-gray-800 font-medium">
@@ -121,7 +121,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
             {redemption.status === 'rejected' &&
               redemption.redemption_rejection_policies && (
                 <div>
-                  <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-red-500 uppercase tracking-widest">
                     Rejection Policy
                   </p>
                   <p className="text-sm font-semibold text-red-700 mt-1">
@@ -132,7 +132,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
               )}
 
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Admin Notes
               </p>
               <div className="mt-1 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm text-gray-600 italic">
@@ -210,8 +210,8 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
                           {new Date(row.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-1">
-                          <span className="inline-flex items-center gap-1.5 font-medium text-[10px] text-gray-700">
-                            <span className="px-1.5 py-0.5 rounded bg-slate-100 font-bold text-slate-700 border border-slate-200 uppercase">
+                          <span className="inline-flex items-center gap-1.5 font-medium text-xs text-gray-700">
+                            <span className="px-1.5 py-0.5 rounded bg-slate-100 font-bold text-slate-700 border border-slate-200 uppercase text-xs">
                               {payoutRail}
                             </span>
                             <span className="font-mono text-gray-500 truncate max-w-[150px]" title={refInfo}>
@@ -231,7 +231,7 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t">
+        <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
           <button
             onClick={handleClose}
             className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all"

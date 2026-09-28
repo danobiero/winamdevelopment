@@ -45,7 +45,7 @@ const getStatusBadge = (status) => {
   const style = map[s] || 'text-slate-500 bg-slate-50 border-slate-100';
 
   return (
-    <span className={`text-[9px] font-black uppercase tracking-wider border px-2 py-0.5 rounded ${style}`}>
+    <span className={`text-xs font-black uppercase tracking-wider border px-2 py-0.5 rounded ${style}`}>
       {status}
     </span>
   );
@@ -105,7 +105,7 @@ export default async function InvestmentsPage({ searchParams }) {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Investments <span className="text-blue-600">Ledger</span>
           </h1>
-          <div className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {investments.length} Total Records
           </div>
         </div>
@@ -158,7 +158,7 @@ export default async function InvestmentsPage({ searchParams }) {
                   key={investment.id}
                   className="hover:bg-blue-50/30 transition-colors group"
                 >
-                  <td className="px-4 py-4 font-mono text-[10px] text-slate-400 font-bold truncate">
+                  <td className="px-4 py-4 font-mono text-xs text-slate-400 font-bold truncate">
                     #{investment.id}
                   </td>
                   <td className="px-4 py-4 font-bold text-slate-900 truncate">
@@ -188,7 +188,7 @@ export default async function InvestmentsPage({ searchParams }) {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/admin/investments?view=${investment.id}&page=${page}`}
-                        className="text-slate-600 hover:underline font-bold uppercase text-[10px]"
+                        className="text-slate-600 hover:underline font-bold uppercase text-xs"
                       >
                         View
                       </Link>
@@ -197,7 +197,7 @@ export default async function InvestmentsPage({ searchParams }) {
                           <span className="text-slate-200">|</span>
                           <Link
                             href={`/admin/investments/${investment.id}`}
-                            className="text-blue-600 hover:underline font-bold uppercase text-[10px]"
+                            className="text-blue-600 hover:underline font-bold uppercase text-xs"
                           >
                             Edit
                           </Link>
@@ -206,7 +206,7 @@ export default async function InvestmentsPage({ searchParams }) {
                       {hasActiveRedemption && (
                         <Link
                           href={`/admin/investments?redemption=${activeRedemption.id}&page=${page}`}
-                          className="ml-2 bg-blue-600 text-white px-2 py-1 rounded text-[9px] font-black uppercase"
+                          className="ml-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-black uppercase"
                         >
                           Redemption
                         </Link>

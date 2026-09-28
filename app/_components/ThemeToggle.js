@@ -40,7 +40,7 @@ export default function ThemeToggle({
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {showLabel && !compact && (
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 px-1">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 px-1">
           Theme
         </span>
       )}

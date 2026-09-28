@@ -60,7 +60,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
       >
         {/* Header - Sticky */}
         <div className="bg-gray-50 pt-4 border-b shrink-0">
-          <div className="px-6 flex justify-between items-center mb-4">
+          <div className="px-4 sm:px-6 flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-800">
               Application Details
             </h2>
@@ -86,7 +86,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
           </div>
 
           {/* Tabs */}
-          <div className="flex px-6 gap-6">
+          <div className="flex px-4 sm:px-6 gap-6">
             <button
               onClick={() => setActiveTab('details')}
               className={`pb-3 text-xs font-black uppercase tracking-widest border-b-2 transition-colors ${
@@ -107,7 +107,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
             >
               Timeline
               {events.length > 0 && (
-                <span className="bg-gray-100 text-gray-500 py-0.5 px-2 rounded-full text-[9px]">
+                <span className="bg-gray-100 text-gray-500 py-0.5 px-2 rounded-full text-xs">
                   {events.length}
                 </span>
               )}
@@ -116,13 +116,13 @@ export default function ApplicationViewModal({ application, events = [] }) {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
           {activeTab === 'details' ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-200">
               {/* Top Section: ID & Status */}
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Application ID
                   </p>
                   <p className="font-mono text-sm text-gray-700">
@@ -130,7 +130,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                   </p>
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
                     application.status === 'approved'
                       ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                       : application.status === 'rejected'
@@ -147,7 +147,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
               {/* Applicant Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Applicant Name
                   </p>
                   <p className="font-bold text-gray-900 text-base">
@@ -155,7 +155,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                   </p>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Contact Info
                   </p>
                   <p className="text-sm text-blue-600 font-medium hover:underline">
@@ -170,17 +170,17 @@ export default function ApplicationViewModal({ application, events = [] }) {
               {/* Agreements & Fees */}
               <div className="bg-slate-50 border rounded-xl p-4 grid grid-cols-2 gap-y-4 gap-x-2">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Application Fee
                   </p>
                   <span
-                    className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${application.application_fee_paid ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}
+                    className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-widest ${application.application_fee_paid ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}
                   >
                     {application.application_fee_paid ? 'PAID' : 'UNPAID'}
                   </span>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Current Shareholding
                   </p>
                   <p className="text-sm font-semibold text-gray-800 mt-1">
@@ -188,7 +188,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                   </p>
                 </div>
                 <div className="col-span-2 border-t pt-3 mt-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
                     Agreements
                   </p>
                   <div className="flex flex-col gap-1.5 text-xs text-gray-700">
@@ -226,7 +226,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
               {/* Interests & Experience */}
               <div className="space-y-4 border-t pt-4">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Primary Interest
                   </p>
                   <p className="text-sm font-medium text-gray-800 mt-1">
@@ -234,7 +234,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Experience Description
                   </p>
                   <div className="mt-1 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm text-gray-700 whitespace-pre-wrap">
@@ -251,7 +251,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                     className={`mt-2 border rounded-xl p-4 ${application.status === 'rejected' ? 'bg-red-50/50 border-red-100' : 'bg-gray-50 border-gray-200'}`}
                   >
                     <p
-                      className={`text-[10px] font-bold uppercase tracking-widest ${application.status === 'rejected' ? 'text-red-500' : 'text-gray-500'}`}
+                      className={`text-xs font-bold uppercase tracking-widest ${application.status === 'rejected' ? 'text-red-500' : 'text-gray-500'}`}
                     >
                       {application.status === 'rejected'
                         ? 'Rejection Reason'
@@ -266,7 +266,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                 )}
 
               <div className="pt-2">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                   Submitted Date
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
@@ -303,7 +303,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
 
                       {/* Event Details */}
                       <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                           {formatDate(event.created_at)}
                         </p>
                         <div className="mt-1">
@@ -336,7 +336,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                         )}
 
                         {event.admin_id && (
-                          <p className="text-[10px] font-medium text-gray-400 mt-2">
+                          <p className="text-xs font-medium text-gray-400 mt-2">
                             Processed by Admin:{' '}
                             {String(event.admin_id).slice(0, 8)}
                           </p>
@@ -349,7 +349,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
                   <div className="relative pl-6">
                     <div className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-white bg-gray-300" />
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                         {formatDate(application.created_at)}
                       </p>
                       <p className="text-sm font-bold text-gray-900 mt-1">
@@ -364,7 +364,7 @@ export default function ApplicationViewModal({ application, events = [] }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t shrink-0">
+        <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t shrink-0">
           {canProcess && activeTab === 'details' ? (
             <div className="flex gap-3">
               <button

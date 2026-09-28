@@ -73,13 +73,13 @@ export default function RefundHistoryModal({ open, onClose, refunds }) {
                   <p className="text-sm sm:text-base font-bold text-primary-800">
                     {FormatCurrency(refund.refund_amount)}
                   </p>
-                  <p className="text-[11px] text-primary-500 mt-0.5">
+                  <p className="text-xs text-primary-500 mt-0.5">
                     {format(new Date(refund.created_at), 'MMM dd, yyyy • p')}
                   </p>
                 </div>
 
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[9px]
+                  className={`px-2.5 py-0.5 rounded-full text-xs
                   font-bold uppercase tracking-wide shrink-0
                   ${statusBadge(refund.status)}`}
                 >
@@ -89,7 +89,7 @@ export default function RefundHistoryModal({ open, onClose, refunds }) {
 
               {/* Original request reason (optional) */}
               {refund.reason && (
-                <div className="mt-2 text-[11px] sm:text-xs text-primary-600 bg-primary-50/50 p-2 rounded">
+                <div className="mt-2 text-xs sm:text-sm text-primary-600 bg-primary-50/50 p-2 rounded">
                   <span className="font-semibold text-primary-700">
                     Request:
                   </span>{' '}
@@ -99,7 +99,7 @@ export default function RefundHistoryModal({ open, onClose, refunds }) {
 
               {/* Rejection reason (ONLY if rejected) */}
               {refund.status === 'rejected' && (
-                <div className="mt-2 text-[11px] sm:text-xs text-red-700 bg-red-50 p-2 rounded border border-red-100">
+                <div className="mt-2 text-xs sm:text-sm text-red-700 bg-red-50 p-2 rounded border border-red-100">
                   <span className="font-semibold uppercase tracking-wide">
                     Rejected:
                   </span>{' '}

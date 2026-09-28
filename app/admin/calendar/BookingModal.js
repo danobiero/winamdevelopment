@@ -116,7 +116,7 @@ export default function BookingModal({
         {/* ===================== INVESTORS ===================== */}
         {isDayView ? (
           <div className="mt-5 p-4 bg-blue-50/30 rounded-xl border border-blue-100/50 text-center">
-            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">
+            <p className="text-xs text-blue-600 font-bold uppercase tracking-wider">
               Investor Details Hidden in Day View
             </p>
             <p className="text-xs text-slate-500 font-medium mt-1">
@@ -126,10 +126,10 @@ export default function BookingModal({
           </div>
         ) : (
           <div className="mt-5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
               Committed Investors
               {!isLoading && !error && (
-                <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold">
+                <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-xs font-mono font-bold">
                   {investors.length}
                 </span>
               )}
@@ -154,13 +154,13 @@ export default function BookingModal({
                   <table className="w-full text-left border-collapse relative">
                     <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200 shadow-sm">
                       <tr>
-                        <th className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th className="px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
                           Investor
                         </th>
-                        <th className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">
+                        <th className="px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
                           Status
                         </th>
-                        <th className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">
+                        <th className="px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
                           Amount
                         </th>
                       </tr>
@@ -175,7 +175,7 @@ export default function BookingModal({
                             {inv.shareholders?.fullName || 'Unknown Investor'}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                               {inv.status || 'Pending'}
                             </span>
                           </td>
@@ -272,7 +272,7 @@ export default function BookingModal({
 
       <div className="relative bg-white w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh] border border-slate-200/80">
         {/* MODAL HEADER */}
-        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div>
             <h2 className="text-xl font-black uppercase tracking-tight text-slate-800">
               {isSingleEvent ? 'Allocation Info' : 'Date Schedule'}
@@ -294,7 +294,7 @@ export default function BookingModal({
         </div>
 
         {/* MODAL CONTENT */}
-        <div className="p-6 overflow-y-auto">
+        <div className="p-4 sm:p-6 overflow-y-auto">
           {isSingleEvent ? (
             renderOpportunity(liveEvent, false)
           ) : dayOpportunities.length > 0 ? (
@@ -368,7 +368,7 @@ export default function BookingModal({
 function DetailRow({ label, value }) {
   return (
     <div className="border-b border-slate-100 pb-2 last:border-0 last:pb-0">
-      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+      <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">
         {label}
       </label>
       <p className="text-base font-bold text-slate-800 mt-0.5">{value}</p>

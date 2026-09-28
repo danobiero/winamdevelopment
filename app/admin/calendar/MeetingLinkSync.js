@@ -71,7 +71,7 @@ export default function MeetingLinkSync({ onError }) {
         </svg>
       )}
 
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+      <span className="text-xs font-black uppercase tracking-[0.2em] leading-none">
         {isPending ? 'Syncing' : 'Meeting Links'}
       </span>
     </button>

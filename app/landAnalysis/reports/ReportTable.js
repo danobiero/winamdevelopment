@@ -27,10 +27,10 @@ export default function ReportTable({ data }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* 🔹 COLUMN 1: PROPERTY RANKING (8/12) */}
-        <section className="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <section className="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50 text-[11px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100">
+              <tr className="bg-gray-50/50 text-xs font-black uppercase tracking-widest text-gray-400 border-b border-gray-100">
                 <th className="px-6 py-4">Rank</th>
                 <th className="px-6 py-4">Property Identity</th>
                 <th className="px-6 py-4 text-center">Score Metric</th>
@@ -58,7 +58,7 @@ export default function ReportTable({ data }) {
                     <div className="text-sm font-bold text-gray-800">
                       {p.name}
                     </div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">
+                    <div className="text-xs text-gray-400 uppercase tracking-tighter">
                       Verified Assessment
                     </div>
                   </td>
@@ -86,7 +86,7 @@ export default function ReportTable({ data }) {
           {selected ? (
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="p-8 bg-gray-900 text-white">
-                <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">
+                <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">
                   Deep Dive Analysis
                 </div>
                 <h2 className="text-2xl font-black leading-tight">
@@ -96,7 +96,7 @@ export default function ReportTable({ data }) {
                   <div className="text-4xl font-black text-green-400">
                     {selected.totalScore}
                   </div>
-                  <div className="text-[10px] text-gray-400 leading-tight uppercase">
+                  <div className="text-xs text-gray-400 leading-tight uppercase">
                     Aggregate
                     <br />
                     Weighted Score
@@ -112,7 +112,7 @@ export default function ReportTable({ data }) {
                   {selected.breakdown.map((b, i) => (
                     <div key={i} className="group">
                       <div className="flex justify-between items-end mb-1">
-                        <span className="text-[11px] font-bold text-gray-400 uppercase">
+                        <span className="text-xs font-bold text-gray-400 uppercase">
                           {b.category}
                         </span>
                         <span className="text-xs font-mono font-bold text-blue-600">

@@ -50,14 +50,14 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
       <div className="bg-white flex flex-col w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
         {/* HEADER */}
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-start shrink-0 bg-white">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex justify-between items-start shrink-0 bg-white">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-mono text-slate-400">
                 #{ticket.id}
               </span>
               <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${priorityStyles[ticket.priority]}`}
+                className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase ${priorityStyles[ticket.priority]}`}
               >
                 {ticket.priority}
               </span>
@@ -95,7 +95,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
           <div className="space-y-4">
             <div className="flex flex-col items-start max-w-[90%]">
               <div className="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm">
-                <p className="text-[10px] font-bold text-blue-600 mb-1 uppercase tracking-tight">
+                <p className="text-xs font-bold text-blue-600 mb-1 uppercase tracking-tight">
                   Original Message
                 </p>
                 <p className="text-slate-800 whitespace-pre-wrap leading-relaxed text-sm">
@@ -112,13 +112,13 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
                 <div
                   className={`p-4 rounded-2xl shadow-sm ${msg.sender_type === 'admin' ? 'bg-slate-900 text-slate-50 rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}
                 >
-                  <p className="text-[10px] font-bold mb-1 uppercase opacity-70">
+                  <p className="text-xs font-bold mb-1 uppercase opacity-70">
                     {msg.sender_type === 'admin' ? 'Support Agent' : 'Client'}
                   </p>
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
                     {msg.message}
                   </p>
-                  <p className="text-[9px] mt-2 opacity-50 text-right">
+                  <p className="text-xs mt-2 opacity-60 text-right">
                     {new Date(msg.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -136,7 +136,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
+                  <label className="text-xs font-bold text-slate-500 uppercase">
                     Status Action:
                   </label>
                   <select
@@ -154,7 +154,7 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
                   </select>
                 </div>
                 {message.trim().length === 0 && (
-                  <span className="text-[10px] font-bold text-amber-600 animate-pulse uppercase">
+                  <span className="text-xs font-bold text-amber-600 animate-pulse uppercase">
                     Message required to save changes
                   </span>
                 )}
@@ -198,14 +198,14 @@ export default function SupportViewModal({ ticket, messages = [], onClose }) {
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={isPending || !message.trim()}
-                  className="px-6 py-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:bg-blue-100 transition-all disabled:opacity-50"
+                  className="px-5 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-100 transition-all disabled:opacity-50"
                 >
                   {isPending ? 'Processing...' : 'Send & Close View'}
                 </button>

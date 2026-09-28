@@ -24,35 +24,53 @@ export async function getMemberRoute() {
     // 1. Authenticate session
     const session = await auth();
 
-    // Ensure both the session and the user's email exist
-    if (!session || !session.user.shareholderId || !session.user.email) {
+    if (!session || !session.user?.email) {
       return '/login';
+    }
+
+    // 2. Check if the session is already an Admin
+    if (session.user.adminId) {
+      return '/admin';
     }
 
     const supabaseServer = createSupabaseServerClient();
 
-    // 2. Check if the user is an Admin
-    // Using maybeSingle() so it doesn't throw an error if the user isn't in the admins table
+    // 3. Check if the user is an Admin in the database
     const { data: adminUser, error: adminError } = await supabaseServer
       .from('admins')
       .select('id, role')
-      .eq('email', session.user.email)
+      .ilike('email', session.user.email)
       .maybeSingle();
 
     if (adminError) {
       console.error('Supabase admin query error:', adminError);
     }
 
-    // If the user exists in the admins table, route directly to account
     if (adminUser) {
-      return '/account';
+      return '/admin';
     }
 
-    // 3. Fallback: Check standard shareholders status
+    // 4. For shareholders, find shareholder ID
+    let shareholderId = session.user.shareholderId;
+
+    if (!shareholderId) {
+      const { data: sh } = await supabaseServer
+        .from('shareholders')
+        .select('id')
+        .ilike('email', session.user.email)
+        .maybeSingle();
+      shareholderId = sh?.id;
+    }
+
+    if (!shareholderId) {
+      return '/membership';
+    }
+
+    // 5. Check standard shareholders membership application status
     const { data: member, error: memberError } = await supabaseServer
       .from('membership_applications')
       .select('status')
-      .eq('shareholder_id', session.user.shareholderId)
+      .eq('shareholder_id', shareholderId)
       .maybeSingle();
 
     if (memberError) {
@@ -60,7 +78,7 @@ export async function getMemberRoute() {
       return '/membership';
     }
 
-    // 4. Direct to account if member status is complete, otherwise to membership
+    // 6. Direct to account if member status is complete, otherwise to membership
     if (member?.status === 'completed') {
       return '/account';
     } else {

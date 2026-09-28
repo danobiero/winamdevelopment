@@ -1,6 +1,10 @@
 import { auth } from '@/app/_lib/auth';
 import { redirect } from 'next/navigation';
-import { getOpportunities, getOpportunityValuations } from '@/app/_lib/data-service';
+import {
+  getOpportunities,
+  getOpportunityValuations,
+  getAllInvestmentsSummary,
+} from '@/app/_lib/data-service';
 import ValuationsClient from './ValuationsClient';
 
 export const metadata = {
@@ -13,9 +17,10 @@ export default async function ValuationsPage() {
     redirect('/admin-login');
   }
 
-  const [opportunities, valuations] = await Promise.all([
+  const [opportunities, valuations, investments] = await Promise.all([
     getOpportunities().catch(() => []),
     getOpportunityValuations().catch(() => []),
+    getAllInvestmentsSummary().catch(() => []),
   ]);
 
   return (
@@ -23,6 +28,7 @@ export default async function ValuationsPage() {
       <ValuationsClient
         opportunities={opportunities}
         initialValuations={valuations}
+        investments={investments}
       />
     </div>
   );

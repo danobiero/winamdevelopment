@@ -156,7 +156,7 @@ export default function UploadDocuments({
               <span className="text-xs font-bold leading-tight block">
                 {type.label}
               </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">
+              <span className="text-xs text-slate-400 block mt-0.5">
                 {type.desc}
               </span>
             </button>
@@ -174,7 +174,7 @@ export default function UploadDocuments({
             <button
               type="button"
               onClick={() => setFile(null)}
-              className="text-[11px] font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
             >
               <XMarkIcon className="h-3 w-3" /> Clear Selection
             </button>
@@ -209,7 +209,7 @@ export default function UploadDocuments({
                   <span className="text-xs font-bold text-slate-800 truncate max-w-[260px]">
                     {file.name}
                   </span>
-                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 bg-emerald-100 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-1 bg-emerald-100 px-2 py-0.5 rounded-md">
                     Ready to Upload
                   </span>
                 </>
@@ -223,7 +223,7 @@ export default function UploadDocuments({
                   <span className="text-xs font-bold text-slate-700">
                     {isDragging ? 'Drop file now' : 'Browse or drag file here'}
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-0.5">
+                  <span className="text-xs text-slate-400 mt-0.5">
                     PDF, DOCX, XLSX, or Images up to 10MB
                   </span>
                 </>

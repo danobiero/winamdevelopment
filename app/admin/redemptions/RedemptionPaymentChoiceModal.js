@@ -269,7 +269,7 @@ export default function RedemptionPaymentChoiceModal({
             <div className="flex justify-between">
               <span className="text-slate-500 font-medium">Request Status:</span>
               <span
-                className={`font-bold uppercase px-2 py-0.5 rounded text-[10px] ${
+                className={`font-bold uppercase px-2 py-0.5 rounded text-xs ${
                   successData.isFullyDone
                     ? 'bg-emerald-100 text-emerald-700'
                     : 'bg-amber-100 text-amber-700'
@@ -293,7 +293,7 @@ export default function RedemptionPaymentChoiceModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
       onClick={closeAndClear}
     >
       <div
@@ -301,13 +301,13 @@ export default function RedemptionPaymentChoiceModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
-        <div className="px-6 sm:px-8 py-5 border-b flex justify-between items-center bg-slate-50/70">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b flex justify-between items-center bg-slate-50/70">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900">
                 Process Redemption Payout
               </h2>
-              <span className="text-[10px] font-mono bg-blue-50 text-blue-700 border border-blue-200 font-bold px-2 py-0.5 rounded-full">
+              <span className="text-xs font-mono bg-blue-50 text-blue-700 border border-blue-200 font-bold px-2 py-0.5 rounded-full">
                 #{String(redemption.id).slice(0, 8)}
               </span>
             </div>
@@ -325,7 +325,7 @@ export default function RedemptionPaymentChoiceModal({
         </div>
 
         {/* MODAL BODY */}
-        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto max-h-[75vh]">
+        <div className="p-4 sm:p-6 space-y-6 overflow-y-auto max-h-[75vh]">
           {/* STATS OVERVIEW */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard
@@ -376,18 +376,18 @@ export default function RedemptionPaymentChoiceModal({
           {paymentMethod ? (
             <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                <span className="text-xs font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   Shareholder Registered Payout Destination
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-200 text-emerald-900">
+                <span className="px-2 py-0.5 rounded text-xs font-black uppercase bg-emerald-200 text-emerald-900">
                   {paymentMethod.payment_type}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
                 {paymentMethod.account_handle && (
                   <div>
-                    <span className="text-slate-500 text-[10px] uppercase font-bold block">
+                    <span className="text-slate-500 text-xs uppercase font-bold block">
                       Handle / Tag / Phone:
                     </span>
                     <span className="font-mono font-bold text-emerald-950">
@@ -397,7 +397,7 @@ export default function RedemptionPaymentChoiceModal({
                 )}
                 {paymentMethod.account_name && (
                   <div>
-                    <span className="text-slate-500 text-[10px] uppercase font-bold block">
+                    <span className="text-slate-500 text-xs uppercase font-bold block">
                       Account / Beneficiary Name:
                     </span>
                     <span className="font-bold text-emerald-950">
@@ -407,7 +407,7 @@ export default function RedemptionPaymentChoiceModal({
                 )}
                 {paymentMethod.account_number && (
                   <div>
-                    <span className="text-slate-500 text-[10px] uppercase font-bold block">
+                    <span className="text-slate-500 text-xs uppercase font-bold block">
                       Account Number / Routing:
                     </span>
                     <span className="font-mono text-emerald-950">
@@ -422,7 +422,7 @@ export default function RedemptionPaymentChoiceModal({
               <span className="text-base">ℹ️</span>
               <div>
                 <p className="font-bold mb-0.5">No Registered Payout Method on File</p>
-                <p className="text-amber-700 text-[11px]">
+                <p className="text-amber-700 text-xs">
                   Shareholder has not saved their Zelle/CashApp in their profile. You can manually enter the destination rail and transaction reference below.
                 </p>
               </div>
@@ -460,7 +460,7 @@ export default function RedemptionPaymentChoiceModal({
                 }`}
               >
                 Stripe Card Refund{' '}
-                <span className="text-[10px] font-normal lowercase">
+                <span className="text-xs font-normal lowercase">
                   ({sortedStripePayments.length} card source{sortedStripePayments.length === 1 ? '' : 's'})
                 </span>
               </button>
@@ -479,7 +479,7 @@ export default function RedemptionPaymentChoiceModal({
           {activeTab === 'manual' && (
             <form onSubmit={handleManualSubmit} className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">
                   Select Payout Rail *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -509,7 +509,7 @@ export default function RedemptionPaymentChoiceModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                     Recipient Handle / Phone / Account
                   </label>
                   <input
@@ -528,7 +528,7 @@ export default function RedemptionPaymentChoiceModal({
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                     Recipient Full Name
                   </label>
                   <input
@@ -543,7 +543,7 @@ export default function RedemptionPaymentChoiceModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                     Transaction Confirmation / Reference # *
                   </label>
                   <input
@@ -557,7 +557,7 @@ export default function RedemptionPaymentChoiceModal({
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                     Payout Amount ($ USD) *
                   </label>
                   <input
@@ -570,7 +570,7 @@ export default function RedemptionPaymentChoiceModal({
                     onChange={(e) => setManualAmount(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-900"
                   />
-                  <span className="text-[10px] text-slate-400 mt-1 block">
+                  <span className="text-xs text-slate-400 mt-1 block">
                     Max remaining: {FormatCurrency(remainingGoal, currency)}
                   </span>
                 </div>
@@ -579,7 +579,7 @@ export default function RedemptionPaymentChoiceModal({
               {/* OPTIONAL: LINK TO EXISTING PAYMENT RECORD */}
               {sortedOfflinePayments.length > 0 && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                     Link to Payment Record (Optional)
                   </label>
                   <select
@@ -601,7 +601,7 @@ export default function RedemptionPaymentChoiceModal({
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
                   Admin Notes / Memo (Optional)
                 </label>
                 <textarea
@@ -641,7 +641,7 @@ export default function RedemptionPaymentChoiceModal({
           {activeTab === 'stripe' && (
             <form onSubmit={handleStripeSubmit} className="space-y-4">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
                   Select Eligible Stripe Payment Source
                 </p>
 
@@ -682,13 +682,13 @@ export default function RedemptionPaymentChoiceModal({
                               {FormatCurrency(pay.amount, pay.currency || currency)}
                             </span>
                             <span
-                              className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 truncate max-w-[220px]"
+                              className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 truncate max-w-[220px]"
                               title={pay.stripe_payment_intent_id || pay.id}
                             >
                               {pay.stripe_payment_intent_id || pay.id}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 mt-1 flex justify-between">
+                          <div className="text-xs text-slate-500 mt-1 flex justify-between">
                             <span>Available to Refund: {FormatCurrency(avail, pay.currency || currency)}</span>
                             <span>{new Date(pay.created_at).toLocaleDateString()}</span>
                           </div>
@@ -723,7 +723,7 @@ export default function RedemptionPaymentChoiceModal({
 function StatCard({ label, value, color = 'text-slate-900' }) {
   return (
     <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-3.5 text-center">
-      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 truncate">
+      <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 truncate">
         {label}
       </div>
       <div className={`text-base sm:text-lg font-black ${color}`}>{value}</div>

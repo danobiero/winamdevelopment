@@ -37,7 +37,7 @@ export default async function SupportPage({ searchParams }) {
             </div>
 
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
                 Total Tickets
               </p>
 
@@ -50,25 +50,25 @@ export default async function SupportPage({ searchParams }) {
 
         {/* STATUS LEGEND */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-[10px] font-bold text-slate-600">Open</span>
+            <span className="text-xs font-bold text-slate-600">Open</span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               In Progress
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               Resolved
             </span>
           </div>
@@ -110,7 +110,7 @@ export default async function SupportPage({ searchParams }) {
               Inbox Zero!
             </h3>
 
-            <p className="text-slate-500 mt-2 text-[11px] uppercase font-medium">
+            <p className="text-slate-500 mt-2 text-xs uppercase font-medium">
               The{' '}
               <span className="font-bold text-blue-600 underline underline-offset-4">
                 {status.replace('_', ' ')}

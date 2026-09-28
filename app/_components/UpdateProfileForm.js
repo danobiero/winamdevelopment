@@ -82,15 +82,15 @@ function UpdateProfileForm({ user, children }) {
                   <h2 className="text-xs sm:text-sm font-black tracking-tight truncate">
                     {fullName || 'Shareholder'}
                   </h2>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    <ShieldCheckIcon className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <ShieldCheckIcon className="h-3.5 w-3.5" />
                     Verified
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-300 truncate">{email}</p>
+                <p className="text-xs text-slate-300 truncate">{email}</p>
 
-                <div className="flex items-center gap-2 pt-0.5 text-[10px] font-medium text-slate-400">
+                <div className="flex items-center gap-2 pt-0.5 text-xs font-medium text-slate-400">
                   {id && (
                     <span className="flex items-center gap-1 font-mono">
                       <IdentificationIcon className="h-3 w-3 text-blue-400" />
@@ -114,8 +114,8 @@ function UpdateProfileForm({ user, children }) {
                   <h3 className="text-xs font-black text-[#000033] uppercase tracking-wider">
                     Portfolio Compliance
                   </h3>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                    <CheckBadgeIcon className="h-3 w-3 text-emerald-600" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <CheckBadgeIcon className="h-3.5 w-3.5 text-emerald-600" />
                     Active KYC
                   </span>
                 </div>
@@ -125,7 +125,7 @@ function UpdateProfileForm({ user, children }) {
                 </p>
               </div>
 
-              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-start gap-2 text-[10px] text-slate-500 shrink-0">
+              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-start gap-2 text-xs text-slate-500 shrink-0">
                 <InformationCircleIcon className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
                 <p className="leading-tight font-medium">
                   Primary email is linked to Google authentication. To update legal name, nationality, or telephone, edit and save.
@@ -143,11 +143,11 @@ function UpdateProfileForm({ user, children }) {
                     <h3 className="text-xs font-black text-[#000033] uppercase tracking-wider">
                       Edit Shareholder Information
                     </h3>
-                    <p className="text-[11px] text-slate-400 font-medium">
+                    <p className="text-xs text-slate-400 font-medium">
                       Official credentials associated with your investment holdings
                     </p>
                   </div>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
                     Credentials
                   </span>
                 </div>
@@ -158,7 +158,7 @@ function UpdateProfileForm({ user, children }) {
                   <div className="space-y-1">
                     <label
                       htmlFor="fullName"
-                      className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600"
+                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600"
                     >
                       <UserIcon className="h-3.5 w-3.5 text-blue-600" />
                       <span>Full Name</span>
@@ -181,13 +181,13 @@ function UpdateProfileForm({ user, children }) {
                     <div className="flex items-center justify-between text-xs">
                       <label
                         htmlFor="email"
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600"
+                        className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600"
                       >
                         <EnvelopeIcon className="h-3.5 w-3.5 text-blue-600" />
                         <span>Email Address</span>
                       </label>
-                      <span className="flex items-center gap-1 text-[9px] font-bold uppercase text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded">
-                        <LockClosedIcon className="h-2.5 w-2.5" />
+                      <span className="flex items-center gap-1 text-xs font-bold uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                        <LockClosedIcon className="h-3 w-3" />
                         Locked
                       </span>
                     </div>
@@ -204,14 +204,14 @@ function UpdateProfileForm({ user, children }) {
                     <div className="flex items-center justify-between text-xs">
                       <label
                         htmlFor="telephone"
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600"
+                        className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600"
                       >
                         <PhoneIcon className="h-3.5 w-3.5 text-blue-600" />
                         <span>Phone Number</span>
                       </label>
                       {telValue && (
                         <span
-                          className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded transition-colors ${
+                          className={`text-xs font-bold uppercase px-2 py-0.5 rounded transition-colors ${
                             isPhoneValid
                               ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
                               : 'text-amber-700 bg-amber-50 border border-amber-200'
@@ -243,7 +243,7 @@ function UpdateProfileForm({ user, children }) {
                     <CheckCircleIcon className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold">Profile Saved</p>
-                      <p className="text-[11px] text-emerald-700">
+                      <p className="text-xs text-emerald-700">
                         {state.message || 'Your investor profile has been updated.'}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ function UpdateProfileForm({ user, children }) {
                     <ExclamationCircleIcon className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold">Update Failed</p>
-                      <p className="text-[11px] text-rose-700">
+                      <p className="text-xs text-rose-700">
                         {state.message || 'Unable to update profile. Please verify your entries.'}
                       </p>
                     </div>
@@ -265,7 +265,7 @@ function UpdateProfileForm({ user, children }) {
 
               {/* ACTION BAR */}
               <div className="pt-2.5 mt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0">
-                <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+                <p className="text-xs text-slate-400 font-medium">
                   Saved changes synchronize automatically with portfolio compliance records.
                 </p>
                 <SubmitButton />

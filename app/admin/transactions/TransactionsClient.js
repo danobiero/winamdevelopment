@@ -305,7 +305,7 @@ export default function TransactionsClient({
               <h1 className="text-xl sm:text-2xl font-black text-[#000033] uppercase tracking-tight">
                 Financial <span className="text-blue-600">Transactions</span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                 Ledger Hub
               </span>
             </div>
@@ -314,7 +314,7 @@ export default function TransactionsClient({
             </p>
           </div>
 
-          <div className="text-[11px] font-mono text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl w-fit self-start sm:self-auto">
+          <div className="text-xs font-mono text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl w-fit self-start sm:self-auto">
             {expenses.length} Expenses • {payments.length} Payments
           </div>
         </div>
@@ -366,7 +366,7 @@ export default function TransactionsClient({
           >
             <ReceiptPercentIcon className="h-4 w-4 shrink-0 text-rose-500" />
             <span className="truncate">List Expenses</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-rose-100 text-rose-800 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-xs bg-rose-100 text-rose-800 font-mono">
               {expenses.length}
             </span>
           </button>
@@ -383,7 +383,7 @@ export default function TransactionsClient({
           >
             <CreditCardIcon className="h-4 w-4 shrink-0 text-blue-600" />
             <span className="truncate">List Payments</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-blue-100 text-blue-800 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-xs bg-blue-100 text-blue-800 font-mono">
               {payments.length}
             </span>
           </button>
@@ -446,7 +446,7 @@ export default function TransactionsClient({
 
         {/* Quick Date Display & Reset */}
         <div className="flex items-center gap-3">
-          <div className="text-[11px] text-slate-500 font-mono">
+          <div className="text-xs text-slate-500 font-mono">
             Period: <span className="font-bold text-slate-700">{periodDisplay.start}</span> to{' '}
             <span className="font-bold text-slate-700">{periodDisplay.end}</span>
           </div>
@@ -460,7 +460,7 @@ export default function TransactionsClient({
                 setExpensesPage(1);
                 setPaymentsPage(1);
               }}
-              className="text-[10px] font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
+              className="text-xs font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
             >
               Reset
             </button>
@@ -472,7 +472,7 @@ export default function TransactionsClient({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Total Capital Inflows
             </span>
             <ArrowTrendingUpIcon className="h-4 w-4 text-emerald-500" />
@@ -480,14 +480,14 @@ export default function TransactionsClient({
           <p className="text-lg sm:text-xl font-black font-mono text-emerald-700">
             {formatUSD(totalPaymentsAmount)}
           </p>
-          <span className="text-[10px] text-slate-500 block truncate" title={`All-time: ${formatUSD(allPaymentsTotal)}`}>
+          <span className="text-xs text-slate-500 block truncate" title={`All-time: ${formatUSD(allPaymentsTotal)}`}>
             {filteredPayments.length} investor payments {selectedQuarter !== 'ALL' || selectedYear !== 'ALL' ? `• All: ${formatUSD(allPaymentsTotal)}` : ''}
           </span>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Total Operating Expenses
             </span>
             <ArrowTrendingDownIcon className="h-4 w-4 text-rose-500" />
@@ -495,14 +495,14 @@ export default function TransactionsClient({
           <p className="text-lg sm:text-xl font-black font-mono text-rose-700">
             {formatUSD(totalExpensesAmount)}
           </p>
-          <span className="text-[10px] text-slate-500 block truncate" title={`All-time: ${formatUSD(allExpensesTotal)}`}>
+          <span className="text-xs text-slate-500 block truncate" title={`All-time: ${formatUSD(allExpensesTotal)}`}>
             {filteredExpenses.length} actual disbursements {selectedQuarter !== 'ALL' || selectedYear !== 'ALL' ? `• All: ${formatUSD(allExpensesTotal)}` : ''}
           </span>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Net Inflow Balance
             </span>
             <ScaleIcon className="h-4 w-4 text-blue-500" />
@@ -510,14 +510,14 @@ export default function TransactionsClient({
           <p className={`text-lg sm:text-xl font-black font-mono ${netCashFlow >= 0 ? 'text-blue-900' : 'text-rose-700'}`}>
             {formatUSD(netCashFlow)}
           </p>
-          <span className="text-[10px] text-slate-500 block">
+          <span className="text-xs text-slate-500 block">
             Inflows less operating costs
           </span>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Total Transactions
             </span>
             <ArrowsRightLeftIcon className="h-4 w-4 text-amber-500" />
@@ -525,7 +525,7 @@ export default function TransactionsClient({
           <p className="text-lg sm:text-xl font-black font-mono text-slate-900">
             {filteredExpenses.length + filteredPayments.length}
           </p>
-          <span className="text-[10px] text-slate-500 block">
+          <span className="text-xs text-slate-500 block">
             {filteredExpenses.length} exp • {filteredPayments.length} pay
           </span>
         </div>
@@ -549,7 +549,7 @@ export default function TransactionsClient({
               >
                 <ReceiptPercentIcon className="h-4 w-4" />
                 <span>Operating Expenses</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${
+                <span className={`px-1.5 py-0.2 rounded-full text-xs font-mono ${
                   activeTab === 'expenses' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {filteredExpenses.length}
@@ -567,7 +567,7 @@ export default function TransactionsClient({
               >
                 <CreditCardIcon className="h-4 w-4" />
                 <span>Payments & Subscriptions</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${
+                <span className={`px-1.5 py-0.2 rounded-full text-xs font-mono ${
                   activeTab === 'payments' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {filteredPayments.length}
@@ -652,7 +652,7 @@ export default function TransactionsClient({
             {/* Status Filter (when Payments tab active) */}
             {activeTab === 'payments' && (
               <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shrink-0 shadow-xs">
-                <span className="text-[10px] uppercase font-black text-slate-400">Status:</span>
+                <span className="text-xs uppercase font-black text-slate-400">Status:</span>
                 <select
                   value={paymentStatusFilter}
                   onChange={(e) => {
@@ -687,7 +687,7 @@ export default function TransactionsClient({
                 <h3 className="text-sm font-bold text-slate-800">No Operating Expenses Found</h3>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
                   {searchQuery || selectedOpportunityFilter !== 'ALL'
-                    ? 'No expenses matched your filter criteria.'
+                     ? 'No expenses matched your filter criteria.'
                     : 'No operating expenses have been recorded yet.'}
                 </p>
                 <button
@@ -705,7 +705,7 @@ export default function TransactionsClient({
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 uppercase font-black text-[10px] tracking-wider border-b border-slate-200">
+                  <thead className="bg-slate-100 text-slate-700 uppercase font-black text-xs tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="px-3.5 py-2.5">Date</th>
                       <th className="px-3.5 py-2.5">Opportunity</th>
@@ -726,7 +726,7 @@ export default function TransactionsClient({
                             {exp.opportunities?.name || `Opportunity #${exp.opportunity_id || 'N/A'}`}
                           </span>
                           {exp.opportunities?.type && (
-                            <span className="text-[10px] text-slate-400 block">
+                            <span className="text-xs text-slate-400 block">
                               {exp.opportunities.type}
                             </span>
                           )}
@@ -735,7 +735,7 @@ export default function TransactionsClient({
                           {exp.vendor || '—'}
                         </td>
                         <td className="px-3.5 py-2.5 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
                             {exp.category}
                           </span>
                         </td>
@@ -801,7 +801,7 @@ export default function TransactionsClient({
                       expenses
                     </span>
                     <span className="text-slate-300">|</span>
-                    <div className="flex items-center gap-1 text-[11px]">
+                    <div className="flex items-center gap-1 text-xs">
                       <span className="text-slate-400">Rows:</span>
                       <select
                         value={expensesPageSize}
@@ -894,7 +894,7 @@ export default function TransactionsClient({
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 uppercase font-black text-[10px] tracking-wider border-b border-slate-200">
+                  <thead className="bg-slate-100 text-slate-700 uppercase font-black text-xs tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="px-3.5 py-2.5">Date</th>
                       <th className="px-3.5 py-2.5">Shareholder / Investor</th>
@@ -921,7 +921,7 @@ export default function TransactionsClient({
                               {pay.shareholders?.fullName || 'Anonymous Investor'}
                             </span>
                             {pay.shareholders?.email && (
-                              <span className="text-[10px] text-slate-400 block font-mono">
+                              <span className="text-xs text-slate-400 block font-mono">
                                 {pay.shareholders.email}
                               </span>
                             )}
@@ -931,7 +931,7 @@ export default function TransactionsClient({
                               {pay.opportunities?.name || `Opportunity #${pay.opportunity_id || 'N/A'}`}
                             </span>
                             {pay.opportunities?.type && (
-                              <span className="text-[10px] text-slate-400 block">
+                              <span className="text-xs text-slate-400 block">
                                 {pay.opportunities.type}
                               </span>
                             )}
@@ -944,19 +944,19 @@ export default function TransactionsClient({
                                 pay.type || 'Subscription'
                               )}
                             </span>
-                            <span className="text-[10px] text-slate-400 uppercase font-mono">
+                            <span className="text-xs text-slate-400 uppercase font-mono">
                               {pay.metadata?.payout_rail || pay.payment_method_type || 'Wire'}
                             </span>
                           </td>
                           <td className="px-3.5 py-2.5 whitespace-nowrap">
                             {pay.type === 'dividend' || pay.type === 'dividend_payout' ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold capitalize bg-purple-50 text-purple-700 border border-purple-200">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold capitalize bg-purple-50 text-purple-700 border border-purple-200">
                                 <BanknotesIcon className="h-3 w-3 text-purple-600" />
                                 <span>Disbursed</span>
                               </span>
                             ) : (
                               <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold capitalize ${
                                   isPaid
                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                     : isPending
@@ -1024,7 +1024,7 @@ export default function TransactionsClient({
                       payments
                     </span>
                     <span className="text-slate-300">|</span>
-                    <div className="flex items-center gap-1 text-[11px]">
+                    <div className="flex items-center gap-1 text-xs">
                       <span className="text-slate-400">Rows:</span>
                       <select
                         value={paymentsPageSize}

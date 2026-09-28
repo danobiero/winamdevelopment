@@ -130,7 +130,7 @@ export default function UpdateProfileForm({ admin }) {
             <h2 className="text-lg sm:text-xl font-black tracking-tight truncate max-w-full">
               {admin.fullName || 'Administrator'}
             </h2>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               <ShieldCheckIcon className="h-3.5 w-3.5" />
               Active Admin
             </span>
@@ -138,7 +138,7 @@ export default function UpdateProfileForm({ admin }) {
 
           <p className="text-xs sm:text-sm text-slate-300 truncate">{admin.email}</p>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-[11px] font-medium text-slate-400">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs font-medium text-slate-400">
             {admin.id && (
               <span className="flex items-center gap-1">
                 <IdentificationIcon className="h-3.5 w-3.5 text-blue-400" />
@@ -233,7 +233,7 @@ export default function UpdateProfileForm({ admin }) {
               {errors.email && (
                 <p className="text-xs text-rose-600 font-medium">{errors.email}</p>
               )}
-              <p className="text-[11px] text-slate-400 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Changing your email will update your sign-in username and 2FA destination.
               </p>
             </div>
@@ -264,7 +264,7 @@ export default function UpdateProfileForm({ admin }) {
                 </label>
                 {telValue && (
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md transition-colors ${
+                    className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md transition-colors ${
                       isPhoneValid
                         ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
                         : 'text-amber-700 bg-amber-50 border border-amber-200'
@@ -296,7 +296,7 @@ export default function UpdateProfileForm({ admin }) {
               {errors.telephone && (
                 <p className="text-xs text-rose-600 font-medium">{errors.telephone}</p>
               )}
-              <p className="text-[11px] text-slate-400 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Enter 9 to 12 digits without spaces or hyphens.
               </p>
             </div>
@@ -345,7 +345,7 @@ export default function UpdateProfileForm({ admin }) {
               </p>
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-600 font-medium space-y-1">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 font-medium space-y-1">
               <div className="flex justify-between">
                 <span className="text-slate-400">Target Email:</span>
                 <span className="font-bold text-slate-800">{formData?.get('email')}</span>

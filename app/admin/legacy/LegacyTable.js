@@ -176,7 +176,7 @@ export default function LegacyTable({
           <button
             type="button"
             onClick={() => setSearchTerm('')}
-            className="text-[11px] font-bold text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded-md hover:bg-slate-100 cursor-pointer"
+            className="text-xs font-bold text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded-md hover:bg-slate-100 cursor-pointer"
           >
             Clear
           </button>
@@ -208,11 +208,11 @@ export default function LegacyTable({
                   <h4 className="font-bold text-slate-900 text-sm truncate">
                     {r.full_name}
                   </h4>
-                  <p className="text-slate-400 font-mono text-[11px] truncate">
+                  <p className="text-slate-400 font-mono text-xs truncate">
                     {r.email}
                   </p>
                   {r.telephone && (
-                    <p className="text-slate-400 text-[10px] mt-0.5">
+                    <p className="text-slate-400 text-xs mt-0.5">
                       Tel: {r.telephone}
                     </p>
                   )}
@@ -241,7 +241,7 @@ export default function LegacyTable({
               {/* Portfolio Allocations & Total */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-400">
                     Allocated Opportunities ({allocations.length})
                   </span>
                   <span className="font-mono font-bold text-emerald-700">
@@ -267,7 +267,7 @@ export default function LegacyTable({
                             {alloc.opportunityName}
                           </span>
                           {alloc.startDate && (
-                            <span className="text-[10px] text-slate-400 block">
+                            <span className="text-xs text-slate-400 block">
                               Date: {alloc.startDate}
                             </span>
                           )}
@@ -283,36 +283,36 @@ export default function LegacyTable({
 
               <div className="grid grid-cols-2 gap-3 text-xs pt-1 border-t border-slate-50">
                 <div>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                     Payout Rail
                   </span>
                   {r.payment_type && r.payment_type !== 'none' ? (
                     <div className="min-w-0">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
                         {r.payment_type}
                       </span>
                       {r.account_handle && (
-                        <span className="block text-[10px] text-slate-400 mt-0.5 truncate">
+                        <span className="block text-xs text-slate-400 mt-0.5 truncate">
                           {r.account_handle}
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-slate-300 text-[11px]">—</span>
+                    <span className="text-slate-300 text-xs">—</span>
                   )}
                 </div>
 
                 <div>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                     Status
                   </span>
                   {r.is_claimed ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                       <CheckBadgeIcon className="h-3 w-3 text-emerald-600" />
                       Live
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                       <ClockIcon className="h-3 w-3 text-amber-500" />
                       Pending
                     </span>
@@ -328,7 +328,7 @@ export default function LegacyTable({
       <div className="hidden lg:block bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm overflow-x-auto border-b-4 border-b-slate-100">
         <table className="min-w-full w-full text-left border-collapse table-fixed">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-black uppercase tracking-wider text-slate-400">
               <th className="w-[23%] py-3.5 px-4">Shareholder</th>
               <th className="w-[37%] py-3.5 px-4">Target Portfolio</th>
               <th className="w-[14%] py-3.5 px-4">Invested Amount</th>
@@ -355,11 +355,11 @@ export default function LegacyTable({
                     <div className="font-bold text-slate-900 text-sm truncate" title={r.full_name}>
                       {r.full_name}
                     </div>
-                    <div className="text-slate-400 font-mono text-[11px] mt-0.5 truncate" title={r.email}>
+                    <div className="text-slate-400 font-mono text-xs mt-0.5 truncate" title={r.email}>
                       {r.email}
                     </div>
                     {r.telephone && (
-                      <div className="text-slate-400 text-[10px] mt-0.5">
+                      <div className="text-slate-400 text-xs mt-0.5">
                         Tel: {r.telephone}
                       </div>
                     )}
@@ -368,7 +368,7 @@ export default function LegacyTable({
                   {/* Allocated Opportunities */}
                   <td className="py-4 px-4 align-top">
                     {allocations.length === 0 ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-600">
                         Membership Only
                       </span>
                     ) : (
@@ -383,7 +383,7 @@ export default function LegacyTable({
                                 {alloc.opportunityName}
                               </span>
                               {alloc.startDate && (
-                                <span className="text-[10px] text-slate-400 block">
+                                <span className="text-xs text-slate-400 block">
                                   Start: {alloc.startDate}
                                 </span>
                               )}
@@ -403,7 +403,7 @@ export default function LegacyTable({
                       {FormatCurrency(totalAmount)}
                     </div>
                     {allocations.length > 1 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 mt-1">
                         {allocations.length} Allocations
                       </span>
                     )}
@@ -413,17 +413,17 @@ export default function LegacyTable({
                   <td className="py-4 px-4 align-top">
                     {r.payment_type && r.payment_type !== 'none' ? (
                       <div>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
                           {r.payment_type}
                         </span>
                         {r.account_handle && (
-                          <span className="block text-[10px] text-slate-400 mt-0.5 truncate max-w-[120px]" title={r.account_handle}>
+                          <span className="block text-xs text-slate-400 mt-0.5 truncate max-w-[120px]" title={r.account_handle}>
                             {r.account_handle}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-slate-300 text-[11px]">—</span>
+                      <span className="text-slate-300 text-xs">—</span>
                     )}
                   </td>
 
@@ -431,18 +431,18 @@ export default function LegacyTable({
                   <td className="py-4 px-4 align-top whitespace-nowrap">
                     {r.is_claimed ? (
                       <div className="space-y-0.5">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckBadgeIcon className="h-3.5 w-3.5 text-emerald-600" />
                           Claimed & Live
                         </span>
                         {r.claimed_by_shareholder_id && (
-                          <span className="block text-[10px] text-slate-400">
+                          <span className="block text-xs text-slate-400">
                             Shareholder #{r.claimed_by_shareholder_id}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                         <ClockIcon className="h-3.5 w-3.5 text-amber-500" />
                         Awaiting Sign-In
                       </span>

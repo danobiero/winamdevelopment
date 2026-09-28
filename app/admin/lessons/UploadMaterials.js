@@ -183,7 +183,7 @@ export default function UploadMaterials({ lessons, onUpload }) {
                     <span className="text-sm font-bold text-slate-800 truncate max-w-[280px]">
                       {file.name}
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-2 bg-emerald-100 px-2 py-1 rounded-md">
+                    <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-2 bg-emerald-100 px-2 py-1 rounded-md">
                       Ready to Upload
                     </span>
                   </>

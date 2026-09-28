@@ -131,10 +131,10 @@ export default function PortfolioClientView({
         <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-3.5 sm:p-4 rounded-2xl text-white relative overflow-hidden shadow-md border border-slate-800 flex flex-col justify-between min-w-0">
           <div className="relative z-10 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Portfolio Valuation
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live
               </span>
@@ -144,7 +144,7 @@ export default function PortfolioClientView({
             </p>
           </div>
 
-          <div className="relative z-10 pt-2 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+          <div className="relative z-10 pt-2 mt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
             <span
               className={`font-bold ${
                 metrics.totalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -153,7 +153,7 @@ export default function PortfolioClientView({
               {metrics.totalReturn >= 0 ? '▲ +' : '▼ '}
               {metrics.totalReturn.toFixed(2)}%
             </span>
-            <span className="text-slate-400 font-medium text-[10px]">Net Asset Value</span>
+            <span className="text-slate-400 font-medium text-xs">Net Asset Value</span>
           </div>
 
           <PresentationChartLineIcon className="absolute -right-3 -bottom-3 h-20 w-20 text-white/5 pointer-events-none" />
@@ -163,7 +163,7 @@ export default function PortfolioClientView({
         <div className="bg-white border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between min-w-0">
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Invested Capital
               </span>
               <div className="p-1 bg-emerald-50 text-emerald-600 rounded-lg">
@@ -175,9 +175,9 @@ export default function PortfolioClientView({
             </p>
           </div>
 
-          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
             <span>Principal Committed</span>
-            <span className="font-bold text-slate-800 text-[10px]">100% Deployed</span>
+            <span className="font-bold text-slate-800 text-xs">100% Deployed</span>
           </div>
         </div>
 
@@ -185,7 +185,7 @@ export default function PortfolioClientView({
         <div className="bg-white border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between min-w-0">
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Active Holdings
               </span>
               <div className="p-1 bg-blue-50 text-blue-600 rounded-lg">
@@ -200,9 +200,9 @@ export default function PortfolioClientView({
             </p>
           </div>
 
-          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
             <span>Asset Classes</span>
-            <span className="font-bold text-blue-600 text-[10px]">
+            <span className="font-bold text-blue-600 text-xs">
               {metrics.uniqueSectors}{' '}
               {metrics.uniqueSectors === 1 ? 'Sector' : 'Sectors'}
             </span>
@@ -219,7 +219,7 @@ export default function PortfolioClientView({
               <ChartPieIcon className="h-4 w-4 text-blue-600" />
               Asset Allocation
             </h3>
-            <span className="text-[10px] font-bold text-slate-400 font-mono">
+            <span className="text-xs font-bold text-slate-400 font-mono">
               {metrics.chartData.length} {metrics.chartData.length === 1 ? 'Holding' : 'Holdings'}
             </span>
           </div>
@@ -259,7 +259,7 @@ export default function PortfolioClientView({
                         borderRadius: '10px',
                         border: 'none',
                         boxShadow: '0 8px 20px -4px rgba(0, 0, 0, 0.3)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: '600',
                         padding: '6px 10px',
                       }}
@@ -269,7 +269,7 @@ export default function PortfolioClientView({
                 </ResponsiveContainer>
 
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none text-center px-2">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                     Total Assets
                   </span>
                   <span className="text-xs sm:text-sm font-black text-slate-900 truncate max-w-[110px]">
@@ -292,7 +292,7 @@ export default function PortfolioClientView({
                 return (
                   <div
                     key={idx}
-                    className="flex items-center justify-between text-[11px]"
+                    className="flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span
@@ -307,7 +307,7 @@ export default function PortfolioClientView({
                       <span className="font-bold text-slate-900">
                         {FormatCurrency(entry.value)}
                       </span>
-                      <span className="text-[10px] text-slate-400 w-9 text-right">
+                      <span className="text-xs text-slate-400 w-10 text-right">
                         {pct}%
                       </span>
                     </div>

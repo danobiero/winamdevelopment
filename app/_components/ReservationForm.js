@@ -69,7 +69,7 @@ function ReservationForm({ opportunity, user, bookedCounts }) {
             />
           </div>
           <div>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+            <p className="text-xs uppercase font-black text-slate-400 tracking-widest">
               Investor
             </p>
             <p className="font-bold text-slate-900 text-sm">{user?.name}</p>
@@ -88,7 +88,7 @@ function ReservationForm({ opportunity, user, bookedCounts }) {
       >
         {/* Shareholder Count */}
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
             Attendees / Shareholders
           </label>
           <select
@@ -114,7 +114,7 @@ function ReservationForm({ opportunity, user, bookedCounts }) {
         <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-start gap-3">
           <ChartBarIcon className="h-5 w-5 text-primary-400 shrink-0" />
           <div>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
+            <p className="text-xs uppercase font-black text-slate-400 tracking-wider">
               Briefing Capacity
             </p>
             <p className="text-sm font-medium text-slate-200">
@@ -127,7 +127,7 @@ function ReservationForm({ opportunity, user, bookedCounts }) {
 
         {/* Agenda / Observations */}
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
             Agenda Items / Discussion Points
           </label>
           <textarea
@@ -142,7 +142,7 @@ function ReservationForm({ opportunity, user, bookedCounts }) {
         <div className="mt-auto pt-4">
           {!isValidSelection ? (
             <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl text-center">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">
+              <p className="text-slate-500 text-xs font-black uppercase tracking-widest">
                 Please select a 6-week briefing window
               </p>
             </div>

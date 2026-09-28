@@ -20,16 +20,16 @@ export default function DeleteReportModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-5"
+        className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-4 sm:space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Warning Icon Badge */}
-        <div className="flex items-center justify-center w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl mx-auto shadow-inner">
-          <ExclamationTriangleIcon className="h-7 w-7" />
+        <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-rose-100 text-rose-600 rounded-2xl mx-auto shadow-inner">
+          <ExclamationTriangleIcon className="h-6 w-6 sm:h-7 sm:w-7" />
         </div>
 
         {/* Text Header */}
@@ -43,11 +43,11 @@ export default function DeleteReportModal({
         </div>
 
         {/* Report Preview Card */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5 text-left">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-2.5 text-left">
           <div className="flex items-start gap-2.5">
             <DocumentIcon className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">
                 Document Title
               </span>
               <p className="text-xs font-bold text-slate-800 break-words leading-snug">
@@ -59,14 +59,14 @@ export default function DeleteReportModal({
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-xs">
             <div className="flex items-center gap-1.5 text-slate-600 min-w-0">
               <BuildingOffice2Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              <span className="text-[11px] font-medium truncate" title={report.opportunities?.name}>
+              <span className="text-xs font-medium truncate" title={report.opportunities?.name}>
                 {report.opportunities?.name || 'Opportunity'}
               </span>
             </div>
 
             <div className="flex items-center gap-1.5 text-slate-600 justify-end">
               <CalendarDaysIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              <span className="text-[11px] font-mono font-medium">
+              <span className="text-xs font-mono font-medium">
                 {report.meetingDate}
               </span>
             </div>

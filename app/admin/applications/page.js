@@ -87,13 +87,13 @@ export default async function MembershipApplicationsPage({ searchParams }) {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Membership <span className="text-blue-600">Applications</span>
           </h1>
-          <div className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {applications.length} Records on Page {page}
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
           {['Applied', 'In Review', 'Approved', 'Rejected'].map((status) => (
@@ -109,7 +109,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                         : 'bg-red-500'
                 }`}
               />
-              <span className="text-[10px] font-bold text-slate-600">
+              <span className="text-xs font-bold text-slate-600">
                 {status}
               </span>
             </div>
@@ -133,7 +133,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
             className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col space-y-4"
           >
             <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
+              <span className="text-xs font-mono text-slate-400 font-bold">
                 #{String(app.id).slice(0, 8)}
               </span>
               <span className="text-xs font-bold text-slate-500">
@@ -141,7 +141,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
               </span>
             </div>
             <div className="w-full">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Applicant Info
               </p>
               <div className="flex flex-col gap-0.5">
@@ -158,17 +158,17 @@ export default async function MembershipApplicationsPage({ searchParams }) {
             </div>
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   Status
                 </p>
                 <StatusBadge status={app.status} />
               </div>
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   App Fee
                 </p>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                  className={`text-xs font-bold px-2 py-0.5 rounded border ${
                     app.application_fee_paid
                       ? 'text-emerald-600 bg-emerald-50 border-emerald-100'
                       : 'text-red-500 bg-slate-50 border-slate-200'
@@ -181,7 +181,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
             <div className="flex flex-wrap gap-2 pt-4 mt-auto border-t border-slate-50">
               <Link
                 href={`/admin/applications?view=${app.id}&page=${page}`}
-                className="px-3 py-2 bg-yellow-600 border border-yellow-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest"
+                className="px-3 py-2 bg-yellow-600 border border-yellow-700 text-white rounded-lg text-xs font-black uppercase tracking-widest"
               >
                 View
               </Link>
@@ -190,7 +190,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                 app.application_fee_paid && (
                   <Link
                     href={`/admin/applications?process=${app.id}&page=${page}`}
-                    className="px-3 py-2 bg-green-600 border border-green-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest"
+                    className="px-3 py-2 bg-green-600 border border-green-700 text-white rounded-lg text-xs font-black uppercase tracking-widest"
                   >
                     Process
                   </Link>
@@ -228,7 +228,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                 key={app.id}
                 className="hover:bg-blue-50/30 transition-colors"
               >
-                <td className="px-4 py-4 font-mono text-[10px] text-slate-400 font-bold truncate">
+                <td className="px-4 py-4 font-mono text-xs text-slate-400 font-bold truncate">
                   #{String(app.id).slice(0, 8)}
                 </td>
                 <td className="px-4 py-4">
@@ -236,7 +236,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                     <span className="font-bold text-slate-900">
                       {app.full_name}
                     </span>
-                    <span className="text-[10px] text-blue-600">
+                    <span className="text-xs text-blue-600">
                       {app.email}
                     </span>
                   </div>
@@ -246,7 +246,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                 </td>
                 <td className="px-4 py-4">
                   <span
-                    className={`px-2 py-0.5 rounded border text-[9px] font-black uppercase ${
+                    className={`px-2 py-0.5 rounded border text-xs font-black uppercase ${
                       app.application_fee_paid
                         ? 'text-emerald-600 bg-emerald-50'
                         : 'text-red-500 bg-slate-50'
@@ -265,7 +265,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                   <div className="flex justify-end items-center gap-2">
                     <Link
                       href={`/admin/applications?view=${app.id}&page=${page}`}
-                      className="bg-yellow-600 border border-yellow-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm"
+                      className="bg-yellow-600 border border-yellow-700 text-white px-2 py-1 rounded text-xs font-black uppercase shadow-sm"
                     >
                       View
                     </Link>
@@ -274,7 +274,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                       app.application_fee_paid && (
                         <Link
                           href={`/admin/applications?process=${app.id}&page=${page}`}
-                          className="bg-green-600 border border-green-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm"
+                          className="bg-green-600 border border-green-700 text-white px-2 py-1 rounded text-xs font-black uppercase shadow-sm"
                         >
                           Process
                         </Link>
@@ -303,7 +303,7 @@ function StatusBadge({ status }) {
   };
   return (
     <span
-      className={`px-2 py-0.5 rounded border text-[9px] font-black uppercase tracking-widest ${
+      className={`px-2 py-0.5 rounded border text-xs font-black uppercase tracking-widest ${
         styles[status?.toLowerCase()] || styles.applied
       }`}
     >

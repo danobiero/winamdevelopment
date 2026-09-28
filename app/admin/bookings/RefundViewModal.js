@@ -23,11 +23,11 @@ export default function RefundViewModal({ refund, ledger = [] }) {
       onClick={handleClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside the modal
       >
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+        <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center sticky top-0 z-10">
           <h2 className="text-xl font-bold text-gray-800">Refund Details</h2>
           <button
             onClick={handleClose}
@@ -54,13 +54,13 @@ export default function RefundViewModal({ refund, ledger = [] }) {
         <div className="p-6 space-y-4">
           <div className="flex justify-between items-start border-b pb-3">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Refund ID
               </p>
               <p className="font-mono text-sm text-gray-700">{refund.id}</p>
             </div>
             <span
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+              className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase ${
                 refund.status === 'approved'
                   ? 'bg-green-100 text-green-700'
                   : refund.status === 'completed'
@@ -74,7 +74,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Booking
               </p>
               <p className="font-semibold text-blue-600">
@@ -82,7 +82,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Amount
               </p>
               <p className="font-bold text-gray-900">
@@ -92,7 +92,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Client
             </p>
             <p className="text-gray-800 font-medium">
@@ -101,7 +101,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Latest reason for Refund
             </p>
             <div className="mt-1 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm text-gray-600 italic">
@@ -110,7 +110,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Last Updated
             </p>
             <p className="text-xs text-gray-500">
@@ -132,7 +132,8 @@ export default function RefundViewModal({ refund, ledger = [] }) {
               No financial activity recorded for this booking.
             </p>
           ) : (
-            <table className="w-full text-xs border-collapse">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="text-gray-500 border-b">
                   <th className="text-left py-1">Date</th>
@@ -162,6 +163,7 @@ export default function RefundViewModal({ refund, ledger = [] }) {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

@@ -15,6 +15,7 @@ import {
   CalendarIcon,
   ArrowTrendingUpIcon,
   DocumentTextIcon,
+  IdentificationIcon,
 } from '@heroicons/react/24/outline';
 import {
   getCoreQuarterlyFinancials,
@@ -51,7 +52,8 @@ export default function QuarterlyFinancialStatementsModal({
 
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedQuarter, setSelectedQuarter] = useState(defaultQuarter);
-  // Statements tabs: 'PACKAGE' | 'INCOME' | 'BALANCE' | 'CASHFLOW' | 'EQUITY'
+  const [selectedScope, setSelectedScope] = useState('COMPANY'); // 'COMPANY' | opportunityId
+  // Statements tabs: 'PACKAGE' | 'INCOME' | 'BALANCE' | 'CASHFLOW' | 'EQUITY' | 'REGISTER'
   const [activeTab, setActiveTab] = useState('PACKAGE');
 
   const [statementData, setStatementData] = useState(null);
@@ -73,9 +75,12 @@ export default function QuarterlyFinancialStatementsModal({
     setArchiveSuccess('');
 
     try {
+      const isCompany = selectedScope === 'COMPANY';
       const res = await getCoreQuarterlyFinancials({
         year: selectedYear,
         quarter: selectedQuarter,
+        scope: isCompany ? 'COMPANY' : 'OPPORTUNITY',
+        opportunityId: isCompany ? null : Number(selectedScope),
       });
 
       if (res?.error) {
@@ -98,7 +103,7 @@ export default function QuarterlyFinancialStatementsModal({
     if (isOpen) {
       loadData();
     }
-  }, [isOpen, selectedYear, selectedQuarter]);
+  }, [isOpen, selectedYear, selectedQuarter, selectedScope]);
 
   if (!isOpen) return null;
 
@@ -113,6 +118,8 @@ export default function QuarterlyFinancialStatementsModal({
         return 'CASH_FLOW';
       case 'EQUITY':
         return 'SHAREHOLDERS_EQUITY';
+      case 'REGISTER':
+        return 'SHAREHOLDER_REGISTER';
       default:
         return 'ALL';
     }
@@ -128,6 +135,8 @@ export default function QuarterlyFinancialStatementsModal({
         return 'Statement of Cash Flows';
       case 'EQUITY':
         return "Statement of Shareholders' Equity";
+      case 'REGISTER':
+        return 'Shareholder Ownership Register & Allocation Schedule';
       default:
         return 'Complete 4-Statement Package';
     }
@@ -168,13 +177,16 @@ export default function QuarterlyFinancialStatementsModal({
 
       if (!pdfBlob) throw new Error('Could not generate statement PDF blob');
 
+      const isCompany = selectedScope === 'COMPANY';
+      const scopePrefix = isCompany ? 'Company-Wide Consolidated' : (statementData.opportunity.name || 'Opportunity');
       const label = getStatementLabel(type === 'ALL' ? 'PACKAGE' : activeTab);
-      const safeTitle = `[General] Core ${label} - ${selectedYear} ${selectedQuarter}.pdf`;
-      const fileName = `Core_${type}_${selectedYear}_${selectedQuarter}.pdf`;
+      const safeTitle = `[General] ${scopePrefix} ${label} - ${selectedYear} ${selectedQuarter}.pdf`;
+      const fileScopeName = isCompany ? 'Company' : 'Opportunity';
+      const fileName = `${fileScopeName}_${type}_${selectedYear}_${selectedQuarter}.pdf`;
       const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
       const formData = new FormData();
-      formData.append('opportunityId', statementData.opportunity.id);
+      formData.append('opportunityId', isCompany ? 'COMPANY' : String(statementData.opportunity.id));
       formData.append('year', String(selectedYear));
       formData.append('quarter', selectedQuarter);
       formData.append('statementType', type);
@@ -218,40 +230,71 @@ export default function QuarterlyFinancialStatementsModal({
         <div className="bg-[#000033] text-white p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Core Portfolio Equity
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border ${
+                selectedScope === 'COMPANY'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+              }`}>
+                {selectedScope === 'COMPANY' ? 'Whole Company Assets' : statementData?.opportunity?.name}
               </span>
               <span className="text-xs text-slate-400 font-mono">
-                Opportunity #{statementData?.opportunity?.id || 9}
+                {selectedScope === 'COMPANY' ? 'Consolidated All Opportunities' : `Opportunity #${statementData?.opportunity?.id}`}
               </span>
               {statementData?.isUsingTableExpenses && (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Actual Expenses Connected
                 </span>
               )}
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
               <BanknotesIcon className="h-6 w-6 text-amber-400" />
-              <span>Core Quarterly Financial Statements</span>
+              <span>
+                {selectedScope === 'COMPANY'
+                  ? 'Company Financial Statements'
+                  : `${statementData?.opportunity?.name || 'Opportunity'} Financial Statements`}
+              </span>
             </h2>
             <p className="text-xs text-slate-300">
-              Winam Development Group • Income Statement, Balance Sheet, Statement of Cash Flows & Shareholders' Equity.
+              Winam Development Group • {selectedScope === 'COMPANY'
+                ? 'Whole Company Assets, Venture Holdings & Participated Shareholder Positions.'
+                : 'Project Operations, Balance Sheet, Cash Flows & Shareholder Register.'}
             </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors self-end sm:self-auto"
+            className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors self-end sm:self-auto cursor-pointer"
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
-        {/* PERIOD SELECTOR & SUMMARY BAR */}
+        {/* PERIOD & SCOPE SELECTOR & SUMMARY BAR */}
         <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-          {/* Year & Quarter Pickers */}
+          {/* Scope, Year & Quarter Pickers */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Scope Selector: Whole Company vs Specific Opportunity */}
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400">Scope:</span>
+              <select
+                value={selectedScope}
+                onChange={(e) => setSelectedScope(e.target.value)}
+                className="bg-transparent text-xs font-black text-blue-900 outline-none cursor-pointer"
+              >
+                <option value="COMPANY">🏢 Whole Company (All Assets & Holdings)</option>
+                <optgroup label="Individual Opportunities">
+                  {opportunities
+                    .filter((o) => o.id !== 999)
+                    .map((opp) => (
+                      <option key={opp.id} value={opp.id}>
+                        {opp.name} ({opp.type || 'Portfolio'})
+                      </option>
+                    ))}
+                </optgroup>
+              </select>
+            </div>
+
             <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-sm">
               <CalendarIcon className="h-4 w-4 text-slate-400" />
               <select
@@ -295,7 +338,7 @@ export default function QuarterlyFinancialStatementsModal({
           {/* Quick Date Display */}
           <div className="flex items-center gap-3">
             {statementData?.period && (
-              <div className="text-[11px] text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 font-mono">
                 Period: <span className="font-bold text-slate-700">{statementData.period.startDate}</span> to{' '}
                 <span className="font-bold text-slate-700">{statementData.period.endDate}</span>
               </div>
@@ -369,6 +412,19 @@ export default function QuarterlyFinancialStatementsModal({
             <UserGroupIcon className="h-4 w-4" />
             <span>4. Shareholders' Equity</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('REGISTER')}
+            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'REGISTER'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <IdentificationIcon className="h-4 w-4" />
+            <span>5. Shareholder Register & Allocation Schedule</span>
+          </button>
         </div>
 
         {/* TAB CONTENT */}
@@ -401,47 +457,49 @@ export default function QuarterlyFinancialStatementsModal({
                   {/* Top KPI Highlights */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Target Capital
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                        {selectedScope === 'COMPANY' ? 'Total Company Assets' : 'Total Opportunity Assets'}
                       </span>
                       <span className="text-base sm:text-lg font-black text-slate-900 font-mono">
-                        {formatUSD(metrics?.targetCapitalization)}
+                        {formatUSD(metrics?.totalAssets)}
                       </span>
-                      <span className="text-[10px] text-slate-500 block">Core Portfolio Target</span>
+                      <span className="text-xs text-slate-500 block truncate">
+                        Sum of Asset Valuations
+                      </span>
                     </div>
 
                     <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
-                      <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+                      <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
                         Cumulative Capital
                       </span>
                       <span className="text-base sm:text-lg font-black text-amber-900 font-mono">
                         {formatUSD(metrics?.cumulativeCapitalRaised)}
                       </span>
-                      <span className="text-[10px] font-bold text-amber-700 block">
-                        {(metrics?.fundingProgressPercent || 0).toFixed(1)}% funded
+                      <span className="text-xs font-bold text-amber-700 block">
+                        {metrics?.activeShareholderCount || 0} participating investors
                       </span>
                     </div>
 
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                      <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
                         Quarter Inflows
                       </span>
                       <span className="text-base sm:text-lg font-black text-emerald-900 font-mono">
                         {formatUSD(metrics?.periodInflows)}
                       </span>
-                      <span className="text-[10px] text-emerald-700 block">
+                      <span className="text-xs text-emerald-700 block">
                         {metrics?.transactionCount || 0} subscriptions
                       </span>
                     </div>
 
                     <div className="p-3 bg-rose-50 rounded-xl border border-rose-200">
-                      <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wider block">
+                      <span className="text-xs font-bold text-rose-800 uppercase tracking-wider block">
                         Operating Expenses
                       </span>
                       <span className="text-base sm:text-lg font-black text-rose-900 font-mono">
                         {formatUSD(metrics?.totalExpenses)}
                       </span>
-                      <span className="text-[10px] text-rose-700 block">
+                      <span className="text-xs text-rose-700 block">
                         {statementData.isUsingTableExpenses ? `${actualExpenses.length} table records` : 'Calculated gateway'}
                       </span>
                     </div>
@@ -458,7 +516,7 @@ export default function QuarterlyFinancialStatementsModal({
                           <BanknotesIcon className="h-4 w-4" />
                           <span>1. Income Statement</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">View Full &rarr;</span>
+                        <span className="text-xs font-mono text-slate-400">View Full &rarr;</span>
                       </div>
                       <div className="text-xs space-y-1 pt-1">
                         <div className="flex justify-between text-slate-600">
@@ -485,18 +543,26 @@ export default function QuarterlyFinancialStatementsModal({
                           <ScaleIcon className="h-4 w-4" />
                           <span>2. Balance Sheet</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">View Full &rarr;</span>
+                        <span className="text-xs font-mono text-slate-400">View Full &rarr;</span>
                       </div>
                       <div className="text-xs space-y-1 pt-1">
                         <div className="flex justify-between text-slate-600">
-                          <span>Total Assets (Cash Vault):</span>
+                          <span>Total Assets:</span>
                           <span className="font-mono font-bold text-slate-900">{formatUSD(balanceSheet?.totalAssets)}</span>
                         </div>
-                        <div className="flex justify-between text-slate-600">
+                        <div className="flex justify-between text-xs text-slate-500 pl-2">
+                          <span>• Unallocated Cash:</span>
+                          <span className="font-mono">{formatUSD(balanceSheet?.totalCurrentAssets)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-slate-500 pl-2">
+                          <span>• Portfolio Holdings (NAV):</span>
+                          <span className="font-mono">{formatUSD(balanceSheet?.totalNonCurrentAssets)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 pt-1 border-t border-slate-100">
                           <span>Total Liabilities:</span>
                           <span className="font-mono">{formatUSD(balanceSheet?.totalLiabilities)}</span>
                         </div>
-                        <div className="flex justify-between font-black text-slate-900 pt-1 border-t border-slate-100">
+                        <div className="flex justify-between font-black text-slate-900">
                           <span>Shareholders' Equity:</span>
                           <span className="font-mono text-blue-600">{formatUSD(balanceSheet?.totalShareholderEquity)}</span>
                         </div>
@@ -512,7 +578,7 @@ export default function QuarterlyFinancialStatementsModal({
                           <ArrowTrendingUpIcon className="h-4 w-4" />
                           <span>3. Statement of Cash Flows</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">View Full &rarr;</span>
+                        <span className="text-xs font-mono text-slate-400">View Full &rarr;</span>
                       </div>
                       <div className="text-xs space-y-1 pt-1">
                         <div className="flex justify-between text-slate-600">
@@ -539,7 +605,7 @@ export default function QuarterlyFinancialStatementsModal({
                           <UserGroupIcon className="h-4 w-4" />
                           <span>4. Shareholders' Equity</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">View Full &rarr;</span>
+                        <span className="text-xs font-mono text-slate-400">View Full &rarr;</span>
                       </div>
                       <div className="text-xs space-y-1 pt-1">
                         <div className="flex justify-between text-slate-600">
@@ -553,6 +619,33 @@ export default function QuarterlyFinancialStatementsModal({
                         <div className="flex justify-between font-black text-slate-900 pt-1 border-t border-slate-100">
                           <span>Total Ending Equity:</span>
                           <span className="font-mono text-purple-700">{formatUSD(shareholdersEquity?.rollforward?.totalEndingEquity)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => setActiveTab('REGISTER')}
+                      className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-indigo-500 shadow-sm hover:shadow transition-all cursor-pointer space-y-2 md:col-span-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <IdentificationIcon className="h-4 w-4" />
+                          <span>5. Shareholder Ownership Register & Allocation Schedule</span>
+                        </span>
+                        <span className="text-xs font-mono text-slate-400">View Full &rarr;</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs pt-1">
+                        <div className="flex justify-between sm:flex-col text-slate-600">
+                          <span className="text-slate-500">Registered Investors:</span>
+                          <span className="font-mono font-bold text-slate-900">{shareholders.length} Active Investors</span>
+                        </div>
+                        <div className="flex justify-between sm:flex-col text-slate-600">
+                          <span className="text-slate-500">Quarter Inflows:</span>
+                          <span className="font-mono font-bold text-emerald-600">+{formatUSD(metrics?.periodInflows)}</span>
+                        </div>
+                        <div className="flex justify-between sm:flex-col text-slate-600">
+                          <span className="text-slate-500">Total Position Value:</span>
+                          <span className="font-mono font-bold text-indigo-700">{formatUSD(shareholders.reduce((s, sh) => s + (sh.currentPositionValue || 0), 0))}</span>
                         </div>
                       </div>
                     </div>
@@ -615,11 +708,11 @@ export default function QuarterlyFinancialStatementsModal({
                         Operating Expenses & Transaction Processing
                       </span>
                       {statementData?.isUsingTableExpenses ? (
-                        <span className="text-[10px] text-emerald-700 font-bold">
+                        <span className="text-xs text-emerald-700 font-bold">
                           ✓ From operating_expenses table ({actualExpenses.length} records)
                         </span>
                       ) : (
-                        <span className="text-[10px] text-amber-600 font-medium">
+                        <span className="text-xs text-amber-600 font-medium">
                           Estimated Gateway Processing Fees
                         </span>
                       )}
@@ -645,7 +738,7 @@ export default function QuarterlyFinancialStatementsModal({
                       <span className="text-xs font-black text-emerald-950 uppercase tracking-wider block">
                         Net Operating Income / Surplus
                       </span>
-                      <span className="text-[11px] text-emerald-800">
+                      <span className="text-xs text-emerald-800">
                         Available for portfolio reinvestment or equity accrual
                       </span>
                     </div>
@@ -673,7 +766,7 @@ export default function QuarterlyFinancialStatementsModal({
                     </div>
 
                     {balanceSheet?.isBalanced && (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
                         <CheckCircleIcon className="h-3.5 w-3.5" />
                         Balanced: Assets = Liabilities + Equity
                       </span>
@@ -700,8 +793,27 @@ export default function QuarterlyFinancialStatementsModal({
                         </div>
                       </div>
 
+                      {/* Non-Current Assets: Portfolio Ventures & Asset Holdings */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                          Non-Current Assets: Portfolio Ventures & Holdings
+                        </span>
+                        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden text-xs">
+                          {balanceSheet?.nonCurrentAssets?.map((a, i) => (
+                            <div key={i} className="flex justify-between p-3">
+                              <span className="text-slate-700 font-semibold">{a.label}</span>
+                              <span className="font-mono font-medium text-slate-900">{formatUSD(a.amount)}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between p-3 bg-slate-50 font-bold text-slate-900">
+                            <span>Total Non-Current Portfolio Assets</span>
+                            <span className="font-mono text-emerald-700">{formatUSD(balanceSheet?.totalNonCurrentAssets)}</span>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="p-3 bg-slate-100/70 rounded-xl border border-slate-200 flex justify-between items-center text-xs font-black text-slate-900">
-                        <span>TOTAL ASSETS</span>
+                        <span>TOTAL ASSETS (Sum of Valuations)</span>
                         <span className="font-mono text-sm">{formatUSD(balanceSheet?.totalAssets)}</span>
                       </div>
                     </div>
@@ -837,7 +949,7 @@ export default function QuarterlyFinancialStatementsModal({
               )}
 
               {/* ========================================================= */}
-              {/* 5. DEDICATED: STATEMENT OF SHAREHOLDERS' EQUITY */}
+              {/* 4. DEDICATED: STATEMENT OF SHAREHOLDERS' EQUITY */}
               {/* ========================================================= */}
               {activeTab === 'EQUITY' && (
                 <div className="space-y-6">
@@ -893,49 +1005,81 @@ export default function QuarterlyFinancialStatementsModal({
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Shareholder Register */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                        Shareholder Ownership Register & Allocation Schedule
-                      </h4>
-                      <span className="text-xs font-mono font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">
+              {/* ========================================================= */}
+              {/* 5. DEDICATED: SHAREHOLDER OWNERSHIP REGISTER & ALLOCATION SCHEDULE */}
+              {/* ========================================================= */}
+              {activeTab === 'REGISTER' && (
+                <div className="space-y-6">
+                  <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                          <IdentificationIcon className="h-5 w-5 text-indigo-600" />
+                          <span>Shareholder Ownership Register & Allocation Schedule</span>
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Consolidated register of equity ownership, active investment allocations, and capital balances.
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full self-start sm:self-auto">
                         {shareholders.length} Registered Investors
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-100 text-slate-700 uppercase font-black text-[10px] tracking-wider border-b border-slate-200">
+                        <thead className="bg-slate-100 text-slate-700 uppercase font-black text-xs tracking-wider border-b border-slate-200">
                           <tr>
-                            <th className="px-3.5 py-2.5">#</th>
-                            <th className="px-3.5 py-2.5">Shareholder</th>
-                            <th className="px-3.5 py-2.5">Email</th>
-                            <th className="px-3.5 py-2.5 text-right">Quarter Inflow</th>
-                            <th className="px-3.5 py-2.5 text-right">Ending Contributed</th>
-                            <th className="px-3.5 py-2.5 text-right">Fund Ownership %</th>
+                            <th className="px-3.5 py-3">#</th>
+                            <th className="px-3.5 py-3">Shareholder</th>
+                            <th className="px-3.5 py-3">Participated Opportunities</th>
+                            <th className="px-3.5 py-3 text-right">Quarter Inflow</th>
+                            <th className="px-3.5 py-3 text-right">Contributed Capital</th>
+                            <th className="px-3.5 py-3 text-right">Position Value (NAV)</th>
+                            <th className="px-3.5 py-3 text-right">Ownership %</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 font-medium">
                           {shareholders.map((sh, idx) => (
                             <tr key={sh.id} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-3.5 py-2.5 font-mono text-slate-400">
+                              <td className="px-3.5 py-3 font-mono text-slate-400">
                                 {idx + 1}
                               </td>
-                              <td className="px-3.5 py-2.5 font-bold text-slate-900">
-                                {sh.name}
+                              <td className="px-3.5 py-3">
+                                <div className="font-bold text-slate-900">{sh.name}</div>
+                                <div className="text-xs text-slate-500 font-mono">{sh.email}</div>
                               </td>
-                              <td className="px-3.5 py-2.5 text-slate-600">
-                                {sh.email}
+                              <td className="px-3.5 py-3">
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {(sh.participatedOpportunities && sh.participatedOpportunities.length > 0) ? (
+                                    sh.participatedOpportunities.map((opp) => (
+                                      <span
+                                        key={opp.id}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200/60"
+                                        title={`Invested: ${formatUSD(opp.invested)}`}
+                                      >
+                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                                        {opp.name}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-slate-400 italic">Core Standard</span>
+                                  )}
+                                </div>
                               </td>
-                              <td className="px-3.5 py-2.5 text-right font-mono font-semibold text-emerald-700">
+                              <td className="px-3.5 py-3 text-right font-mono font-semibold text-emerald-700 whitespace-nowrap">
                                 {formatUSD(sh.periodContributions)}
                               </td>
-                              <td className="px-3.5 py-2.5 text-right font-mono font-black text-slate-900">
+                              <td className="px-3.5 py-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
                                 {formatUSD(sh.endingBalance)}
                               </td>
-                              <td className="px-3.5 py-2.5 text-right font-mono font-bold text-purple-700">
+                              <td className="px-3.5 py-3 text-right font-mono font-black text-blue-900 whitespace-nowrap">
+                                {formatUSD(sh.currentPositionValue)}
+                              </td>
+                              <td className="px-3.5 py-3 text-right font-mono font-black text-purple-700 whitespace-nowrap">
                                 {sh.ownershipPercent}%
                               </td>
                             </tr>
@@ -943,16 +1087,19 @@ export default function QuarterlyFinancialStatementsModal({
                         </tbody>
                         <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
                           <tr>
-                            <td colSpan={3} className="px-3.5 py-2.5 text-slate-700 uppercase">
-                              Total Active Capital
+                            <td colSpan={3} className="px-3.5 py-3 text-slate-700 uppercase">
+                              Total Consolidated Positions ({shareholders.length} Active Investors)
                             </td>
-                            <td className="px-3.5 py-2.5 text-right font-mono font-black text-emerald-700">
+                            <td className="px-3.5 py-3 text-right font-mono font-black text-emerald-700 whitespace-nowrap">
                               {formatUSD(metrics?.periodInflows)}
                             </td>
-                            <td className="px-3.5 py-2.5 text-right font-mono font-black text-slate-900 text-sm">
+                            <td className="px-3.5 py-3 text-right font-mono font-black text-slate-900 whitespace-nowrap text-sm">
                               {formatUSD(metrics?.cumulativeCapitalRaised)}
                             </td>
-                            <td className="px-3.5 py-2.5 text-right font-mono font-black text-purple-900">
+                            <td className="px-3.5 py-3 text-right font-mono font-black text-blue-900 whitespace-nowrap text-sm">
+                              {formatUSD(shareholders.reduce((s, sh) => s + (sh.currentPositionValue || 0), 0))}
+                            </td>
+                            <td className="px-3.5 py-3 text-right font-mono font-black text-purple-900 whitespace-nowrap">
                               100.00%
                             </td>
                           </tr>

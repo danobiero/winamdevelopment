@@ -115,13 +115,13 @@ export default function DocumentsList({ documents = [], onDelete }) {
                       </a>
 
                       <span
-                        className={`inline-flex items-center px-2 py-0.2 rounded-md text-[9px] font-black uppercase tracking-wider border ${badge.classes}`}
+                        className={`inline-flex items-center px-2 py-0.2 rounded-md text-xs font-black uppercase tracking-wider border ${badge.classes}`}
                       >
                         {badge.label}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
                       <ClockIcon className="h-3 w-3" />
                       <span>{new Date(doc.created_at).toLocaleString()}</span>
                     </div>

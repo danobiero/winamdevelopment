@@ -139,7 +139,7 @@ export default async function Page({ params }) {
             <h1 className="text-sm sm:text-base xl:text-lg font-black text-slate-900 tracking-tight truncate">
               Opportunity <span className="text-blue-600">Details</span> <span className="text-slate-300 font-normal">|</span> {name}
             </h1>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
               {typeLabel} Opportunity
             </p>
           </div>
@@ -147,13 +147,13 @@ export default async function Page({ params }) {
 
         <div className="flex items-center gap-2 shrink-0">
           {is_featured && (
-            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-black shadow-2xs">
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-400 text-black shadow-2xs">
               <StarIcon className="h-3 w-3" />
               Featured
             </span>
           )}
           <span
-            className={`px-3 py-1 rounded-full text-[10px] xl:text-xs font-black uppercase tracking-wider shadow-2xs ${
+            className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-2xs ${
               statusStyles[status] || statusStyles.inactive
             }`}
           >
@@ -180,11 +180,11 @@ export default async function Page({ params }) {
 
             {/* Badges on Hero */}
             <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex flex-wrap gap-2">
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/95 text-slate-900 text-[10px] xl:text-xs font-black uppercase tracking-wider shadow-sm backdrop-blur-sm">
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/95 text-slate-900 text-xs font-black uppercase tracking-wider shadow-sm backdrop-blur-sm">
                 <ShieldCheckIcon className="h-3.5 w-3.5 text-blue-600" />
                 {typeLabel}
               </span>
-              <span className="px-3 py-1 rounded-full bg-slate-900/80 text-white text-[10px] xl:text-xs font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">
+              <span className="px-3 py-1 rounded-full bg-slate-900/80 text-white text-xs font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">
                 Winam Ecosystem
               </span>
             </div>
@@ -195,7 +195,7 @@ export default async function Page({ params }) {
             <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
               <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
                 <CurrencyDollarIcon className="h-3.5 w-3.5 text-emerald-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Min. Investment
                 </span>
               </div>
@@ -207,7 +207,7 @@ export default async function Page({ params }) {
             <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
               <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
                 <ArrowTrendingUpIcon className="h-3.5 w-3.5 text-blue-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Target Return
                 </span>
               </div>
@@ -219,7 +219,7 @@ export default async function Page({ params }) {
             <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
               <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
                 <ClockIcon className="h-3.5 w-3.5 text-purple-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Duration
                 </span>
               </div>
@@ -231,7 +231,7 @@ export default async function Page({ params }) {
             <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs">
               <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
                 <ShieldCheckIcon className="h-3.5 w-3.5 text-indigo-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Security
                 </span>
               </div>
@@ -247,7 +247,7 @@ export default async function Page({ params }) {
           <div className="space-y-4">
             {/* Title & Category Banner */}
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-wider mb-1.5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-wider mb-1.5">
                 Strategic Opportunity
               </div>
               <h2 className="text-xl sm:text-2xl xl:text-3xl font-black text-slate-900 tracking-tight leading-tight">
@@ -257,7 +257,7 @@ export default async function Page({ params }) {
 
             {/* Description */}
             <div>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
                 Executive Overview
               </h3>
               <p className="text-xs sm:text-sm xl:text-base text-slate-600 leading-relaxed font-normal">
@@ -325,7 +325,7 @@ export default async function Page({ params }) {
                     <LockClosedIcon className="h-4 w-4 text-amber-600" />
                     <span>Membership Step 7 Required</span>
                   </div>
-                  <p className="text-[11px] text-amber-800/90 mt-1 max-w-lg leading-relaxed">
+                  <p className="text-xs text-amber-800/90 mt-1 max-w-lg leading-relaxed">
                     To invest in selective ventures like {name}, you must complete your minimum core shareholding of $2,000.
                     {memberData && (
                       <span className="font-mono font-bold block sm:inline sm:ml-2">

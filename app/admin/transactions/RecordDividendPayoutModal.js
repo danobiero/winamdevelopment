@@ -188,7 +188,7 @@ export default function RecordDividendPayoutModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white">Disburse Dividend Payout</h3>
-                <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/30">
+                <span className="px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/30">
                   Asset Reduction
                 </span>
               </div>
@@ -217,7 +217,7 @@ export default function RecordDividendPayoutModal({
                 <span className="text-rose-500 font-black">*</span>
               </label>
               {selectedOpportunity && (
-                <span className="text-[10px] text-slate-500 font-mono">
+                <span className="text-xs text-slate-500 font-mono">
                   Asset NAV: <strong className="text-slate-800">{formatUSD(currentAssetValue)}</strong>
                 </span>
               )}
@@ -245,7 +245,7 @@ export default function RecordDividendPayoutModal({
                 <span>Recipient Shareholder</span>
                 <span className="text-rose-500 font-black">*</span>
               </label>
-              <span className="text-[10px] text-slate-400 font-medium">
+              <span className="text-xs text-slate-500 font-medium">
                 {filteredShareholders.length} shareholders found
               </span>
             </div>
@@ -259,7 +259,7 @@ export default function RecordDividendPayoutModal({
                   placeholder="Type name, email, or ID to filter..."
                   value={shareholderSearch}
                   onChange={(e) => setShareholderSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:bg-white focus:border-purple-500 transition-all"
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:bg-white focus:border-purple-500 transition-all"
                 />
               </div>
             )}
@@ -287,30 +287,30 @@ export default function RecordDividendPayoutModal({
           {/* SHAREHOLDER REGISTERED PAYMENT INFORMATION CARD */}
           <div className="p-3 sm:p-3.5 rounded-xl border border-purple-200 bg-purple-50/50 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+              <span className="text-xs font-black uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
                 <CreditCardIcon className="h-4 w-4 text-purple-600" />
                 <span>Shareholder Payout Destination (On File)</span>
               </span>
 
               {selectedShareholder?.payment_method ? (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   Registered Rail: {selectedShareholder.payment_method.payment_type?.toUpperCase()}
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
                   No Rail on File
                 </span>
               )}
             </div>
 
             {selectedShareholder?.payment_method ? (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px] text-slate-700">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono text-xs text-slate-700">
                 <div>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block font-sans">Account Name</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block font-sans">Account Name</span>
                   <span className="font-bold truncate block">{selectedShareholder.payment_method.account_name || selectedShareholder.fullName}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block font-sans">Account / Routing #</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block font-sans">Account / Routing #</span>
                   <span className="font-bold truncate block">
                     {selectedShareholder.payment_method.account_number
                       ? `•••• ${selectedShareholder.payment_method.account_number.slice(-4)}`
@@ -318,12 +318,12 @@ export default function RecordDividendPayoutModal({
                   </span>
                 </div>
                 <div>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block font-sans">Handle / Email / Phone</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block font-sans">Handle / Email / Phone</span>
                   <span className="font-bold truncate block">{selectedShareholder.payment_method.account_handle || selectedShareholder.email || '—'}</span>
                 </div>
               </div>
             ) : (
-              <p className="text-[11px] text-slate-600 font-medium">
+              <p className="text-xs text-slate-600 font-medium">
                 This shareholder has not yet registered an automated payout rail. You can designate the payout rail below and record manual bank clearing.
               </p>
             )}
@@ -365,15 +365,15 @@ export default function RecordDividendPayoutModal({
           {payoutAmount > 0 && selectedOpportunity && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs font-mono">
               <div>
-                <span className="text-[9px] uppercase font-bold text-slate-400 font-sans block">Current Asset NAV</span>
+                <span className="text-xs uppercase font-bold text-slate-400 font-sans block">Current Asset NAV</span>
                 <span className="font-bold text-slate-700">{formatUSD(currentAssetValue)}</span>
               </div>
               <div className="text-rose-600 font-bold">
-                <span className="text-[9px] uppercase font-bold text-slate-400 font-sans block text-right">Dividend Paid</span>
+                <span className="text-xs uppercase font-bold text-slate-400 font-sans block text-right">Dividend Paid</span>
                 <span>-{formatUSD(payoutAmount)}</span>
               </div>
               <div className="text-right">
-                <span className="text-[9px] uppercase font-bold text-slate-400 font-sans block">New Asset NAV</span>
+                <span className="text-xs uppercase font-bold text-slate-400 font-sans block">New Asset NAV</span>
                 <span className="font-black text-purple-700 text-sm">{formatUSD(newAssetValue)}</span>
               </div>
             </div>
@@ -390,7 +390,7 @@ export default function RecordDividendPayoutModal({
                     key={method}
                     type="button"
                     onClick={() => setPayoutRail(method.toLowerCase())}
-                    className={`py-1.5 px-2 rounded-xl font-bold text-[11px] transition-all cursor-pointer text-center ${
+                    className={`py-1.5 px-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-center ${
                       isSelected
                         ? 'bg-purple-900 text-white shadow-sm'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

@@ -37,7 +37,7 @@ export default async function SupportPage() {
         <div>
           <Link
             href="/account/support/new"
-            className="inline-flex items-center justify-center px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95"
           >
             + Create New Ticket
           </Link>

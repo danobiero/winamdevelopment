@@ -78,7 +78,7 @@ function DateSelector({ session, opportunity, bookedDates = [] }) {
       <div
         className={`mb-4 h-8 flex items-center transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}
       >
-        <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
+        <span className="bg-slate-900 text-white text-xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
           Reservation Required
         </span>
       </div>
@@ -120,7 +120,7 @@ function DateSelector({ session, opportunity, bookedDates = [] }) {
       </div>
 
       {/* 🔹 LEGEND */}
-      <div className="flex justify-center flex-wrap gap-6 text-[10px] uppercase font-black text-slate-400 mt-6 mb-8 tracking-widest">
+      <div className="flex justify-center flex-wrap gap-6 text-xs uppercase font-black text-slate-400 mt-6 mb-8 tracking-widest">
         <span className="flex items-center gap-2">
           <span className="w-3 h-3 bg-slate-200 rounded-sm"></span> Selection
           Range
@@ -150,7 +150,7 @@ function DateSelector({ session, opportunity, bookedDates = [] }) {
         {selectedRange?.from && (
           <button
             onClick={handleReset}
-            className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-red-600 transition-colors"
+            className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-red-600 transition-colors"
           >
             [ Clear Selection ]
           </button>

@@ -215,14 +215,14 @@ export default function PaymentViewModal({ payment, onClose }) {
               <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase">
                 Payment <span className="text-blue-600">Details</span>
               </h2>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-mono mt-0.5 truncate max-w-[200px] sm:max-w-none">
+              <p className="text-xs text-slate-500 font-mono mt-0.5 truncate max-w-[200px] sm:max-w-none">
                 ID: {payment.id}
               </p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <span
-                className={`text-[10px] font-black uppercase tracking-widest border px-3 py-1 rounded-full ${statusStyles}`}
+                className={`text-xs font-black uppercase tracking-widest border px-3 py-1 rounded-full ${statusStyles}`}
               >
                 {currentStatus}
               </span>
@@ -321,7 +321,7 @@ export default function PaymentViewModal({ payment, onClose }) {
                   <form onSubmit={handleConfirm} className="space-y-3 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-600 mb-1">
+                        <label className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">
                           Reference / Check # / Cashtag
                         </label>
                         <input
@@ -334,7 +334,7 @@ export default function PaymentViewModal({ payment, onClose }) {
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-600 mb-1">
+                        <label className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">
                           Admin Verification Note (Optional)
                         </label>
                         <input
@@ -391,7 +391,7 @@ export default function PaymentViewModal({ payment, onClose }) {
 
                   <form onSubmit={handleFail} className="space-y-3 pt-1">
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-600 mb-1">
+                      <label className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">
                         Reason For Failure / Reconciliation Note <span className="text-rose-500">*</span>
                       </label>
                       <input
@@ -446,10 +446,10 @@ export default function PaymentViewModal({ payment, onClose }) {
                 {(confirmedMeta.reference_number ||
                   confirmedMeta.confirmed_at ||
                   confirmedMeta.admin_confirmation_note) && (
-                  <div className="mt-2 pt-2 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-emerald-900">
+                  <div className="mt-2 pt-2 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-emerald-900">
                     {confirmedMeta.reference_number && (
                       <div>
-                        <strong className="uppercase text-[9px] tracking-wider text-emerald-700 block">
+                        <strong className="uppercase text-xs tracking-wider text-emerald-700 block">
                           Reference / Check:
                         </strong>
                         <span className="font-mono font-bold">
@@ -459,7 +459,7 @@ export default function PaymentViewModal({ payment, onClose }) {
                     )}
                     {confirmedMeta.confirmed_at && (
                       <div>
-                        <strong className="uppercase text-[9px] tracking-wider text-emerald-700 block">
+                        <strong className="uppercase text-xs tracking-wider text-emerald-700 block">
                           Confirmed At:
                         </strong>
                         <span>{formatDate(confirmedMeta.confirmed_at)}</span>
@@ -467,7 +467,7 @@ export default function PaymentViewModal({ payment, onClose }) {
                     )}
                     {confirmedMeta.admin_confirmation_note && (
                       <div className="sm:col-span-2">
-                        <strong className="uppercase text-[9px] tracking-wider text-emerald-700 block">
+                        <strong className="uppercase text-xs tracking-wider text-emerald-700 block">
                           Admin Note:
                         </strong>
                         <span>{confirmedMeta.admin_confirmation_note}</span>
@@ -492,9 +492,9 @@ export default function PaymentViewModal({ payment, onClose }) {
                 <p className="text-rose-800 leading-relaxed">
                   This payment was not reconciled and has been marked as failed.
                 </p>
-                <div className="mt-2 pt-2 border-t border-rose-200/60 space-y-1.5 text-[11px] text-rose-900">
+                <div className="mt-2 pt-2 border-t border-rose-200/60 space-y-1.5 text-xs text-rose-900">
                   <div>
-                    <strong className="uppercase text-[9px] tracking-wider text-rose-700 block">
+                    <strong className="uppercase text-xs tracking-wider text-rose-700 block">
                       Failure Reason:
                     </strong>
                     <span className="font-medium bg-white px-2 py-1 rounded border border-rose-200 block mt-0.5">
@@ -503,7 +503,7 @@ export default function PaymentViewModal({ payment, onClose }) {
                   </div>
                   {(confirmedMeta.failed_at || payment.metadata?.failed_at || payment.updated_at) && (
                     <div>
-                      <strong className="uppercase text-[9px] tracking-wider text-rose-700 block">
+                      <strong className="uppercase text-xs tracking-wider text-rose-700 block">
                         Marked Failed On:
                       </strong>
                       <span>{formatDate(confirmedMeta.failed_at || payment.metadata?.failed_at || payment.updated_at)}</span>
@@ -624,7 +624,7 @@ export default function PaymentViewModal({ payment, onClose }) {
           {payment.metadata && (
             <Section title="Technical Metadata">
               <div className="bg-slate-950 rounded-xl p-4 overflow-x-auto max-h-48">
-                <pre className="text-[11px] text-slate-200 whitespace-pre font-mono">
+                <pre className="text-xs text-slate-200 whitespace-pre font-mono">
                   {JSON.stringify(
                     { ...payment.metadata, ...confirmedMeta },
                     null,
@@ -670,7 +670,7 @@ export default function PaymentViewModal({ payment, onClose }) {
 function Section({ title, children }) {
   return (
     <div className="space-y-2">
-      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+      <div className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
         {title}
       </div>
       {children}
@@ -688,7 +688,7 @@ function InfoCard({
     <div
       className={`border border-slate-100 rounded-xl p-3 bg-slate-50/50 ${className}`}
     >
-      <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-slate-400 mb-1">
+      <div className="text-xs uppercase font-black tracking-widest text-slate-400 mb-1">
         {label}
       </div>
       <div
@@ -705,12 +705,12 @@ function DetailRow({ label, value, mono = false }) {
 
   return (
     <div className="flex flex-col gap-0.5 min-w-0">
-      <span className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-slate-400">
+      <span className="text-xs uppercase font-black tracking-widest text-slate-400">
         {label}
       </span>
       <span
         className={`text-slate-800 break-all sm:break-words uppercase ${
-          mono ? 'font-mono text-[10px] sm:text-[11px]' : 'text-sm font-bold'
+          mono ? 'font-mono text-xs' : 'text-sm font-bold'
         }`}
       >
         {displayValue || '—'}

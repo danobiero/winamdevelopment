@@ -58,7 +58,7 @@ export default function SupportForm({ session }) {
           {!isLoggedIn && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
               <div className="space-y-1">
-                <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 ml-0.5">
+                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 ml-0.5">
                   Name
                 </label>
                 <input
@@ -70,7 +70,7 @@ export default function SupportForm({ session }) {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 ml-0.5">
+                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 ml-0.5">
                   Email
                 </label>
                 <input
@@ -85,7 +85,7 @@ export default function SupportForm({ session }) {
           )}
 
           <div className="space-y-1">
-            <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 ml-0.5">
+            <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 ml-0.5">
               Subject
             </label>
             <input
@@ -97,7 +97,7 @@ export default function SupportForm({ session }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 ml-0.5">
+            <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 ml-0.5">
               Message
             </label>
             <textarea
@@ -145,7 +145,7 @@ export default function SupportForm({ session }) {
           </div>
         </form>
 
-        <p className="mt-3.5 sm:mt-4 text-center text-slate-400 text-[11px]">
+        <p className="mt-3.5 sm:mt-4 text-center text-slate-400 text-xs">
           By submitting, you agree to our terms and privacy policy.
         </p>
       </div>

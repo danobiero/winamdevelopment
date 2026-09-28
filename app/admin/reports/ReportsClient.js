@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useToast } from '@/app/_lib/ToastContext';
 import UploadReportModal from './UploadReportModal';
 import DeleteReportModal from './DeleteReportModal';
@@ -19,6 +20,7 @@ import {
   ClockIcon,
   BanknotesIcon,
   ReceiptPercentIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 
 export default function ReportsClient({
@@ -37,11 +39,21 @@ export default function ReportsClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const isFinancialReportDoc = (doc) => {
+    const rawName = (doc?.name || '').toLowerCase();
+    return (
+      rawName.includes('financial statement package') ||
+      rawName.includes('balance sheet') ||
+      rawName.includes('statement of cash flows') ||
+      rawName.includes('statement of shareholders equity') ||
+      rawName.includes('shareholder ownership register') ||
+      rawName.includes('shareholder register') ||
+      rawName.includes('income statement')
+    );
+  };
+
   // Categorize reports
-  const financialReports = reports.filter((r) => 
-    r.name?.includes('[General] Core') && 
-    (r.name?.includes('Statement') || r.name?.includes('Balance Sheet') || r.name?.includes('Package'))
-  );
+  const financialReports = reports.filter(isFinancialReportDoc);
   const opportunityReports = reports.filter((r) => !financialReports.some((f) => f.id === r.id));
   const totalGeneral = opportunityReports.filter((r) => r.category === 'GENERAL').length;
   const totalProject = opportunityReports.filter((r) => r.category === 'PROJECT').length;
@@ -53,15 +65,15 @@ export default function ReportsClient({
     if (filter === 'INCOME') return name.includes('income');
     if (filter === 'BALANCE') return name.includes('balance');
     if (filter === 'CASHFLOW') return name.includes('cash flow');
-    if (filter === 'EQUITY') return name.includes('shareholders') || name.includes('equity');
+    if (filter === 'EQUITY') return (name.includes('shareholders') || name.includes('equity')) && !name.includes('register') && !name.includes('allocation');
+    if (filter === 'REGISTER') return name.includes('register') || name.includes('allocation');
     return true;
   };
 
   // Filter reports
   const filteredReports = reports.filter((r) => {
     // 0. Finance Mode Filter
-    const isFinancialReport = r.name?.includes('[General] Core') && 
-      (r.name?.includes('Statement') || r.name?.includes('Balance Sheet') || r.name?.includes('Package'));
+    const isFinancialReport = isFinancialReportDoc(r);
     
     if (isFinanceMode && !isFinancialReport) return false;
     if (!isFinanceMode && isFinancialReport) return false;
@@ -174,13 +186,13 @@ export default function ReportsClient({
                   <>Opportunity <span className="text-blue-600">Reports</span></>
                 )}
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                 {isFinanceMode ? 'Financial Statements' : 'Meeting Minutes'}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
               {isFinanceMode 
-                ? 'Official quarterly financial statements for Core Portfolio Equity.'
+                ? 'Official quarterly financial statements for Whole Company Assets and Shareholder Equity.'
                 : 'Monthly minutes for core opportunity and weekly minutes for project opportunities stored in Supabase.'}
             </p>
           </div>
@@ -188,15 +200,25 @@ export default function ReportsClient({
           {/* Header Action Button */}
           <div className="shrink-0 flex items-center gap-2.5">
             {isFinanceMode ? (
-              <button
-                type="button"
-                onClick={() => setIsFinancialModalOpen(true)}
-                className="px-4 py-2.5 bg-[#000033] hover:bg-blue-950 text-amber-400 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg border border-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
-                title="Generate, review and download official quarterly financial statements for Core Portfolio Equity"
-              >
-                <BanknotesIcon className="h-4 w-4 text-amber-400" />
-                <span>Core Statements</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/admin/finance-reports/valuations"
+                  className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm border border-emerald-200 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Update opportunity Net Asset Values (NAV)"
+                >
+                  <ChartBarIcon className="h-4 w-4 text-emerald-700" />
+                  <span>Update Valuations (NAV)</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsFinancialModalOpen(true)}
+                  className="px-4 py-2.5 bg-[#000033] hover:bg-blue-950 text-amber-400 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg border border-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  title="Generate, review and download official quarterly financial statements for Whole Company Assets and Shareholder Equity"
+                >
+                  <BanknotesIcon className="h-4 w-4 text-amber-400" />
+                  <span>Financial Statements</span>
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
@@ -302,11 +324,22 @@ export default function ReportsClient({
                 onClick={() => setFilterCategory('EQUITY')}
                 className={`px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                   filterCategory === 'EQUITY'
-                    ? 'bg-teal-600 text-white shadow-sm'
-                    : 'bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200/60'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/60'
                 }`}
               >
                 Shareholders' Equity
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterCategory('REGISTER')}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
+                  filterCategory === 'REGISTER'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/60'
+                }`}
+              >
+                Shareholder Register
               </button>
             </>
           ) : (
@@ -333,7 +366,7 @@ export default function ReportsClient({
                 }`}
               >
                 <span>General (Monthly)</span>
-                <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-white/20 font-mono">
+                <span className="px-1.5 py-0.2 text-xs rounded-full bg-white/20 font-mono">
                   {totalGeneral}
                 </span>
               </button>
@@ -348,7 +381,7 @@ export default function ReportsClient({
                 }`}
               >
                 <span>Project (Weekly)</span>
-                <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-white/20 font-mono">
+                <span className="px-1.5 py-0.2 text-xs rounded-full bg-white/20 font-mono">
                   {totalProject}
                 </span>
               </button>
@@ -373,7 +406,7 @@ export default function ReportsClient({
                   ? 'No statements match your selected filter or search keyword.'
                   : 'No reports match your selected category or search filter.'
                 : isFinanceMode
-                ? 'Click "Core Quarterly Statements" to generate and archive official financial statements for this fund.'
+                ? 'Click "Financial Statements" to generate and archive official financial statements for Company Assets and Shareholder Equity.'
                 : 'Click "Attach New Report" to upload and link meeting minutes to an opportunity.'}
             </p>
           </div>
@@ -384,7 +417,7 @@ export default function ReportsClient({
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#000033] hover:bg-blue-950 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
             >
               <BanknotesIcon className="h-4 w-4 text-amber-400" />
-              <span>Generate Core Statements</span>
+              <span>Generate Financial Statements</span>
             </button>
           ) : (
             <button
@@ -410,7 +443,7 @@ export default function ReportsClient({
                   <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
                     {monthGroup.label}
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
                     {monthGroup.reports.length} {isFinanceMode ? (monthGroup.reports.length === 1 ? 'statement' : 'statements') : (monthGroup.reports.length === 1 ? 'report' : 'reports')}
                   </span>
                 </div>
@@ -440,13 +473,13 @@ export default function ReportsClient({
                         {/* Badges Bar */}
                         <div className="flex items-center justify-between gap-2">
                           {isFinanceMode ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border bg-amber-50 text-amber-800 border-amber-200">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border bg-amber-50 text-amber-800 border-amber-200">
                               <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
                               {statementBadgeLabel}
                             </span>
                           ) : (
                             <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border ${
                                 isGeneral
                                   ? 'bg-blue-50 text-blue-700 border-blue-200'
                                   : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -458,13 +491,13 @@ export default function ReportsClient({
                                 }`}
                               />
                               {report.category}
-                              <span className="opacity-60 text-[8px] font-semibold">
+                              <span className="opacity-60 text-xs font-semibold">
                                 ({isGeneral ? 'Monthly' : 'Weekly'})
                               </span>
                             </span>
                           )}
 
-                          <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+                          <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
                             <ClockIcon className="h-3 w-3 text-slate-400" />
                             {report.meetingDate}
                           </span>
@@ -485,7 +518,7 @@ export default function ReportsClient({
                             {report.opportunities?.name || 'Unlinked Opportunity'}
                           </span>
                           {report.opportunities?.type && (
-                            <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
+                            <span className="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
                               {report.opportunities.type}
                             </span>
                           )}

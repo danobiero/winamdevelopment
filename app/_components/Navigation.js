@@ -19,24 +19,24 @@ export default function Navigation({ session, isMobile, onClick }) {
     {
       name: 'Opportunities',
       href: '/opportunities',
-      icon: <SparklesIcon className="h-4 w-4 text-blue-600" />,
+      icon: <SparklesIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />,
     },
     {
       name: 'About',
       href: '/about',
-      icon: <InformationCircleIcon className="h-4 w-4 text-slate-400" />,
+      icon: <InformationCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />,
     },
     {
       name: 'Support',
       href: '/support',
-      icon: <LifebuoyIcon className="h-4 w-4 text-slate-400" />,
+      icon: <LifebuoyIcon className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />,
     },
   ];
 
   if (isMobile) {
     return (
       <nav className="w-full">
-        <ul className="flex flex-col gap-0.5 w-full">
+        <ul className="flex flex-col gap-1 w-full">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -44,16 +44,16 @@ export default function Navigation({ session, isMobile, onClick }) {
                 <Link
                   href={link.href}
                   onClick={onClick}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors w-full font-bold ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm sm:text-base transition-colors w-full font-bold ${
                     isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/25'
+                      : 'text-slate-800 hover:text-blue-700 hover:bg-blue-50/70'
                   }`}
                 >
-                  <span className="shrink-0">{link.icon}</span>
+                  <span className={`shrink-0 ${isActive ? '[&>svg]:text-white' : ''}`}>{link.icon}</span>
                   <span className="truncate">{link.name}</span>
                   {isActive && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                    <span className="ml-auto h-2 w-2 rounded-full bg-white shrink-0 shadow-xs" />
                   )}
                 </Link>
               </li>
@@ -61,14 +61,14 @@ export default function Navigation({ session, isMobile, onClick }) {
           })}
 
           {/* User Account / Dashboard */}
-          <li className="pt-1.5 mt-1 border-t border-slate-100">
+          <li className="pt-2 mt-1.5 border-t border-slate-100">
             {session?.user ? (
               <Link
                 href={dashboardLink}
                 onClick={onClick}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors w-full"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-50/70 transition-colors w-full bg-slate-50/60 border border-slate-100"
               >
-                <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border-2 border-blue-200">
                   {session.user.image ? (
                     <Image
                       src={session.user.image}
@@ -78,27 +78,27 @@ export default function Navigation({ session, isMobile, onClick }) {
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full h-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-full h-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
                       {session.user.name?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
                 </div>
 
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs font-bold text-slate-900 truncate">
+                  <span className="text-sm font-bold text-slate-900 truncate">
                     {session.user.name?.split(' ')[0] || 'Account'}
                   </span>
-                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">
+                  <span className="text-xs uppercase tracking-wider text-blue-600 font-bold">
                     Dashboard
                   </span>
                 </div>
-                <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 text-blue-600 shrink-0" />
               </Link>
             ) : (
               <Link
                 href="/account"
                 onClick={onClick}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl text-center block shadow-xs transition-colors"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wider rounded-xl text-center block shadow-md shadow-blue-500/25 transition-colors"
               >
                 Login
               </Link>
@@ -166,7 +166,7 @@ export default function Navigation({ session, isMobile, onClick }) {
                   {session.user.name.split(' ')[0]}
                 </span>
 
-                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">
                   Dashboard
                 </span>
               </div>

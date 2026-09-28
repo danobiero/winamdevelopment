@@ -214,7 +214,7 @@ export default function RecordPaymentModal({
                 <span>Shareholder / Investor</span>
                 <span className="text-amber-600 font-black">*</span>
               </label>
-              <span className="text-[10px] text-slate-400 font-medium">
+              <span className="text-xs text-slate-500 font-medium">
                 {filteredShareholders.length} investors found
               </span>
             </div>
@@ -228,7 +228,7 @@ export default function RecordPaymentModal({
                   placeholder="Type name or email to filter shareholders..."
                   value={shareholderSearch}
                   onChange={(e) => setShareholderSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[11px] text-slate-700 outline-none focus:bg-white focus:border-blue-500 transition-all"
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:bg-white focus:border-blue-500 transition-all"
                 />
               </div>
             )}
@@ -291,7 +291,7 @@ export default function RecordPaymentModal({
                   key={method}
                   type="button"
                   onClick={() => setPaymentMethod(method)}
-                  className={`py-1.5 px-2 rounded-xl font-bold text-[11px] transition-all cursor-pointer text-center ${
+                  className={`py-1.5 px-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-center ${
                     paymentMethod === method
                       ? 'bg-emerald-700 text-white shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

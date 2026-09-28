@@ -129,12 +129,12 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
                 Manage Opportunities & Portfolio
               </h2>
               {record?.is_claimed ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <CheckBadgeIcon className="h-3 w-3 text-emerald-600" />
                   Live & Claimed
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                   <ClockIcon className="h-3 w-3 text-amber-500" />
                   Awaiting Sign-In
                 </span>
@@ -173,7 +173,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
         )}
 
         {/* Form Body */}
-        <form action={formAction} className="overflow-y-auto p-5 sm:p-6 space-y-6 flex-1">
+        <form action={formAction} className="overflow-y-auto p-4 sm:p-6 space-y-6 flex-1">
           {/* Hidden inputs to pass data */}
           <input
             type="hidden"
@@ -199,7 +199,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
           {/* Identity Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Full Name
               </label>
               <input
@@ -211,7 +211,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Email Address (Unique ID)
               </label>
               <input
@@ -224,7 +224,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Telephone (Optional)
               </label>
               <input
@@ -236,7 +236,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Nationality (Optional)
               </label>
               <input
@@ -255,13 +255,13 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                   Allocated Investment Opportunities
                 </h4>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-xs text-slate-400">
                   Add, adjust, or remove investment opportunities for this shareholder.
                 </p>
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] font-black uppercase text-slate-400 block">Total Invested</span>
+                <span className="text-xs font-black uppercase text-slate-400 block">Total Invested</span>
                 <span className="text-sm font-mono font-bold text-emerald-600">
                   {FormatCurrency(totalInvested)}
                 </span>
@@ -275,7 +275,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
                   className="p-3.5 bg-slate-50/90 border border-slate-200 rounded-2xl space-y-3 relative group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-400">
                       Allocation #{index + 1}
                     </span>
                     {allocations.length > 1 && (
@@ -293,7 +293,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Opportunity Dropdown */}
                     <div className="space-y-1 sm:col-span-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                         Opportunity
                       </label>
                       <select
@@ -314,7 +314,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
 
                     {/* Amount */}
                     <div className="space-y-1 sm:col-span-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                         Invested Amount ($)
                       </label>
                       <div className="relative">
@@ -339,7 +339,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
 
                     {/* Start Date */}
                     <div className="space-y-1 sm:col-span-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                         Start Date
                       </label>
                       <input
@@ -375,7 +375,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Payout Rail
                 </label>
                 <select
@@ -393,7 +393,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
 
               {paymentType !== 'none' && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                     Account Handle / Email
                   </label>
                   <input
@@ -407,7 +407,7 @@ export default function EditLegacyModal({ record, opportunities = [], initialAll
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Administrative Notes
               </label>
               <textarea

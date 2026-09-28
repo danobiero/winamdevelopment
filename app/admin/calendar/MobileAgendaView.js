@@ -46,7 +46,7 @@ export default function MobileAgendaView({
                   : 'bg-white text-slate-500 border border-slate-100'
               }`}
             >
-              <span className="text-[10px] uppercase font-bold opacity-70">
+              <span className="text-xs uppercase font-bold opacity-70">
                 {format(date, 'EEE')}
               </span>
               <span className="text-sm font-black mt-1">
@@ -80,7 +80,7 @@ export default function MobileAgendaView({
                   <span className="text-xs font-black text-[#000033]">
                     {format(new Date(ev.start_time), 'h:mm')}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  <span className="text-xs font-bold text-slate-400 uppercase">
                     {format(new Date(ev.start_time), 'a')}
                   </span>
                 </div>
@@ -88,7 +88,7 @@ export default function MobileAgendaView({
                   <h5 className="text-sm font-black text-slate-800 truncate">
                     {ev.title}
                   </h5>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 font-medium">
                     {ev.bookingDetails?.length > 0
                       ? `${ev.bookingDetails.length} Student(s)`
                       : 'Unbooked'}

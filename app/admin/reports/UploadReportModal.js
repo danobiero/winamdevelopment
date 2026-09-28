@@ -177,11 +177,11 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
                   <span className="text-xs font-black uppercase tracking-wider text-blue-700">
                     GENERAL
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-blue-100 text-blue-800">
+                  <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase bg-blue-100 text-blue-800">
                     Monthly
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium mt-1">
+                <p className="text-xs text-slate-500 font-medium mt-1">
                   Monthly meeting minutes for core opportunity and leadership governance.
                 </p>
               </button>
@@ -200,11 +200,11 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-700">
                     PROJECT
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
+                  <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase bg-emerald-100 text-emerald-800">
                     Weekly
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium mt-1">
+                <p className="text-xs text-slate-500 font-medium mt-1">
                   Weekly project updates and operational meeting minutes.
                 </p>
               </button>
@@ -243,7 +243,7 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
 
           {/* Title Preview */}
           <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-1">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
               <InformationCircleIcon className="h-4 w-4 text-amber-600" />
               Generated Report Title:
             </div>
@@ -262,7 +262,7 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
                 <button
                   type="button"
                   onClick={() => setFile(null)}
-                  className="text-[11px] font-bold text-rose-600 hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1"
                 >
                   <XMarkIcon className="h-3.5 w-3.5" /> Remove
                 </button>
@@ -296,10 +296,10 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
                     <span className="text-xs font-bold text-slate-800 max-w-[260px] truncate">
                       {file.name}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">
+                    <span className="text-xs text-slate-400 mt-0.5">
                       ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                     </span>
-                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mt-2 bg-amber-100 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-amber-700 uppercase tracking-wider mt-2 bg-amber-100 px-2 py-0.5 rounded-md">
                       Ready to Upload
                     </span>
                   </div>
@@ -309,7 +309,7 @@ export default function UploadReportModal({ opportunities = [], onClose, onRepor
                     <span className="text-xs font-bold text-slate-700">
                       Click to choose or drag & drop report file here
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-1">
+                    <span className="text-xs text-slate-400 mt-1">
                       Supports PDF, Word (DOCX), Excel, and images
                     </span>
                   </div>

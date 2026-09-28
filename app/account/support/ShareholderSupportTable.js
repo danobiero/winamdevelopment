@@ -12,7 +12,7 @@ export default function ShareholderSupportTable({ tickets, messages = [] }) {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-100 text-slate-400 text-[11px] uppercase tracking-[0.2em] font-black">
+            <tr className="border-b border-slate-100 text-slate-400 text-xs uppercase tracking-[0.2em] font-black">
               <th className="px-6 py-5">Subject</th>
               <th className="px-6 py-5">Status</th>
               <th className="px-6 py-5 text-right">Updated</th>
@@ -52,7 +52,7 @@ export default function ShareholderSupportTable({ tickets, messages = [] }) {
           >
             <div className="flex justify-between items-start mb-3">
               <StatusBadge status={ticket.status} />
-              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+              <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
                 {new Date(ticket.updated_at).toLocaleDateString()}
               </span>
             </div>
@@ -122,7 +122,7 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${current.bg} ${current.text} ${current.border} shadow-sm`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${current.bg} ${current.text} ${current.border} shadow-sm`}
     >
       <span className={`w-1.5 h-1.5 rounded-full mr-2 ${current.dot}`} />
       {current.label}

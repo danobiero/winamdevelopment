@@ -72,7 +72,7 @@ export default function PublishCalendarButton({ onError }) {
         </svg>
       )}
 
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+      <span className="text-xs font-black uppercase tracking-[0.2em] leading-none">
         {isPending ? 'Publishing' : 'Publish'}
       </span>
     </button>

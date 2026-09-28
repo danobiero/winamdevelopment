@@ -107,6 +107,7 @@ export default async function CreateOpportunityPage() {
                   backgroundSize: '1.25rem',
                 }}
               >
+                <option value="core">Core</option>
                 <option value="Real Estate">Real Estate</option>
                 <option value="Venture Capital">Venture Capital</option>
                 <option value="Private Equity">Private Equity</option>

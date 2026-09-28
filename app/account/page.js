@@ -33,12 +33,12 @@ export default async function AccountPage() {
           <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
             <span className="text-blue-600 dark:text-blue-400">WINAM</span> Dashboard
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
             Welcome back, {session.user.name || 'Shareholder'} • Global Investment Overview
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] sm:text-[11px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg shadow-2xs font-bold">
+          <span className="text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg shadow-2xs font-bold">
             Shareholder ID #{session.user.shareholderId || 'Active'}
           </span>
         </div>

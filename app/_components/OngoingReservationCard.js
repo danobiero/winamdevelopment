@@ -45,7 +45,7 @@ export default function OngoingReservationCard({ booking, calendarEvents }) {
               {/* Desktop Full Calendar Toggle */}
               <button
                 onClick={() => setShowFullCalendar(!showFullCalendar)}
-                className="hidden md:flex items-center gap-1 text-[11px] text-slate-400 hover:text-blue-600 transition font-bold uppercase tracking-wider"
+                className="hidden md:flex items-center gap-1 text-xs text-slate-400 hover:text-blue-600 transition font-bold uppercase tracking-wider"
               >
                 {showFullCalendar ? 'Hide Calendar' : 'Full Calendar'}
 
@@ -109,7 +109,7 @@ export default function OngoingReservationCard({ booking, calendarEvents }) {
           </div>
 
           <div className="text-right flex-shrink-0">
-            <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">
+            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-0.5">
               Status
             </p>
 

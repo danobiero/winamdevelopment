@@ -51,7 +51,7 @@ export default function AdminGate({ onVerified }) {
   return (
     <div className="space-y-4 w-full">
       <div className="text-center space-y-1 mb-4">
-        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
+        <p className="text-xs font-black text-blue-600 uppercase tracking-widest">
           Security Protocol Required
         </p>
       </div>
@@ -61,7 +61,7 @@ export default function AdminGate({ onVerified }) {
         type="button"
         onClick={handleSendCode}
         disabled={loading.sending || cooldown > 0}
-        className={`w-full py-3 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all border
+        className={`w-full py-3 text-xs font-black uppercase tracking-widest rounded-lg transition-all border
           ${
             cooldown > 0
               ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
@@ -90,7 +90,7 @@ export default function AdminGate({ onVerified }) {
 
       {error && (
         <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 animate-shake">
-          <p className="text-[9px] font-black text-rose-500 text-center uppercase">
+          <p className="text-xs font-black text-rose-500 text-center uppercase">
             {error}
           </p>
         </div>
@@ -101,12 +101,12 @@ export default function AdminGate({ onVerified }) {
         type="button"
         onClick={handleVerifyCode}
         disabled={loading.verifying || code.length < 4}
-        className="w-full py-4 bg-[#000033] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.95] disabled:bg-slate-200 disabled:shadow-none"
+        className="w-full py-4 bg-[#000033] text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.95] disabled:bg-slate-200 disabled:shadow-none"
       >
         {loading.verifying ? 'Verifying...' : 'Unlock Admin Portal'}
       </button>
 
-      <p className="text-center text-[8px] font-bold text-slate-300 uppercase tracking-widest">
+      <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
         Step 1: Verify Identity • Step 2: Google Auth
       </p>
     </div>

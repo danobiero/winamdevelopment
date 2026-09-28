@@ -109,7 +109,7 @@ export default function PerformanceModal({
           {/* METRICS ROW */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200/60 min-w-0">
-              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">
+              <p className="text-xs uppercase font-bold text-slate-400 mb-1 tracking-wider">
                 Inception Capital
               </p>
               <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate font-mono">
@@ -118,7 +118,7 @@ export default function PerformanceModal({
             </div>
 
             <div className="bg-emerald-50/70 p-3 sm:p-3.5 rounded-xl border border-emerald-200/60 min-w-0">
-              <p className="text-[10px] uppercase font-bold text-emerald-700 mb-1 tracking-wider">
+              <p className="text-xs uppercase font-bold text-emerald-700 mb-1 tracking-wider">
                 Current Valuation
               </p>
               <p className="text-base sm:text-lg font-black text-emerald-700 tracking-tight truncate font-mono">
@@ -133,7 +133,7 @@ export default function PerformanceModal({
                   : 'bg-rose-50/70 border-rose-200/60 text-rose-700'
               }`}
             >
-              <p className="text-[10px] uppercase font-bold mb-1 tracking-wider opacity-80">
+              <p className="text-xs uppercase font-bold mb-1 tracking-wider opacity-80">
                 Total Return
               </p>
               <p className="text-base sm:text-lg font-black tracking-tight truncate flex items-center gap-1">

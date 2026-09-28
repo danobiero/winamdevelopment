@@ -92,7 +92,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
             <h2 className="text-base font-black text-blue-950 leading-tight truncate">
               Payment Statement
             </h2>
-            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest truncate">
+            <p className="text-xs font-bold text-blue-600 uppercase tracking-widest truncate">
               {opportunityName || 'Investment'}
             </p>
           </div>
@@ -123,7 +123,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col gap-2 sm:gap-3 lg:gap-4 flex-grow">
               <div className="col-span-2 sm:col-span-1 lg:col-auto bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-2xs border border-slate-200/80 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase mb-0.5 tracking-tight">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-0.5 tracking-tight">
                   Total Credited
                 </p>
                 <p className="text-base sm:text-lg lg:text-2xl font-black text-blue-950 tracking-tight truncate">
@@ -132,7 +132,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
               </div>
 
               <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl shadow-2xs border border-slate-200/80 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase mb-0.5 tracking-tight truncate">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-0.5 tracking-tight truncate">
                   Transactions
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 truncate">
@@ -142,7 +142,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
 
               {failedCount > 0 && (
                 <div className="bg-rose-50 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-rose-200 min-w-0">
-                  <p className="text-[9px] sm:text-[10px] font-bold text-rose-600 uppercase mb-0.5 tracking-tight truncate">
+                  <p className="text-xs font-bold text-rose-600 uppercase mb-0.5 tracking-tight truncate">
                     Unreconciled / Failed
                   </p>
                   <p className="text-sm sm:text-base lg:text-lg font-bold text-rose-900 truncate">
@@ -152,10 +152,10 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
               )}
 
               <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl shadow-2xs border border-slate-200/80 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase mb-0.5 tracking-tight truncate">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-0.5 tracking-tight truncate">
                   Last Activity
                 </p>
-                <p className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
+                <p className="text-xs font-bold text-slate-800 truncate">
                   {lastPayment
                     ? new Date(lastPayment).toLocaleDateString()
                     : 'N/A'}
@@ -166,7 +166,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
             <div className="hidden lg:block mt-auto pt-6">
               <div className="flex items-center gap-2.5 p-3.5 bg-blue-50/60 rounded-2xl border border-blue-100/60">
                 <InformationCircleIcon className="h-4 w-4 text-blue-600 shrink-0" />
-                <p className="text-[10px] text-blue-800 leading-relaxed font-medium">
+                <p className="text-xs text-blue-800 leading-relaxed font-medium">
                   Showing all recorded payments and reconciliation status for this position.
                 </p>
               </div>
@@ -181,7 +181,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                 <h3 className="text-sm sm:text-base lg:text-lg font-bold text-blue-950">
                   Transaction History
                 </h3>
-                <p className="text-[10px] sm:text-xs text-slate-400 font-medium">
+                <p className="text-xs text-slate-400 font-medium">
                   Detailed logs of your payments and reconciliation status
                 </p>
               </div>
@@ -220,16 +220,16 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                   <table className="w-full text-left table-auto">
                     <thead className="sticky top-0 bg-white z-10 border-b border-slate-100">
                       <tr>
-                        <th className="py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400 pl-0.5 sm:pl-1 whitespace-nowrap w-24 sm:w-36">
+                        <th className="py-2.5 sm:py-3 text-left text-xs font-black uppercase tracking-wider text-slate-400 pl-0.5 sm:pl-1 whitespace-nowrap w-24 sm:w-36">
                           Date
                         </th>
-                        <th className="py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400 px-2 sm:px-3">
+                        <th className="py-2.5 sm:py-3 text-left text-xs font-black uppercase tracking-wider text-slate-400 px-2 sm:px-3">
                           Description & Details
                         </th>
-                        <th className="py-2.5 sm:py-3 text-center text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400 px-2 whitespace-nowrap w-24">
+                        <th className="py-2.5 sm:py-3 text-center text-xs font-black uppercase tracking-wider text-slate-400 px-2 whitespace-nowrap w-24">
                           Status
                         </th>
-                        <th className="py-2.5 sm:py-3 text-right text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400 pr-0.5 sm:pr-1 whitespace-nowrap w-24 sm:w-32">
+                        <th className="py-2.5 sm:py-3 text-right text-xs font-black uppercase tracking-wider text-slate-400 pr-0.5 sm:pr-1 whitespace-nowrap w-24 sm:w-32">
                           Amount
                         </th>
                       </tr>
@@ -252,7 +252,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                                 <div className="p-1 bg-slate-50 border border-slate-100 rounded-lg group-hover:border-blue-200 group-hover:bg-blue-50/50 transition-colors shrink-0">
                                   <CalendarDaysIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-600" />
                                 </div>
-                                <span className="text-[11px] sm:text-xs font-bold text-slate-700">
+                                <span className="text-xs font-bold text-slate-700">
                                   {new Date(tx.transaction_date).toLocaleDateString()}
                                 </span>
                               </div>
@@ -269,7 +269,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                                     href={tx.receipt_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 transition-colors shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100"
+                                    className="text-blue-600 hover:text-blue-800 transition-colors shrink-0 inline-flex items-center gap-0.5 text-xs sm:text-xs font-semibold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100"
                                     title="View Receipt"
                                   >
                                     <span>Receipt</span>
@@ -278,20 +278,20 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                                 )}
                               </div>
                               <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                <span className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 bg-slate-100 px-1 py-0.5 rounded uppercase tracking-wider">
+                                <span className="text-xs sm:text-xs font-extrabold text-slate-500 bg-slate-100 px-1 py-0.5 rounded uppercase tracking-wider">
                                   {tx.ledger_category}
                                 </span>
-                                <span className="text-[8px] sm:text-[9px] text-slate-400 font-mono">
+                                <span className="text-xs sm:text-xs text-slate-400 font-mono">
                                   #{tx.transaction_id?.slice(0, 8)}
                                 </span>
                               </div>
 
                               {/* FAILURE REASON CALLOUT (If marked failed by admin) */}
                               {isFailed && (
-                                <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-[11px] leading-tight flex items-start gap-1.5">
+                                <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs leading-tight flex items-start gap-1.5">
                                   <ExclamationTriangleIcon className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
                                   <div>
-                                    <strong className="uppercase text-[9px] tracking-wider text-rose-700 block">
+                                    <strong className="uppercase text-xs tracking-wider text-rose-700 block">
                                       Reconciliation Notice:
                                     </strong>
                                     <span>{tx.failure_reason || 'Payment could not be reconciled by administrator'}</span>
@@ -303,17 +303,17 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                             {/* STATUS BADGE */}
                             <td className="py-2.5 sm:py-3.5 px-2 text-center whitespace-nowrap align-middle">
                               {isSucceeded && (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="px-2 py-0.5 rounded-full text-xs sm:text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                                   Credited
                                 </span>
                               )}
                               {isFailed && (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                                <span className="px-2 py-0.5 rounded-full text-xs sm:text-xs font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
                                   Unreconciled
                                 </span>
                               )}
                               {!isSucceeded && !isFailed && (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                <span className="px-2 py-0.5 rounded-full text-xs sm:text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                                   Pending
                                 </span>
                               )}
@@ -326,7 +326,7 @@ function PaymentStatementModal({ opportunityId, opportunityName, onClose }) {
                                   <span className="text-xs sm:text-sm font-semibold line-through text-slate-400">
                                     {FormatCurrency(Number(tx.amount))}
                                   </span>
-                                  <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest">
+                                  <span className="text-xs sm:text-xs font-black text-rose-600 uppercase tracking-widest">
                                     Not Credited
                                   </span>
                                 </div>

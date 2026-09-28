@@ -75,7 +75,7 @@ export default function SupportTable({
           <button
             key={s}
             onClick={() => changeStatus(s)}
-            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all shrink-0 border ${
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all shrink-0 border ${
               status === s
                 ? 'bg-[#000033] border-[#000033] text-white shadow-md'
                 : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
@@ -114,7 +114,7 @@ export default function SupportTable({
       {/* TABLE / CARD CONTAINER */}
       <div className="w-full space-y-4 md:space-y-0 md:bg-white md:rounded-2xl md:border md:border-slate-200 md:shadow-sm">
         {/* DESKTOP HEADER */}
-        <div className="hidden md:grid grid-cols-12 bg-slate-50/50 px-6 py-4 text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] border-b border-slate-200">
+        <div className="hidden md:grid grid-cols-12 bg-slate-50/50 px-6 py-4 text-xs font-black uppercase text-slate-400 tracking-[0.2em] border-b border-slate-200">
           <div className="col-span-7">Ticket Details</div>
           <div className="col-span-2 text-center">Status</div>
           <div className="col-span-3 text-right">Activity</div>
@@ -137,11 +137,11 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
                 {/* Subject & User Info */}
                 <div className="col-span-7 mb-4 md:mb-0 min-w-0">
                   <div className="flex items-center gap-3 mb-1 min-w-0">
-                    <span className="text-[9px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 shrink-0">
+                    <span className="text-xs font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 shrink-0">
                       #{String(ticket.id).slice(0, 6)}
                     </span>
 
-                    <span className="text-[10px] font-bold text-slate-400 truncate max-w-[180px] md:max-w-[260px] lg:max-w-[340px]">
+                    <span className="text-xs font-bold text-slate-400 truncate max-w-[180px] md:max-w-[260px] lg:max-w-[340px]">
                       {ticket.student_email || ticket.email || 'System Request'}
                     </span>
                   </div>
@@ -158,13 +158,13 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
 
                 {/* Date/Time */}
                 <div className="col-span-3 flex justify-between items-center md:block md:text-right border-t border-slate-50 pt-3 md:pt-0 md:border-none">
-                  <p className="text-[11px] font-black text-slate-900 uppercase">
+                  <p className="text-xs font-black text-slate-900 uppercase">
                     {new Date(ticket.created_at).toLocaleDateString(undefined, {
                       month: 'short',
                       day: 'numeric',
                     })}
                   </p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                     {formatRelativeTime(ticket.created_at)}
                   </p>
                 </div>
@@ -172,7 +172,7 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
             ))
           ) : (
             <div className="p-20 text-center bg-white rounded-2xl border border-slate-200 border-dashed m-4">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
                 {search ? 'No matching tickets.' : 'No tickets found.'}
               </p>
             </div>
@@ -183,7 +183,7 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
       {/* RESPONSIVE PAGINATION */}
       {pageCount > 1 && (
         <div className="flex flex-col sm:flex-row justify-between items-center mt-8 px-2 gap-4">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+          <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
             Page {page} of {pageCount}
           </p>
 
@@ -194,7 +194,7 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
                 e.stopPropagation();
                 changePage(page - 1);
               }}
-              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
+              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-xs font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
             >
               Prev
             </button>
@@ -204,7 +204,7 @@ hover:bg-blue-50/30 transition-all cursor-pointer group
                 e.stopPropagation();
                 changePage(page + 1);
               }}
-              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
+              className="flex-1 sm:flex-none px-6 py-3 sm:py-2 text-xs font-black uppercase tracking-widest bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 disabled:opacity-20 transition-all active:scale-95 shadow-sm"
             >
               Next
             </button>
@@ -273,11 +273,11 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-start shrink-0">
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-mono font-bold text-slate-400">
+              <span className="text-xs font-mono font-bold text-slate-400">
                 #{String(ticket.id).slice(0, 8)}
               </span>
               <span
-                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                className={`px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider ${
                   priorityStyles[ticket.priority] || priorityStyles.normal
                 }`}
               >
@@ -303,22 +303,22 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
           {/* Client Info Card */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Client Contact
               </p>
               <p className="text-sm font-bold text-slate-900 break-words">
                 {ticket.name || 'Anonymous'}
               </p>
-              <p className="text-[11px] font-medium text-slate-500 break-all">
+              <p className="text-xs font-medium text-slate-500 break-all">
                 {ticket.email || ticket.student_email || 'No email provided'}
               </p>
             </div>
 
             <div className="sm:text-right">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Received At
               </p>
-              <p className="text-[11px] font-bold text-slate-700 uppercase">
+              <p className="text-xs font-bold text-slate-700 uppercase">
                 {new Date(ticket.created_at).toLocaleString()}
               </p>
             </div>
@@ -328,7 +328,7 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
             {/* Original Message */}
             <div className="flex flex-col items-start max-w-[92%]">
               <div className="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm">
-                <p className="text-[9px] font-black text-blue-600 mb-2 uppercase tracking-widest border-b border-blue-50 pb-1">
+                <p className="text-xs font-black text-blue-600 mb-2 uppercase tracking-widest border-b border-blue-50 pb-1">
                   Original Inquiry
                 </p>
                 <p className="text-[13px] font-medium text-slate-800 whitespace-pre-wrap leading-relaxed break-words">
@@ -354,13 +354,13 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
                       : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
                   }`}
                 >
-                  <p className="text-[9px] font-black mb-2 uppercase tracking-widest opacity-60">
+                  <p className="text-xs font-black mb-2 uppercase tracking-widest opacity-60">
                     {msg.sender_type === 'admin' ? 'Support Lead' : 'Client'}
                   </p>
                   <p className="text-[13px] font-medium whitespace-pre-wrap leading-relaxed break-words">
                     {msg.message}
                   </p>
-                  <p className="text-[9px] mt-2 opacity-40 font-bold text-right italic">
+                  <p className="text-xs mt-2 opacity-40 font-bold text-right italic">
                     {new Date(msg.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -378,14 +378,14 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
                     Update Status:
                   </span>
 
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border-none ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-slate-900 transition-all ${
+                    className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border-none ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-slate-900 transition-all ${
                       statusStyles[status]
                     }`}
                   >
@@ -400,7 +400,7 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
                 </div>
 
                 {message.trim().length === 0 && (
-                  <span className="text-[9px] font-black text-amber-600 animate-pulse uppercase tracking-widest">
+                  <span className="text-xs font-black text-amber-600 animate-pulse uppercase tracking-widest">
                     Message Required
                   </span>
                 )}
@@ -430,14 +430,14 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
             </div>
           ) : (
             <div className="py-4 flex flex-col items-center justify-center text-center space-y-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest">
                 This ticket is {ticket.status}
               </p>
 
               <div className="flex gap-2 flex-wrap justify-center">
                 <button
                   onClick={() => setStatus('in_progress')}
-                  className="px-6 py-2.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95"
+                  className="px-6 py-2.5 bg-blue-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95"
                 >
                   Reopen & Reply
                 </button>
@@ -445,7 +445,7 @@ function SupportViewModal({ ticket, messages = [], onClose }) {
                 {ticket.status === 'resolved' && (
                   <button
                     onClick={handleQuickClose}
-                    className="px-6 py-2.5 bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-300 transition-all active:scale-95"
+                    className="px-6 py-2.5 bg-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-300 transition-all active:scale-95"
                   >
                     Archive
                   </button>
@@ -470,7 +470,7 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+      className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-widest border ${
         styles[status] || styles.closed
       }`}
     >
@@ -484,7 +484,7 @@ function LoadingOverlay() {
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white/60 backdrop-blur-sm">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-4 border-[#000033] border-t-transparent rounded-full animate-spin" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+        <span className="text-xs font-black uppercase tracking-widest text-slate-900">
           Retrieving Thread...
         </span>
       </div>

@@ -71,7 +71,7 @@ export default function SyncCalendarButton({ onError }) {
         </svg>
       )}
 
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+      <span className="text-xs font-black uppercase tracking-[0.2em] leading-none">
         {isPending ? 'Syncing' : 'Export'}
       </span>
     </button>

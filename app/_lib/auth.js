@@ -106,14 +106,16 @@ const authConfig = {
 
       if (isLoggedIn && isAdmin) {
         // Define which paths the admin is allowed to be on
-        const isAtAdminPortal =
+        const isAllowedPath =
+          nextUrl.pathname.startsWith('/admin') ||
           nextUrl.pathname.startsWith('/admin-login') ||
-          nextUrl.pathname.startsWith('/admin');
+          nextUrl.pathname.startsWith('/welcome') ||
+          nextUrl.pathname.startsWith('/api');
 
         // If the admin is authenticated but trying to access shareholder pages,
-        // silently redirect them to the admin gate.
-        if (!isAtAdminPortal) {
-          return Response.redirect(new URL('/admin-login', nextUrl.url));
+        // redirect them to the admin portal.
+        if (!isAllowedPath) {
+          return Response.redirect(new URL('/admin', nextUrl.url));
         }
       }
 

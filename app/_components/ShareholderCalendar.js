@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -9,6 +9,7 @@ import {
   VideoCameraIcon,
   ClockIcon,
 } from '@heroicons/react/24/solid';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import {
   format,
   startOfMonth,
@@ -20,6 +21,10 @@ import {
   subMonths,
   isSameMonth,
   isToday,
+  parseISO,
+  isValid,
+  isBefore,
+  isAfter,
 } from 'date-fns';
 
 import EventModal from './InvestorEventModal';
@@ -44,15 +49,25 @@ const FALLBACK_COLOR = {
   dot: 'bg-slate-400',
 };
 
+function getEventDate(timeValue) {
+  if (!timeValue) return null;
+  if (timeValue instanceof Date && isValid(timeValue)) return timeValue;
+  const parsed =
+    typeof timeValue === 'string' ? parseISO(timeValue) : new Date(timeValue);
+  if (isValid(parsed)) return parsed;
+  const directDate = new Date(timeValue);
+  return isValid(directDate) ? directDate : null;
+}
+
 function formatEventTime(timeStr) {
   if (!timeStr) return '';
   try {
-    const d = new Date(timeStr);
-    if (!isNaN(d.getTime())) {
+    const d = getEventDate(timeStr);
+    if (d) {
       return format(d, 'h:mm a');
     }
   } catch (err) {
-    // Return original string if not ISO
+    // Return original string if not parsable
   }
   return timeStr;
 }
@@ -62,6 +77,12 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [modalEvents, setModalEvents] = useState(null);
   const [modalDate, setModalDate] = useState(null);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   /* ===================== EXTRACT ALL FLAT EVENTS ===================== */
   const allEvents = useMemo(() => {
@@ -157,7 +178,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
             <h2 className="text-sm sm:text-base font-black text-[#000033] dark:text-white uppercase tracking-wider">
               {format(currentMonth, 'MMMM yyyy')}
             </h2>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-full border border-blue-200/60 dark:border-blue-800/60">
+            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-full border border-blue-200/60 dark:border-blue-800/60">
               {totalEvents} {totalEvents === 1 ? 'Meeting' : 'Meetings'} Scheduled
             </span>
           </div>
@@ -168,7 +189,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-[#000033] dark:bg-blue-600 text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -180,7 +201,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   viewMode === 'list'
                     ? 'bg-[#000033] dark:bg-blue-600 text-white shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -205,7 +226,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
               <button
                 type="button"
                 onClick={goToday}
-                className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-2xs cursor-pointer"
+                className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-2xs cursor-pointer"
               >
                 Today
               </button>
@@ -225,13 +246,13 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
         {/* PORTFOLIO HOLDINGS LEGEND */}
         {Object.keys(investmentMap).length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-200/40 dark:border-slate-800">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 mr-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 mr-1">
               Holdings:
             </span>
             {Object.values(investmentMap).map((item) => (
               <div
                 key={item.id}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-[9px] font-semibold ${item.color.bg} ${item.color.border} ${item.color.text}`}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-semibold ${item.color.bg} ${item.color.border} ${item.color.text}`}
               >
                 <div className={`h-1.5 w-1.5 rounded-full ${item.color.dot}`} />
                 <span className="truncate max-w-[150px]">{item.name}</span>
@@ -249,7 +270,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
               <div
                 key={d}
-                className="py-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800 last:border-r-0"
+                className="py-1.5 text-center text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800 last:border-r-0"
               >
                 {d}
               </div>
@@ -283,7 +304,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
                   <div className="flex justify-between items-center mb-0.5 shrink-0">
                     <span
                       className={`
-                        text-[10px] sm:text-[11px] font-black px-1 py-0.2 rounded shadow-2xs leading-tight
+                        text-xs sm:text-sm font-black px-1.5 py-0.5 rounded shadow-2xs leading-tight
                         ${isTodayDate ? 'bg-[#000033] dark:bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'}
                       `}
                     >
@@ -291,7 +312,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
                     </span>
 
                     {isTodayDate && (
-                      <span className="text-[8px] font-bold uppercase text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-900/50 px-1 rounded">
+                      <span className="text-xs sm:text-xs font-bold uppercase text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-900/50 px-1 rounded">
                         Today
                       </span>
                     )}
@@ -303,20 +324,25 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
                       const invKey = ev.investmentId || ev.investmentName || 'default';
                       const colorScheme = investmentMap[invKey]?.color || FALLBACK_COLOR;
                       const eventTime = formatEventTime(ev.time || ev.start_time);
+                      const startDt = getEventDate(ev.start_time || ev.startTime || (ev.dateStr ? `${ev.dateStr}T00:00:00` : null));
+                      const rawEndDt = getEventDate(ev.endTime || ev.end_time);
+                      const endDt = rawEndDt || (startDt ? new Date(startDt.getTime() + 60 * 60 * 1000) : null);
+                      const isPast = endDt ? isBefore(endDt, now) : (startDt ? isBefore(startDt, now) : false);
 
                       return (
                         <div
                           key={ev.id}
                           className={`
-                            w-full text-left px-1 py-0.5 rounded border transition-all truncate
+                            w-full text-left px-1.5 py-0.5 rounded border transition-all truncate
                             ${colorScheme.bg} ${colorScheme.border} ${colorScheme.text}
+                            ${isPast ? 'opacity-60 line-through' : ''}
                           `}
                         >
-                          <div className="text-[9px] font-bold truncate leading-tight">
+                          <div className="text-xs sm:text-xs font-bold truncate leading-tight">
                             {ev.title || 'Briefing'}
                           </div>
                           {eventTime && (
-                            <div className="hidden lg:block text-[8px] opacity-75 truncate leading-none">
+                            <div className="hidden lg:block text-xs opacity-75 truncate leading-none">
                               {eventTime}
                             </div>
                           )}
@@ -325,7 +351,7 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
                     })}
 
                     {dayEvents.length > 2 && (
-                      <div className="text-[8px] font-bold text-slate-400 dark:text-slate-500 text-center leading-none">
+                      <div className="text-xs font-bold text-slate-400 dark:text-slate-500 text-center leading-none">
                         +{dayEvents.length - 2} more
                       </div>
                     )}
@@ -337,32 +363,80 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
         </div>
       ) : (
         /* ===== LIST / AGENDA VIEW ===== */
-        <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-2 custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar">
           {sortedEventList.length > 0 ? (
             sortedEventList.map((ev) => {
               const invKey = ev.investmentId || ev.investmentName || 'default';
               const colorScheme = investmentMap[invKey]?.color || FALLBACK_COLOR;
-              const eventDateStr = ev.start_time
-                ? format(new Date(ev.start_time), 'EEEE, MMMM d, yyyy')
-                : format(new Date(ev.dateStr + 'T00:00:00'), 'EEEE, MMMM d, yyyy');
+              const startDt = getEventDate(ev.start_time || ev.startTime || (ev.dateStr ? `${ev.dateStr}T00:00:00` : null));
+              const rawEndDt = getEventDate(ev.endTime || ev.end_time);
+              const endDt = rawEndDt || (startDt ? new Date(startDt.getTime() + 60 * 60 * 1000) : null);
+
+              const isPast = endDt
+                ? isBefore(endDt, now)
+                : startDt
+                  ? isBefore(startDt, now)
+                  : false;
+
+              const isLive = Boolean(
+                startDt &&
+                endDt &&
+                isAfter(now, startDt) &&
+                isBefore(now, endDt)
+              );
+
+              const eventDateStr = startDt
+                ? format(startDt, 'EEEE, MMMM d, yyyy')
+                : ev.dateStr
+                  ? format(new Date(ev.dateStr + 'T00:00:00'), 'EEEE, MMMM d, yyyy')
+                  : '';
               const eventTimeStr = formatEventTime(ev.time || ev.start_time);
+              const eventEndTimeStr = rawEndDt ? formatEventTime(rawEndDt) : null;
 
               return (
                 <div
                   key={ev.id}
-                  className="p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:shadow-xs transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+                  className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 relative ${
+                    isPast
+                      ? 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 opacity-60'
+                      : isLive
+                        ? 'bg-white dark:bg-slate-800 border-green-300 dark:border-green-800 shadow-md ring-1 ring-green-100 dark:ring-green-900/30'
+                        : 'bg-white dark:bg-slate-800/90 border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:shadow-xs'
+                  }`}
                 >
-                  <div className="space-y-0.5 min-w-0 flex-1">
+                  {/* LIVE BADGE */}
+                  {isLive && (
+                    <div className="absolute -top-2.5 right-3 flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-tight animate-pulse shadow-sm">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-100"></span>
+                      </span>
+                      Live Now
+                    </div>
+                  )}
+
+                  <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`px-2 py-0.2 rounded-md text-[9px] font-bold uppercase border ${colorScheme.bg} ${colorScheme.border} ${colorScheme.text}`}>
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase border ${colorScheme.bg} ${colorScheme.border} ${colorScheme.text}`}>
                         {ev.investmentName || 'Portfolio Event'}
                       </span>
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 flex items-center gap-1">
                         <ClockIcon className="h-3 w-3 text-slate-400 dark:text-slate-500" />
                         {eventDateStr} {eventTimeStr && `at ${eventTimeStr}`}
+                        {eventEndTimeStr && ` — ${eventEndTimeStr}`}
                       </span>
+                      {isPast && (
+                        <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                          <CheckCircleIcon className="h-3.5 w-3.5 text-slate-400" />
+                          Ended
+                        </span>
+                      )}
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
+                    <h3
+                      className={`text-sm font-bold leading-tight truncate ${
+                        isPast ? 'text-slate-500 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-white'
+                      }`}
+                    >
                       {ev.title || 'Shareholder Event'}
                     </h3>
                     {ev.description && (
@@ -372,16 +446,33 @@ export default function ShareholderCalendar({ eventsByDate = {}, events = null }
                     )}
                   </div>
 
-                  {ev.meetLink && (
-                    <a
-                      href={ev.meetLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-950 dark:bg-blue-600 hover:bg-blue-900 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all shrink-0 w-full sm:w-auto justify-center cursor-pointer shadow-2xs"
-                    >
-                      <VideoCameraIcon className="h-3.5 w-3.5" />
-                      Join Meeting
-                    </a>
+                  {/* ACTION BUTTON / CONCLUDED STATUS */}
+                  {(ev.meetLink || ev.meet_link) && (
+                    isPast ? (
+                      <div className="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl text-xs font-bold text-center border border-slate-200 dark:border-slate-700 italic shrink-0 w-full sm:w-auto">
+                        Meeting has concluded
+                      </div>
+                    ) : isLive ? (
+                      <a
+                        href={ev.meetLink || ev.meet_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 w-full sm:w-auto justify-center cursor-pointer shadow-sm animate-pulse"
+                      >
+                        <VideoCameraIcon className="h-3.5 w-3.5" />
+                        Join Ongoing Meeting
+                      </a>
+                    ) : (
+                      <a
+                        href={ev.meetLink || ev.meet_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-950 dark:bg-blue-600 hover:bg-blue-900 dark:hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 w-full sm:w-auto justify-center cursor-pointer shadow-2xs"
+                      >
+                        <VideoCameraIcon className="h-3.5 w-3.5" />
+                        Join Meeting
+                      </a>
+                    )
                   )}
                 </div>
               );

@@ -40,7 +40,7 @@ export default function DecisionStep({
         {/* BONUS: Show the applicant exactly why they were rejected based on admin notes */}
         {!isApproved && membershipRecord?.decision_result && (
           <div className="p-4 bg-red-50/50 border border-red-100 rounded-xl text-sm font-medium text-red-800 text-left">
-            <span className="font-bold uppercase tracking-widest text-[10px] block mb-1 text-red-500">
+            <span className="font-bold uppercase tracking-widest text-xs block mb-1 text-red-500">
               Decision Notes
             </span>
             {membershipRecord.decision_result}

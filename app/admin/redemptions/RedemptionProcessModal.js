@@ -56,7 +56,7 @@ export default function RedemptionProcessModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Sticky */}
-        <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center shrink-0">
+        <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold text-gray-800">
             {isPending ? 'Process Redemption' : 'Redemption Details'}
           </h2>
@@ -82,10 +82,10 @@ export default function RedemptionProcessModal({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="p-6 overflow-y-auto space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5">
           <div className="flex justify-between items-start border-b pb-4">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Request ID
               </p>
               <p className="font-mono text-sm text-gray-700">
@@ -93,7 +93,7 @@ export default function RedemptionProcessModal({
               </p>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+              className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
                 redemption.status === 'completed'
                   ? 'bg-green-100 text-green-700 border border-green-200'
                   : redemption.status === 'rejected'
@@ -115,7 +115,7 @@ export default function RedemptionProcessModal({
                 {redemption.investments?.opportunities?.name ||
                   'Unknown Opportunity'}
               </p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Investment ID
               </p>
               <p className="font-semibold text-blue-600">
@@ -123,7 +123,7 @@ export default function RedemptionProcessModal({
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Requested Amount
               </p>
               <p className="font-bold text-gray-900 text-base">
@@ -133,7 +133,7 @@ export default function RedemptionProcessModal({
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Shareholder
             </p>
             <p className="text-gray-800 font-medium">
@@ -142,7 +142,7 @@ export default function RedemptionProcessModal({
           </div>
 
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Reason Code
             </p>
             <div className="mt-1 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm text-gray-700 font-medium">
@@ -181,7 +181,7 @@ export default function RedemptionProcessModal({
                       </td>
                       <td className="py-2">
                         <span
-                          className={`capitalize px-2 py-0.5 rounded text-[10px] font-bold ${
+                          className={`capitalize px-2 py-0.5 rounded text-xs font-bold ${
                             row.entry_type === 'investment'
                               ? 'bg-green-50 text-green-700 border border-green-100'
                               : 'bg-violet-50 text-violet-700 border border-violet-100'
@@ -210,7 +210,7 @@ export default function RedemptionProcessModal({
               {redemption.status === 'rejected' &&
                 redemption.redemption_rejection_policies && (
                   <div>
-                    <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-red-500 uppercase tracking-widest">
                       Rejection Policy
                     </p>
                     <p className="text-sm text-red-700 font-semibold mt-1">
@@ -221,7 +221,7 @@ export default function RedemptionProcessModal({
                 )}
 
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                   Admin Notes
                 </p>
                 <p className="text-sm text-gray-600 italic mt-1">
@@ -230,7 +230,7 @@ export default function RedemptionProcessModal({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     Submitted
                   </p>
                   <p className="text-xs text-gray-500">
@@ -239,7 +239,7 @@ export default function RedemptionProcessModal({
                 </div>
                 {redemption.processed_at && (
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                       Processed
                     </p>
                     <p className="text-xs text-gray-500">
@@ -254,7 +254,7 @@ export default function RedemptionProcessModal({
 
         {/* Footer Actions - Sticky */}
         {isPending ? (
-          <div className="px-6 py-4 bg-gray-50 border-t space-y-4 shrink-0">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t space-y-4 shrink-0">
             {/* STATE 1: Idle */}
             {actionState === 'idle' && (
               <div className="flex gap-3">
@@ -292,7 +292,7 @@ export default function RedemptionProcessModal({
                 />
 
                 <div>
-                  <label className="text-[10px] font-bold text-red-600 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-red-600 uppercase tracking-widest block mb-1">
                     Select Rejection Policy *
                   </label>
                   <select
@@ -310,7 +310,7 @@ export default function RedemptionProcessModal({
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
                     Internal Notes (Optional)
                   </label>
                   <textarea
@@ -343,7 +343,7 @@ export default function RedemptionProcessModal({
             )}
           </div>
         ) : (
-          <div className="px-6 py-4 bg-gray-50 border-t shrink-0">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t shrink-0">
             <button
               onClick={handleClose}
               className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all active:scale-[0.98] shadow-md"

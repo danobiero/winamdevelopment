@@ -66,7 +66,7 @@ export default function LessonCard({ eventsByDate }) {
       <div className="p-4">
         {eventList.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed border-primary-50 rounded-xl">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary-300">
+            <p className="text-xs font-black uppercase tracking-widest text-primary-300">
               No lessons scheduled
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function LessonCard({ eventsByDate }) {
                   <div className="p-4 flex-grow min-w-0">
                     <div className="mb-2 flex items-center justify-between">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                        className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
                           isEnded
                             ? 'bg-zinc-700 text-zinc-200'
                             : isTodayDate
@@ -131,14 +131,14 @@ export default function LessonCard({ eventsByDate }) {
                         href={evt.meet_link}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full flex items-center justify-center gap-2 px-3 py-4 text-[10px] font-black uppercase bg-green-500 text-white hover:bg-blue-600 transition-all active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-4 text-xs font-black uppercase bg-green-500 text-white hover:bg-blue-600 transition-all active:scale-95"
                       >
                         <VideoCameraIcon className="h-3.5 w-3.5" />
                         Join Session
                       </a>
                     ) : (
                       <div
-                        className={`flex items-center justify-center gap-1.5 px-3 py-4 text-[10px] font-black uppercase tracking-widest ${
+                        className={`flex items-center justify-center gap-1.5 px-3 py-4 text-xs font-black uppercase tracking-widest ${
                           isEnded
                             ? 'bg-zinc-100 text-zinc-500'
                             : 'bg-orange-50/30 text-orange-600'

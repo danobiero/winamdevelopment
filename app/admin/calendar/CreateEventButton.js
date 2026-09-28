@@ -31,7 +31,7 @@ export default function CreateEventButton({ onClick }) {
         />
       </svg>
 
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">
+      <span className="text-xs font-black uppercase tracking-[0.2em] leading-none">
         Create Event
       </span>
     </button>

@@ -32,7 +32,7 @@ export default function MainInvestmentList({
         <p className="text-slate-700 font-bold text-xs">
           No Active Positions Found
         </p>
-        <p className="text-slate-400 text-[11px] max-w-xs mx-auto">
+        <p className="text-slate-400 text-xs max-w-xs mx-auto">
           Your portfolio is ready. Once you invest in an opportunity, its performance and official documents will appear here.
         </p>
       </div>
@@ -46,7 +46,7 @@ export default function MainInvestmentList({
           <BriefcaseIcon className="h-4 w-4 text-blue-600" />
           Position Details
         </h3>
-        <span className="text-[10px] text-slate-400 font-mono">
+        <span className="text-xs text-slate-400 font-mono">
           {investments.length} Active {investments.length === 1 ? 'Asset' : 'Assets'}
         </span>
       </div>
@@ -80,7 +80,7 @@ export default function MainInvestmentList({
                           TYPE_COLORS[type] || TYPE_COLORS.default,
                       }}
                     />
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest truncate">
                       {type.replace('_', ' ')} • ID #{inv.id}
                     </span>
                   </div>
@@ -90,13 +90,13 @@ export default function MainInvestmentList({
                   >
                     {name}
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium">
+                  <p className="text-xs text-slate-400 font-medium">
                     Principal: <span className="font-mono text-slate-600 font-semibold">{FormatCurrency(invested)}</span>
                   </p>
                 </div>
 
                 <div className="w-full sm:w-auto sm:text-right min-w-0 shrink-0">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Current Valuation
                   </p>
                   <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight break-all sm:break-words min-w-0">
@@ -104,7 +104,7 @@ export default function MainInvestmentList({
                   </p>
                   {invested > 0 && (
                     <p
-                      className={`text-[11px] font-bold tracking-tight break-words min-w-0 ${
+                      className={`text-xs font-bold tracking-tight break-words min-w-0 ${
                         profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
                       }`}
                     >
@@ -121,7 +121,7 @@ export default function MainInvestmentList({
                 <button
                   type="button"
                   onClick={() => onViewPerformance(inv)}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
                 >
                   <ChartBarIcon className="h-3.5 w-3.5 shrink-0 text-slate-300" />
                   <span>Performance</span>
@@ -131,7 +131,7 @@ export default function MainInvestmentList({
                   <button
                     type="button"
                     onClick={() => onViewStatements(inv)}
-                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200/60 rounded-lg text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200/60 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
                   >
                     <DocumentTextIcon className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                     <span>Statements</span>
@@ -140,7 +140,7 @@ export default function MainInvestmentList({
 
                 <Link
                   href="/account/documents"
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-2xs text-center"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition-all shadow-2xs text-center"
                 >
                   <DocumentTextIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
                   <span>Documents</span>
@@ -149,7 +149,7 @@ export default function MainInvestmentList({
                 {isActive ? (
                   <Link
                     href="/account/support"
-                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-2xs text-center"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition-all shadow-2xs text-center"
                   >
                     <EnvelopeIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
                     <span>Support</span>
@@ -158,7 +158,7 @@ export default function MainInvestmentList({
                   <button
                     type="button"
                     onClick={() => onSelectRedemption(inv)}
-                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
                   >
                     <ArrowPathIcon className="h-3.5 w-3.5 shrink-0" />
                     <span>Redeem</span>

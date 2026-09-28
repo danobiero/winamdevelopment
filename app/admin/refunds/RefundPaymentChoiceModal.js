@@ -158,16 +158,16 @@ const sortedPayments = useMemo(() => {
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-t-3xl md:rounded-3xl shadow-2xl w-full max-w-2xl max-h-[95vh] md:max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom md:slide-in-from-bottom-0 md:zoom-in-95 duration-300"
+        className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       >
         <input type="hidden" name="refundId" value={refund.id} />
         <input type="hidden" name="paymentId" value={selectedId || ''} />
 
         {/* HEADER - Sticky */}
-        <div className="px-6 md:px-8 py-5 md:py-6 border-b flex justify-between items-center bg-white shrink-0">
+        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 border-b flex justify-between items-center bg-white shrink-0">
           <div>
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
               Process Refund
@@ -186,7 +186,7 @@ const sortedPayments = useMemo(() => {
         </div>
 
         {/* SCROLLABLE BODY */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 md:space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
           {/* QUICK STATS - Horizontal Scroll on small screens, Grid on md+ */}
           <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-3 md:gap-4 pb-2 md:pb-0 scrollbar-hide">
             <StatCard label="Total Paid" value={FormatCurrency(totalPaid)} />
@@ -225,7 +225,7 @@ const sortedPayments = useMemo(() => {
 
           {/* PAYMENT SELECTION */}
           <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-4">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.1em] mb-4">
               Select Stripe Source
             </p>
             <div className="grid gap-3">
@@ -253,7 +253,7 @@ const sortedPayments = useMemo(() => {
                           {FormatCurrency(pay.amount)}
                         </span>
                         <span
-                          className={`text-[9px] md:text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          className={`text-xs font-black uppercase px-2 py-0.5 rounded-md ${
                             isTestPayment(pay)
                               ? 'bg-purple-100 text-purple-700'
                               : 'bg-emerald-100 text-emerald-700'
@@ -263,10 +263,10 @@ const sortedPayments = useMemo(() => {
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[11px] md:text-xs font-medium text-slate-500">
+                        <span className="text-xs font-medium text-slate-500">
                           Avail: {FormatCurrency(available)}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-xs font-mono text-slate-400">
                           …{String(pay.id).slice(-6)}
                         </span>
                       </div>
@@ -301,7 +301,7 @@ const sortedPayments = useMemo(() => {
         </div>
 
         {/* FOOTER - Sticky */}
-        <div className="p-6 md:p-8 bg-slate-50 border-t border-slate-100 space-y-4 shrink-0 pb-10 md:pb-8">
+        <div className="p-4 sm:p-6 md:p-8 bg-slate-50 border-t border-slate-100 space-y-4 shrink-0 pb-6 md:pb-8">
           {selectedPayment && (
             <div className="flex items-start md:items-center gap-3 text-xs md:text-sm text-slate-600 font-medium px-1">
               <svg
@@ -352,7 +352,7 @@ const sortedPayments = useMemo(() => {
 function Section({ title, children }) {
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.1em]">
         {title}
       </p>
       <div className="space-y-1.5">{children}</div>
@@ -372,7 +372,7 @@ function KeyValue({ label, value }) {
 function StatCard({ label, value, color = 'text-slate-900' }) {
   return (
     <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 md:p-4 min-w-[120px] md:min-w-0 flex-shrink-0">
-      <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-0.5 md:mb-1">
+      <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-0.5 md:mb-1">
         {label}
       </p>
       <p className={`text-base md:text-xl font-black ${color}`}>{value}</p>

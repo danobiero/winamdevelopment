@@ -24,9 +24,9 @@ export default function ViewModal({ lesson, materials = [] }) {
   const handleClose = () => router.push('/admin/lessons');
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
       {/* Container: Full screen on mobile, max-xl on desktop */}
-      <div className="bg-white w-full h-full sm:h-auto sm:max-w-xl sm:rounded-2xl shadow-2xl relative flex flex-col overflow-hidden">
+      <div className="bg-white w-full max-h-[92vh] sm:max-w-xl rounded-2xl shadow-2xl relative flex flex-col overflow-hidden">
         {/* HEADER */}
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div>
@@ -50,7 +50,7 @@ export default function ViewModal({ lesson, materials = [] }) {
           {/* STATS GRID */}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-xs font-bold text-slate-400 uppercase">
                 Capacity
               </p>
               <p className="text-sm font-bold text-slate-700">
@@ -58,7 +58,7 @@ export default function ViewModal({ lesson, materials = [] }) {
               </p>
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-xs font-bold text-slate-400 uppercase">
                 Category
               </p>
               <p className="text-sm font-bold text-slate-700">
@@ -66,7 +66,7 @@ export default function ViewModal({ lesson, materials = [] }) {
               </p>
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-xs font-bold text-slate-400 uppercase">
                 Price
               </p>
               <p className="text-sm font-bold text-slate-700">
@@ -74,7 +74,7 @@ export default function ViewModal({ lesson, materials = [] }) {
               </p>
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-xs font-bold text-slate-400 uppercase">
                 Discount
               </p>
               <p className="text-sm font-bold text-slate-700">
@@ -143,7 +143,7 @@ export default function ViewModal({ lesson, materials = [] }) {
                         {m.name}
                         <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 flex-shrink-0" />
                       </a>
-                      <span className="text-[10px] font-medium text-slate-400">
+                      <span className="text-xs font-medium text-slate-400">
                         Added {new Date(m.created_at).toLocaleDateString()}
                       </span>
                     </div>

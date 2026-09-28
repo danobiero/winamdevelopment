@@ -106,7 +106,7 @@ export default async function PaymentsPage({ searchParams }) {
             Payments <span className="text-blue-600">Ledger</span>
           </h1>
 
-          <div className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {payments.length} Records
           </div>
         </div>
@@ -136,7 +136,7 @@ export default async function PaymentsPage({ searchParams }) {
               className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col space-y-4"
             >
               <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                <span className="text-[9px] font-mono text-slate-400 font-bold">
+                <span className="text-xs font-mono text-slate-400 font-bold">
                   ID: {pay.id?.slice(0, 8)}...
                 </span>
 
@@ -146,7 +146,7 @@ export default async function PaymentsPage({ searchParams }) {
               </div>
 
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   Shareholder
                 </p>
 
@@ -157,7 +157,7 @@ export default async function PaymentsPage({ searchParams }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                     Opportunity
                   </p>
 
@@ -167,7 +167,7 @@ export default async function PaymentsPage({ searchParams }) {
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
                     Status
                   </p>
 
@@ -180,13 +180,13 @@ export default async function PaymentsPage({ searchParams }) {
                   <>
                     <Link
                       href={`/admin/payments?view=${pay.id}&page=${page}`}
-                      className="flex-1 text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition"
+                      className="flex-1 text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-sm transition"
                     >
                       Confirm Payment
                     </Link>
                     <Link
                       href={`/admin/payments?view=${pay.id}&page=${page}`}
-                      className="px-4 text-center py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest transition"
+                      className="px-4 text-center py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition"
                     >
                       Details
                     </Link>
@@ -194,7 +194,7 @@ export default async function PaymentsPage({ searchParams }) {
                 ) : (
                   <Link
                     href={`/admin/payments?view=${pay.id}&page=${page}`}
-                    className="block w-full text-center py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                    className="block w-full text-center py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest"
                   >
                     Details
                   </Link>
@@ -247,7 +247,7 @@ export default async function PaymentsPage({ searchParams }) {
 
               return (
                 <tr key={pay.id} className="hover:bg-blue-50/30">
-                  <td className="px-6 py-4 font-mono text-[10px] text-slate-400">
+                  <td className="px-6 py-4 font-mono text-xs text-slate-400">
                     {pay.id}
                   </td>
 
@@ -280,14 +280,14 @@ export default async function PaymentsPage({ searchParams }) {
                       {status === 'pending' && (
                         <Link
                           href={`/admin/payments?view=${pay.id}&page=${page}`}
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black uppercase tracking-wider transition-colors shadow-sm"
                         >
                           Confirm
                         </Link>
                       )}
                       <Link
                         href={`/admin/payments?view=${pay.id}&page=${page}`}
-                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase text-slate-600 hover:border-slate-900 transition-colors"
+                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-black uppercase text-slate-600 hover:border-slate-900 transition-colors"
                       >
                         Details
                       </Link>
@@ -324,7 +324,7 @@ function PaymentStatusBadge({ status, raw }) {
 
   return (
     <span
-      className={`text-[9px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${map[status]}`}
+      className={`text-xs font-black uppercase tracking-widest border px-2 py-0.5 rounded ${map[status]}`}
     >
       {raw}
     </span>

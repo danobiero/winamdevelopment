@@ -231,15 +231,15 @@ function SideNavigation({ isMobile }) {
                           key={`drawer-${group.category}-${link.name}`}
                           href={link.href}
                           onClick={() => setIsMoreOpen(false)}
-                          className={`flex items-center gap-2.5 p-2.5 rounded-xl font-bold text-xs transition-all ${
+                          className={`flex items-center gap-2.5 p-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
                             isActive
-                              ? 'bg-primary-900 dark:bg-blue-600 text-white shadow-md'
-                              : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                              : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
                           }`}
                         >
                           <span
                             className={
-                              isActive ? 'text-white' : 'text-primary-500 dark:text-primary-400'
+                              isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'
                             }
                           >
                             {link.icon}
@@ -275,7 +275,7 @@ function SideNavigation({ isMobile }) {
     return (
       <>
         {/* MOBILE BOTTOM NAV BAR */}
-        <nav className="flex justify-around items-center h-16 px-2 bg-white dark:bg-slate-900 transition-colors duration-200">
+        <nav className="flex justify-around items-center h-16 px-2 bg-white dark:bg-slate-900 border-t-2 border-slate-200/90 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] transition-colors duration-200">
           {mobileQuickLinks.map((link) => {
             const isActive = isActiveRoute(pathname, link.href);
 
@@ -285,18 +285,18 @@ function SideNavigation({ isMobile }) {
                 href={link.href}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all duration-200 ${
                   isActive
-                    ? 'text-primary-900 dark:text-blue-400 scale-105 font-bold'
-                    : 'text-primary-400 dark:text-slate-400 hover:text-primary-900 dark:hover:text-slate-200'
+                    ? 'text-blue-600 dark:text-blue-400 scale-105 font-bold'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold'
                 }`}
               >
                 <div
                   className={`p-1.5 rounded-lg transition-colors duration-200 ${
-                    isActive ? 'bg-primary-50 dark:bg-slate-800 text-primary-900 dark:text-blue-400 font-bold' : ''
+                    isActive ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-bold shadow-sm shadow-blue-500/20' : ''
                   }`}
                 >
                   {link.icon}
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-tighter truncate max-w-[55px]">
+                <span className="text-xs font-bold uppercase tracking-tight truncate max-w-[65px]">
                   {link.name}
                 </span>
               </Link>
@@ -309,18 +309,18 @@ function SideNavigation({ isMobile }) {
             onClick={() => setIsMoreOpen(true)}
             className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all duration-200 cursor-pointer ${
               isOtherRouteActive
-                ? 'text-primary-900 dark:text-blue-400 font-bold scale-105'
-                : 'text-primary-400 dark:text-slate-400 hover:text-primary-900 dark:hover:text-slate-200'
+                ? 'text-blue-600 dark:text-blue-400 font-bold scale-105'
+                : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold'
             }`}
           >
             <div
               className={`p-1.5 rounded-lg transition-colors duration-200 ${
-                isOtherRouteActive ? 'bg-primary-50 dark:bg-slate-800 text-primary-900 dark:text-blue-400' : ''
+                isOtherRouteActive ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-bold shadow-sm shadow-blue-500/20' : ''
               }`}
             >
               <Bars3Icon className="h-5 w-5" />
             </div>
-            <span className="text-[9px] font-bold uppercase tracking-tighter">
+            <span className="text-xs font-bold uppercase tracking-tight">
               More
             </span>
           </button>

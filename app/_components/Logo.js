@@ -28,7 +28,7 @@ function Logo() {
           <span className="text-sm font-black tracking-tight text-[#000033] leading-none">
             WINAM
           </span>
-          <span className="text-[8.5px] font-bold uppercase tracking-wider text-slate-500 leading-tight mt-0.5">
+          <span className="text-xs sm:text-xs font-bold uppercase tracking-wider text-slate-500 leading-tight mt-0.5">
             DEVELOPMENT GROUP
           </span>
         </div>
@@ -38,7 +38,7 @@ function Logo() {
           <span className="text-lg md:text-2xl font-black tracking-tight text-[#000033] leading-none">
             WINAM DEVELOPMENT GROUP
           </span>
-          <span className="hidden md:inline-block text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mt-1">
+          <span className="hidden md:inline-block text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mt-1">
             Stronger Together
           </span>
         </div>

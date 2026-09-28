@@ -28,7 +28,7 @@ export default function AdminToggleStatus({ lessonId, currentCategory }) {
   return (
     <div className="flex items-center gap-2">
       <span
-        className={`text-[10px] font-bold uppercase tracking-tighter ${
+        className={`text-xs font-bold uppercase tracking-tighter ${
           isActive ? 'text-emerald-600' : 'text-slate-400'
         }`}
       >

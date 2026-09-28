@@ -14,11 +14,16 @@ import { da } from 'date-fns/locale';
 //================================= ================
 
 export async function getAdmin(email) {
+  if (!email) return null;
   const { data, error } = await supabase
     .from('admins')
     .select('id, email, fullName, telephone')
-    .eq('email', email)
-    .single();
+    .ilike('email', email)
+    .maybeSingle();
+  if (error) {
+    console.error('getAdmin error:', error.message);
+    return null;
+  }
   return data;
 }
 
@@ -867,3 +872,22 @@ export async function getOpportunityValuations() {
     }
   }));
 }
+
+export async function getAllInvestmentsSummary() {
+  try {
+    const adminClient = createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('investments')
+      .select('id, opportunity_id, amount_invested, total_committed, status');
+
+    if (error) {
+      console.error('Error fetching investments summary:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error('getAllInvestmentsSummary error:', err);
+    return [];
+  }
+}
+

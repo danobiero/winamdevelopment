@@ -54,19 +54,19 @@ function InvestorPortfolioCard({
               {investment.opportunities?.name}
             </h3>
 
-            <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-1 rounded-md border border-slate-200">
+            <span className="text-xs font-mono bg-slate-100 text-slate-500 px-2 py-1 rounded-md border border-slate-200">
               ID: {investment.id}
             </span>
           </div>
 
-          <p className="text-[11px] font-bold tracking-widest text-slate-400 flex items-center gap-2 mt-1 uppercase">
+          <p className="text-xs font-bold tracking-widest text-slate-400 flex items-center gap-2 mt-1 uppercase">
             <BriefcaseIcon className="h-4 w-4 text-slate-300" />
             {investment.opportunities?.type || 'Equity'}
           </p>
         </div>
 
         <span
-          className={`flex-shrink-0 ml-4 px-3 py-1.5 rounded-lg border text-[11px] font-black uppercase shadow-sm ${badgeStyle}`}
+          className={`flex-shrink-0 ml-4 px-3 py-1.5 rounded-lg border text-xs font-black uppercase shadow-sm ${badgeStyle}`}
         >
           {investment.status.replaceAll('_', ' ')}
         </span>

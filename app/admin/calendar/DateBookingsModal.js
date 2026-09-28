@@ -21,7 +21,7 @@ export default function DateBookingsModal({ date, bookings = [], onClose }) {
       />
 
       {/* MODAL CONTAINER */}
-      <div className="relative bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto border border-slate-200">
+      <div className="relative bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto border border-slate-200">
         {/* Mobile Handle */}
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
 
@@ -87,7 +87,7 @@ export default function DateBookingsModal({ date, bookings = [], onClose }) {
 
                   {/* LINKED INVESTMENTS / SHAREHOLDERS */}
                   <div className="mt-4">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">
                       Committed Investors
                     </label>
 
@@ -159,7 +159,7 @@ export default function DateBookingsModal({ date, bookings = [], onClose }) {
 function DetailRow({ label, value }) {
   return (
     <div className="border-b border-slate-200/60 pb-2 mb-3 last:mb-0 last:border-0 last:pb-0">
-      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
         {label}
       </label>
       <p className="text-base font-semibold text-slate-800 mt-0.5">{value}</p>

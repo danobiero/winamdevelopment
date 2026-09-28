@@ -13,14 +13,18 @@ export async function getAllReports() {
 
   const supabase = createAdminSupabaseClient();
 
-  // Ensure opportunity-documents bucket is public
+  // Ensure opportunity-documents bucket exists and is public
   try {
     await supabase.storage.updateBucket('opportunity-documents', { public: true });
   } catch (e) {
-    // Ignore if already public or no permission
+    try {
+      await supabase.storage.createBucket('opportunity-documents', { public: true });
+    } catch (e2) {}
   }
 
-  const { data, error } = await supabase
+  // Resilient query: fetch documents with opportunities, with fallback if relationship is not configured in schema cache
+  let data = [];
+  const { data: joinedData, error: joinError } = await supabase
     .from('opportunity_documents')
     .select(`
       *,
@@ -32,30 +36,34 @@ export async function getAllReports() {
     `)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching reports:', error);
-    return [];
+  if (joinError) {
+    console.warn('Direct join in getAllReports failed, fetching separately:', joinError.message);
+    const { data: rawDocs, error: rawError } = await supabase
+      .from('opportunity_documents')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (rawError) {
+      console.error('Error fetching raw opportunity documents:', rawError);
+      return [];
+    }
+
+    const { data: opps } = await supabase
+      .from('opportunities')
+      .select('id, name, type');
+
+    const oppMap = new Map((opps || []).map((o) => [o.id, o]));
+    data = (rawDocs || []).map((d) => ({
+      ...d,
+      opportunities: oppMap.get(d.opportunity_id) || null,
+    }));
+  } else {
+    data = joinedData || [];
   }
 
-  // 1. Filter ONLY documents that are explicitly GENERAL or PROJECT reports
-  // This excludes general opportunity documents (brochures, agreements, decks, etc.)
-  const reportDocs = (data || []).filter((doc) => {
-    const rawName = (doc.name || '').toLowerCase();
-    const rawPath = (doc.storage_path || '').toLowerCase();
-    const docType = (doc.document_type || doc.report_type || '').toLowerCase();
-
-    return (
-      rawName.includes('[general]') ||
-      rawName.includes('[project]') ||
-      rawPath.startsWith('reports/') ||
-      docType === 'general' ||
-      docType === 'project'
-    );
-  });
-
-  // 2. Parse category (GENERAL vs PROJECT), calendar month, and generate secure signed URLs
+  // Parse category (GENERAL vs PROJECT), calendar month, and generate secure signed URLs
   const reportsWithUrls = await Promise.all(
-    reportDocs.map(async (doc) => {
+    (data || []).map(async (doc) => {
       const rawName = doc.name || '';
       const rawPath = (doc.storage_path || '').toLowerCase();
       const docType = (doc.document_type || doc.report_type || '').toUpperCase();
@@ -142,10 +150,14 @@ export async function uploadReportAction(formData) {
 
     const supabase = createAdminSupabaseClient();
 
-    // Ensure opportunity-documents bucket is public
+    // Ensure opportunity-documents bucket exists and is public
     try {
       await supabase.storage.updateBucket('opportunity-documents', { public: true });
-    } catch (e) {}
+    } catch (e) {
+      try {
+        await supabase.storage.createBucket('opportunity-documents', { public: true });
+      } catch (e2) {}
+    }
 
     const opportunityId = formData.get('opportunityId');
     const reportType = formData.get('reportType') || 'General'; // 'General' or 'Project'
@@ -155,14 +167,14 @@ export async function uploadReportAction(formData) {
     const file = formData.get('file');
 
     if (!opportunityId) return { error: 'Please select an Opportunity.' };
-    if (!file || !(file instanceof File) || file.size === 0) {
+    if (!file || typeof file === 'string' || !file.name || file.size === 0) {
       return { error: 'Please choose a document to upload.' };
     }
 
     // Fetch opportunity to get exact name for title
     const { data: opp, error: oppErr } = await supabase
       .from('opportunities')
-      .select('id, name')
+      .select('id, name, type')
       .eq('id', Number(opportunityId))
       .single();
 
@@ -202,43 +214,74 @@ export async function uploadReportAction(formData) {
       .getPublicUrl(storagePath);
 
     // Also get signed URL for immediate preview
-    const { data: signedData } = await supabase.storage
-      .from('opportunity-documents')
-      .createSignedUrl(storagePath, 86400);
+    let activeViewUrl = urlObj?.publicUrl;
+    try {
+      const { data: signedData } = await supabase.storage
+        .from('opportunity-documents')
+        .createSignedUrl(storagePath, 86400);
 
-    const activeViewUrl = signedData?.signedUrl || urlObj.publicUrl;
+      if (signedData?.signedUrl) {
+        activeViewUrl = signedData.signedUrl;
+      }
+    } catch (signErr) {
+      console.warn('Could not generate signed URL on upload:', signErr);
+    }
 
-    // Insert database record
-    const { data: inserted, error: insertErr } = await supabase
-      .from('opportunity_documents')
-      .insert({
-        opportunity_id: Number(opportunityId),
-        name: reportName,
-        file_url: urlObj.publicUrl,
-        storage_path: storagePath,
-      })
-      .select(`
-        *,
-        opportunities (
-          id,
-          name,
-          type
-        )
-      `)
-      .single();
+    // Insert database record (resilient to document_type column existence)
+    let inserted = null;
+    try {
+      const { data, error } = await supabase
+        .from('opportunity_documents')
+        .insert({
+          opportunity_id: Number(opportunityId),
+          name: reportName,
+          file_url: urlObj.publicUrl,
+          storage_path: storagePath,
+          document_type: reportType,
+        })
+        .select('*')
+        .single();
 
-    if (insertErr) {
-      console.error('Database insert error:', insertErr);
-      return { error: `Database insert failed: ${insertErr.message}` };
+      if (!error && data) {
+        inserted = data;
+      }
+    } catch (e) {}
+
+    if (!inserted) {
+      const { data, error: insertErr } = await supabase
+        .from('opportunity_documents')
+        .insert({
+          opportunity_id: Number(opportunityId),
+          name: reportName,
+          file_url: urlObj.publicUrl,
+          storage_path: storagePath,
+        })
+        .select('*')
+        .single();
+
+      if (insertErr) {
+        console.error('Database insert error:', insertErr);
+        return { error: `Database insert failed: ${insertErr.message}` };
+      }
+      inserted = data;
     }
 
     revalidatePath('/admin/reports');
+    revalidatePath('/admin/finance-reports');
     revalidatePath('/admin/opportunities');
 
     return {
       success: true,
       report: {
         ...inserted,
+        document_type: reportType,
+        opportunities: {
+          id: opp.id,
+          name: opp.name,
+          type: opp.type,
+        },
+        category: reportType.toUpperCase(),
+        meetingDate: reportDate,
         viewUrl: activeViewUrl,
       },
     };
@@ -285,9 +328,14 @@ export async function deleteReportAction(documentId, storagePath) {
 }
 
 /**
- * Get Core Quarterly Financial Statements data
+ * Get Quarterly Financial Statements data (Consolidated Whole Company or Single Opportunity)
  */
-export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', opportunityId } = {}) {
+export async function getCoreQuarterlyFinancials({
+  year = 2026,
+  quarter = 'Q3',
+  opportunityId,
+  scope = 'COMPANY',
+} = {}) {
   try {
     const session = await auth();
     if (!session?.user?.adminId) throw new Error('Unauthorized');
@@ -295,39 +343,35 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
     const supabase = createAdminSupabaseClient();
     const selectedYear = Number(year) || new Date().getFullYear();
 
-    // 1. Fetch Core Opportunity
-    let coreOpp = null;
-    if (opportunityId) {
-      const { data: specificOpp } = await supabase
-        .from('opportunities')
-        .select('*')
-        .eq('id', Number(opportunityId))
-        .maybeSingle();
-      coreOpp = specificOpp;
+    // 1. Determine Scope: Whole Company (default) vs Specific Opportunity
+    const isCompanyScope =
+      scope === 'COMPANY' || !opportunityId || opportunityId === 'ALL';
+
+    // 2. Fetch All Opportunities (excluding internal fees bucket id: 999 if present)
+    const { data: allOppsData, error: oppsErr } = await supabase
+      .from('opportunities')
+      .select('*')
+      .neq('id', 999)
+      .order('name', { ascending: true });
+
+    if (oppsErr) console.error('Error fetching opportunities:', oppsErr);
+    const allOpportunities = allOppsData || [];
+
+    // Find core / default opportunity for document linking or fallback
+    let coreOpp = allOpportunities.find(
+      (o) =>
+        (o.type || '').toLowerCase().includes('core') ||
+        (o.name || '').toLowerCase().includes('core')
+    ) || allOpportunities.find((o) => o.id === 9) || allOpportunities[0];
+
+    let selectedOpp = null;
+    if (!isCompanyScope && opportunityId) {
+      selectedOpp =
+        allOpportunities.find((o) => Number(o.id) === Number(opportunityId)) ||
+        coreOpp;
     }
 
-    if (!coreOpp) {
-      const { data: opps } = await supabase
-        .from('opportunities')
-        .select('*')
-        .or('type.ilike.%core%,name.ilike.%core%');
-
-      coreOpp = opps?.[0];
-      if (!coreOpp) {
-        const { data: fallback } = await supabase
-          .from('opportunities')
-          .select('*')
-          .eq('id', 9)
-          .maybeSingle();
-        coreOpp = fallback;
-      }
-    }
-
-    if (!coreOpp) {
-      throw new Error('Core opportunity not found');
-    }
-
-    // 2. Fetch Settings for branding
+    // 3. Fetch Settings for branding
     const { data: settingsList } = await supabase
       .from('settings')
       .select('*')
@@ -337,7 +381,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       default_currency: 'USD',
     };
 
-    // 3. Define Date Ranges
+    // 4. Define Date Ranges
     let startDate, endDate, periodLabel;
     if (quarter === 'Q1') {
       startDate = new Date(Date.UTC(selectedYear, 0, 1, 0, 0, 0));
@@ -361,25 +405,8 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       periodLabel = `Full Year (YTD) ${selectedYear}`;
     }
 
-    // 4. Fetch Payments for Core Opportunity
-    const { data: payments, error: payErr } = await supabase
-      .from('payments')
-      .select(`
-        *,
-        shareholders (
-          id,
-          fullName,
-          email,
-          telephone
-        )
-      `)
-      .eq('opportunity_id', coreOpp.id)
-      .order('created_at', { ascending: false });
-
-    if (payErr) console.error('Error fetching payments:', payErr);
-
-    // 5. Fetch Investments for Core Opportunity
-    const { data: investments, error: invErr } = await supabase
+    // 5. Fetch Investments (with participated opportunities & shareholder details)
+    let investmentsQuery = supabase
       .from('investments')
       .select(`
         *,
@@ -388,14 +415,91 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
           fullName,
           email,
           telephone
+        ),
+        opportunities (
+          id,
+          name,
+          type,
+          total_value
         )
       `)
-      .eq('opportunity_id', coreOpp.id)
       .order('created_at', { ascending: false });
 
-    if (invErr) console.error('Error fetching investments:', invErr);
+    if (!isCompanyScope && selectedOpp) {
+      investmentsQuery = investmentsQuery.eq('opportunity_id', selectedOpp.id);
+    }
 
-    // 6. Fetch Redemptions
+    const { data: investments, error: invErr } = await investmentsQuery;
+    if (invErr) console.error('Error fetching investments:', invErr);
+    const allInvestments = investments || [];
+
+    // Group investments by opportunity_id to calculate shareholder invested sum
+    const investmentsByOpp = {};
+    (allInvestments || []).forEach((inv) => {
+      const oppId = Number(inv.opportunity_id);
+      const amt = Number(inv.amount_invested ?? inv.total_committed ?? 0);
+      investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amt;
+    });
+
+    // 6. Fetch Latest Valuations for All Opportunities up to period end
+    const { data: allValuations } = await supabase
+      .from('opportunity_valuations')
+      .select('*')
+      .order('valuation_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    const latestValuationMap = {};
+    const latestValuationDateMap = {};
+    (allValuations || []).forEach((v) => {
+      const vDate = new Date(v.valuation_date);
+      if (vDate <= endDate && !latestValuationMap[v.opportunity_id]) {
+        latestValuationMap[v.opportunity_id] = Number(v.total_asset_value || 0);
+        latestValuationDateMap[v.opportunity_id] = v.valuation_date;
+      }
+    });
+
+    // If no valuation logged prior to endDate, check overall latest or fallback to sum of shareholder investments
+    allOpportunities.forEach((opp) => {
+      if (latestValuationMap[opp.id] === undefined) {
+        const anyVal = (allValuations || []).find((v) => v.opportunity_id === opp.id);
+        if (anyVal) {
+          latestValuationMap[opp.id] = Number(anyVal.total_asset_value || 0);
+          latestValuationDateMap[opp.id] = anyVal.valuation_date;
+        } else {
+          latestValuationMap[opp.id] = investmentsByOpp[Number(opp.id)] || 0;
+          latestValuationDateMap[opp.id] = opp.created_at ? new Date(opp.created_at).toISOString().split('T')[0] : null;
+        }
+      }
+    });
+
+    // 7. Fetch Payments (scoped to Whole Company or Selected Opportunity)
+    let paymentsQuery = supabase
+      .from('payments')
+      .select(`
+        *,
+        shareholders (
+          id,
+          fullName,
+          email,
+          telephone
+        ),
+        opportunities (
+          id,
+          name,
+          type
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (!isCompanyScope && selectedOpp) {
+      paymentsQuery = paymentsQuery.eq('opportunity_id', selectedOpp.id);
+    }
+
+    const { data: payments, error: payErr } = await paymentsQuery;
+    if (payErr) console.error('Error fetching payments:', payErr);
+    const allPayments = payments || [];
+
+    // 8. Fetch Redemptions
     let allRedemptions = [];
     try {
       const { data: redData, error: redErr } = await supabase
@@ -408,57 +512,87 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
         `);
 
       if (!redErr && redData) {
-        allRedemptions = redData.filter(
-          (r) =>
-            r.opportunity_id === coreOpp.id ||
-            r.investments?.opportunity_id === coreOpp.id
-        );
+        if (isCompanyScope) {
+          allRedemptions = redData;
+        } else if (selectedOpp) {
+          allRedemptions = redData.filter(
+            (r) =>
+              r.opportunity_id === selectedOpp.id ||
+              r.investments?.opportunity_id === selectedOpp.id
+          );
+        }
       }
     } catch (redErr) {
       console.warn('Error fetching redemptions:', redErr);
     }
 
-    const allPayments = payments || [];
-    const allInvestments = investments || [];
+    // 9. Payment Filtering for Period & Cumulative Rollforward
+    const isSuccessfulPayment = (p) => {
+      const status = (p.status || '').toLowerCase();
+      return ['succeeded', 'completed', 'paid', 'success'].includes(status);
+    };
 
-    // Filter payments into cumulative (up to end of quarter) and period (inside quarter)
     const cumulativePayments = allPayments.filter((p) => {
       const pDate = new Date(p.created_at);
-      const isSuccess = ['succeeded', 'completed', 'paid', 'success'].includes(
-        (p.status || '').toLowerCase()
-      );
-      return isSuccess && pDate <= endDate;
+      return isSuccessfulPayment(p) && pDate <= endDate;
     });
 
     const periodPayments = allPayments.filter((p) => {
       const pDate = new Date(p.created_at);
-      const isSuccess = ['succeeded', 'completed', 'paid', 'success'].includes(
-        (p.status || '').toLowerCase()
-      );
-      return isSuccess && pDate >= startDate && pDate <= endDate;
+      return isSuccessfulPayment(p) && pDate >= startDate && pDate <= endDate;
     });
 
-    // Payments prior to this quarter
     const priorPayments = allPayments.filter((p) => {
       const pDate = new Date(p.created_at);
-      const isSuccess = ['succeeded', 'completed', 'paid', 'success'].includes(
-        (p.status || '').toLowerCase()
-      );
-      return isSuccess && pDate < startDate;
+      return isSuccessfulPayment(p) && pDate < startDate;
     });
 
-    // Financial Metrics Calculation
-    const targetCapitalization = Number(coreOpp.total_value) || 1000000;
-    const minimumInvestment = Number(coreOpp.minimum_investment) || 2000;
+    // 10. Fetch Operating Expenses
+    let expQuery = supabase
+      .from('operating_expenses')
+      .select(`
+        *,
+        opportunities (
+          id,
+          name,
+          type
+        )
+      `)
+      .order('expense_date', { ascending: false });
 
-    const beginningCash = priorPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    if (!isCompanyScope && selectedOpp) {
+      expQuery = expQuery.or(`opportunity_id.eq.${selectedOpp.id},opportunity_id.is.null`);
+    }
+
+    const { data: expData, error: expErr } = await expQuery;
+    if (expErr) console.warn('Error fetching operating expenses:', expErr);
+
+    const allExpList = expData || [];
+    const tableExpenses = allExpList.filter((e) => {
+      const eDate = new Date(e.expense_date);
+      return eDate >= startDate && eDate <= endDate;
+    });
+    const priorTableExpenses = allExpList.filter((e) => {
+      const eDate = new Date(e.expense_date);
+      return eDate < startDate;
+    });
+
+    // 11. Financial Metrics Calculation
+    const targetCapitalization = isCompanyScope
+      ? allOpportunities.reduce((s, o) => s + (Number(o.total_value) || 0), 0) || 1000000
+      : Number(selectedOpp?.total_value) || 1000000;
+
+    const minimumInvestment = isCompanyScope
+      ? 0
+      : Number(selectedOpp?.minimum_investment) || 2000;
+
     const periodInflows = periodPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
     const cumulativeCapitalRaised = cumulativePayments.reduce(
       (s, p) => s + (Number(p.amount) || 0),
       0
     );
 
-    // Categorize Inflows
+    // Inflow Categorization
     const cardInflows = periodPayments
       .filter((p) => (p.payment_method_type || '').toLowerCase() === 'card')
       .reduce((s, p) => s + (Number(p.amount) || 0), 0);
@@ -473,7 +607,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
 
     const otherInflows = periodInflows - (cardInflows + legacyInflows);
 
-    // Prior Redemptions (prior to quarter)
+    // Redemptions
     const priorRedemptionsPaid = allRedemptions
       .filter((r) => {
         const rDate = new Date(r.created_at);
@@ -484,7 +618,6 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       })
       .reduce((s, r) => s + (Number(r.amount_redeemed || r.amount) || 0), 0);
 
-    // Period Redemptions (during quarter)
     const periodRedemptions = allRedemptions.filter((r) => {
       const rDate = new Date(r.created_at);
       return rDate >= startDate && rDate <= endDate;
@@ -502,32 +635,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       .filter((r) => (r.status || '').toLowerCase() === 'pending')
       .reduce((s, r) => s + (Number(r.amount_redeemed || r.amount) || 0), 0);
 
-    // 7. Fetch Actual Operating Expenses from operating_expenses table
-    let tableExpenses = [];
-    let priorTableExpenses = [];
-    try {
-      const { data: expData, error: expErr } = await supabase
-        .from('operating_expenses')
-        .select('*')
-        .or(`opportunity_id.eq.${coreOpp.id},opportunity_id.is.null`)
-        .order('expense_date', { ascending: false });
-
-      if (!expErr && expData) {
-        tableExpenses = expData.filter((e) => {
-          const eDate = new Date(e.expense_date);
-          return eDate >= startDate && eDate <= endDate;
-        });
-
-        priorTableExpenses = expData.filter((e) => {
-          const eDate = new Date(e.expense_date);
-          return eDate < startDate;
-        });
-      }
-    } catch (e) {
-      console.warn('operating_expenses table not available yet, using calculation fallback:', e);
-    }
-
-    // Operating Expenses Calculation
+    // Expenses Calculation
     let expenseRows = [];
     let totalOperatingExpenses = 0;
     let priorExpensesPaid = 0;
@@ -538,7 +646,6 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
     let processingFees = 0;
 
     if (tableExpenses.length > 0) {
-      // Use actual expenses recorded in operating_expenses table
       const expensesByCategory = {};
       tableExpenses.forEach((exp) => {
         const cat = exp.category || 'Other Operating';
@@ -546,7 +653,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
           (expensesByCategory[cat] || 0) + (Number(exp.amount) || 0);
       });
 
-      processingFees = expensesByCategory['Payment Gateway & Processing Fees'] || 0;
+      processingFees = expensesByCategory['Payment Processing'] || 0;
 
       expenseRows = Object.entries(expensesByCategory).map(([label, amount]) => ({
         label,
@@ -563,26 +670,117 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
         0
       );
     } else {
-      // Fallback: estimate standard payment processing (2.9% + $0.30 per card payment)
       processingFees =
         cardInflows > 0 ? Number((cardInflows * 0.029 + cardTxCount * 0.3).toFixed(2)) : 0;
-      const managementFees = 0;
-
       expenseRows = [
         { label: 'Payment Gateway & Processing Fees', amount: processingFees },
-        { label: 'Fund Operational Management Allocation', amount: managementFees },
+        { label: 'Fund Operational Management Allocation', amount: 0 },
       ];
-      totalOperatingExpenses = processingFees + managementFees;
+      totalOperatingExpenses = processingFees;
     }
 
     const cumulativeExpensesPaid = priorExpensesPaid + totalOperatingExpenses;
-
-    // Net Income / Surplus
     const netOperatingIncome = periodInflows - totalOperatingExpenses;
 
-    // 1. INCOME STATEMENT (Statement of Comprehensive Income / Operations)
+    const priorInflows = priorPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+    // 12. BALANCE SHEET: WHOLE COMPANY ASSETS & VALUATION BREAKDOWN (OPTION A: PORTFOLIO NAV ASSET BASE)
+    // Build portfolio venture holdings schedule from opportunity valuations
+    let portfolioBreakdown = [];
+    let totalPortfolioAssets = 0;
+
+    if (isCompanyScope) {
+      // List all opportunities as portfolio assets with their latest valuation NAV updated by admin
+      portfolioBreakdown = allOpportunities.map((opp) => {
+        const val = latestValuationMap[opp.id] ?? (Number(opp.total_value) || 0);
+        return {
+          id: opp.id,
+          name: opp.name,
+          type: opp.type || 'Portfolio Asset',
+          assetValue: val,
+          lastValuedDate: latestValuationDateMap[opp.id] || null,
+        };
+      });
+
+      // Total Non-Current Portfolio Assets (sum of venture holdings)
+      totalPortfolioAssets = portfolioBreakdown.reduce((s, item) => s + item.assetValue, 0);
+    } else {
+      const singleVal = latestValuationMap[selectedOpp.id] ?? (Number(selectedOpp.total_value) || 0);
+      portfolioBreakdown = [
+        {
+          id: selectedOpp.id,
+          name: selectedOpp.name,
+          type: selectedOpp.type || 'Portfolio Asset',
+          assetValue: singleVal,
+          lastValuedDate: latestValuationDateMap[selectedOpp.id] || null,
+        },
+      ];
+      totalPortfolioAssets = singleVal;
+    }
+
+    // Capital deployed calculation: determine how much contributed capital was invested into opportunities
+    const totalCapitalInvested = allInvestments.reduce(
+      (s, inv) => s + (Number(inv.amount_invested) || 0),
+      0
+    );
+
+    const oppCapitalInvested = selectedOpp
+      ? allInvestments
+          .filter((inv) => Number(inv.opportunity_id) === Number(selectedOpp.id))
+          .reduce((s, inv) => s + (Number(inv.amount_invested) || 0), 0)
+      : totalCapitalInvested;
+
+    const deployedCapital = isCompanyScope
+      ? Math.min(cumulativeCapitalRaised, totalCapitalInvested)
+      : Math.min(cumulativeCapitalRaised, oppCapitalInvested);
+
+    // Prior period capital deployment
+    const priorCapitalInvested = allInvestments
+      .filter((inv) => {
+        const invDate = new Date(inv.created_at);
+        return isCompanyScope
+          ? invDate < startDate
+          : Number(inv.opportunity_id) === Number(selectedOpp?.id) && invDate < startDate;
+      })
+      .reduce((s, inv) => s + (Number(inv.amount_invested) || 0), 0);
+
+    const priorDeployed = Math.min(priorInflows, priorCapitalInvested);
+    const periodCapitalDeployed = Math.max(0, deployedCapital - priorDeployed);
+
+    // Unallocated Treasury Cash (contributed funds not yet deployed into opportunity ventures)
+    const unallocatedCash = Math.max(
+      0,
+      cumulativeCapitalRaised - cumulativeRedemptionsPaid - deployedCapital - cumulativeExpensesPaid
+    );
+
+    const beginningCash = Math.max(
+      0,
+      priorInflows - priorRedemptionsPaid - priorDeployed - priorExpensesPaid
+    );
+
+    const totalCurrentAssets = unallocatedCash;
+    // Total Company Assets reflects the sum of the valuations
+    const totalAssets = totalPortfolioAssets;
+
+    const currentLiabilities = [
+      { label: 'Pending Shareholder Redemptions', amount: pendingRedemptions },
+    ];
+    const totalLiabilities = pendingRedemptions;
+
+    // Equity: Contributed Capital + Valuation Reserves & Retained Surplus
+    const endingContributedCapital =
+      cumulativeCapitalRaised - cumulativeRedemptionsPaid;
+    const valuationSurplus =
+      totalAssets - totalLiabilities - endingContributedCapital;
+    const retainedOperatingSurplus = valuationSurplus;
+    const totalShareholderEquity =
+      endingContributedCapital + valuationSurplus;
+
+    // 13. STATEMENT OF OPERATIONS (Income Statement)
     const incomeStatement = {
-      title: 'Income Statement (Statement of Operations)',
+      title: isCompanyScope
+        ? 'Consolidated Statement of Operations & Comprehensive Income'
+        : `${selectedOpp.name} - Statement of Operations`,
       subtitle: `For the period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`,
       revenues: [
         { label: 'Direct Member Card Subscriptions', amount: cardInflows },
@@ -595,74 +793,79 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       netIncome: netOperatingIncome,
     };
 
-    // 2. BALANCE SHEET (Statement of Financial Position)
-    const cashAndEquivalents =
-      cumulativeCapitalRaised - cumulativeRedemptionsPaid - cumulativeExpensesPaid;
-    const portfolioInvestments = 0;
-    const totalCurrentAssets = cashAndEquivalents;
-    const totalAssets = totalCurrentAssets + portfolioInvestments;
-
-    const currentLiabilities = [
-      { label: 'Pending Shareholder Redemptions', amount: pendingRedemptions },
-    ];
-    const totalLiabilities = pendingRedemptions;
-
-    // Equity: Contributed Capital + Retained Operating Surplus
-    const endingContributedCapital =
-      cumulativeCapitalRaised - cumulativeRedemptionsPaid;
-    const retainedOperatingSurplus = totalAssets - totalLiabilities - endingContributedCapital;
-    const totalShareholderEquity = endingContributedCapital + retainedOperatingSurplus;
+    // 14. BALANCE SHEET
+    const nonCurrentAssetRows = isCompanyScope
+      ? portfolioBreakdown.map((p) => ({
+          label: `${p.name} (${p.type})`,
+          amount: p.assetValue,
+          opportunityId: p.id,
+        }))
+      : [
+          {
+            label: `${selectedOpp.name} Net Asset Value (NAV)`,
+            amount: totalPortfolioAssets,
+            opportunityId: selectedOpp.id,
+          },
+        ];
 
     const balanceSheet = {
-      title: 'Balance Sheet (Statement of Financial Position)',
+      title: isCompanyScope
+        ? 'Consolidated Balance Sheet (Statement of Financial Position)'
+        : `${selectedOpp.name} - Balance Sheet`,
       asOfDate: endDate.toISOString().split('T')[0],
       currentAssets: [
-        { label: 'Cash & Cash Equivalents (Core Vault Account)', amount: cashAndEquivalents },
+        {
+          label: isCompanyScope
+            ? 'Cash & Cash Equivalents (Unallocated Treasury)'
+            : `Cash & Cash Equivalents (Unallocated ${selectedOpp.name} Vault)`,
+          amount: unallocatedCash,
+        },
         { label: 'Subscriptions in Clearing / In-Transit', amount: 0 },
       ],
       totalCurrentAssets,
-      nonCurrentAssets: [
-        { label: 'Portfolio Capital Deployed in Ventures', amount: portfolioInvestments },
-      ],
-      totalNonCurrentAssets: portfolioInvestments,
+      nonCurrentAssets: nonCurrentAssetRows,
+      totalNonCurrentAssets: totalPortfolioAssets,
       totalAssets,
       currentLiabilities,
       totalLiabilities,
       equity: [
         {
-          label: 'Contributed Shareholder Capital (Common Equity Units)',
+          label: isCompanyScope
+            ? 'Contributed Shareholder Capital (All Participated Investments)'
+            : 'Contributed Shareholder Capital',
           amount: endingContributedCapital,
         },
         {
-          label: 'Retained Operating Surplus / Reserves',
-          amount: retainedOperatingSurplus,
+          label: 'Valuation Surplus & Retained Reserves',
+          amount: valuationSurplus,
         },
       ],
       totalShareholderEquity,
       totalLiabilitiesAndEquity: totalLiabilities + totalShareholderEquity,
-      isBalanced: Math.abs(totalAssets - (totalLiabilities + totalShareholderEquity)) < 0.01,
+      isBalanced:
+        Math.abs(totalAssets - (totalLiabilities + totalShareholderEquity)) < 0.01,
     };
 
-    // 3. STATEMENT OF CASH FLOWS
-    // We adjust netOperatingIncome by subtracting periodInflows to avoid double-counting,
-    // since Capital Contributions are classified as Financing Activities below.
-    const operatingCashFlow = netOperatingIncome - periodInflows;
-    const investingCashFlow = 0;
+    // 15. STATEMENT OF CASH FLOWS
+    const operatingCashFlow = -totalOperatingExpenses;
+    const investingCashFlow = -periodCapitalDeployed;
     const financingInflows = periodInflows;
     const financingOutflows = -periodRedemptionsPaid;
     const financingCashFlow = financingInflows + financingOutflows;
     const netCashChange = operatingCashFlow + investingCashFlow + financingCashFlow;
+    const endingCash = unallocatedCash;
 
     const cashFlow = {
-      title: 'Statement of Cash Flows',
+      title: isCompanyScope
+        ? 'Consolidated Statement of Cash Flows'
+        : `${selectedOpp.name} - Statement of Cash Flows`,
       subtitle: `For the period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`,
       operatingActivities: [
-        { label: 'Net Income / (Loss)', amount: netOperatingIncome },
-        { label: 'Less: Contributions Classified as Financing', amount: -periodInflows },
+        { label: 'Net Operating Income / Operational Expenses', amount: operatingCashFlow },
       ],
       netOperatingCash: operatingCashFlow,
       investingActivities: [
-        { label: 'Capital Deployed into Portfolio Ventures', amount: investingCashFlow },
+        { label: 'Capital Deployed into Portfolio Holdings', amount: investingCashFlow },
       ],
       netInvestingCash: investingCashFlow,
       financingActivities: [
@@ -672,24 +875,66 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       netFinancingCash: financingCashFlow,
       netCashChange,
       beginningCash,
-      endingCash: beginningCash + netCashChange,
+      endingCash,
     };
 
-    // 4. STATEMENT OF SHAREHOLDERS' EQUITY (Changes in Equity)
-    const priorInflows = priorPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    // 16. STATEMENT OF SHAREHOLDERS' EQUITY & PARTICIPATED INVESTMENTS SCHEDULE
     const beginningContributedCapital = priorInflows - priorRedemptionsPaid;
     const beginningRetainedSurplus = 0;
 
-    // Individual Shareholder Cap Table Schedule
+    // Build comprehensive map of all participating shareholders
     const shareholderMap = {};
+
+    // 16A: Seed with all participated investments from investments table
+    allInvestments.forEach((inv) => {
+      const shId = inv.shareholder_id;
+      if (!shId) return;
+
+      if (!shareholderMap[shId]) {
+        shareholderMap[shId] = {
+          id: shId,
+          name: inv.shareholders?.fullName || 'Anonymous Investor',
+          email: inv.shareholders?.email || 'N/A',
+          phone: inv.shareholders?.telephone || 'N/A',
+          participatedOpportunities: [],
+          participatedOppIds: new Set(),
+          totalInvested: 0,
+          totalCommitted: 0,
+          currentPositionValue: 0,
+          beginningBalance: 0,
+          periodContributions: 0,
+          periodRedemptions: 0,
+          endingBalance: 0,
+          ownershipPercent: 0,
+        };
+      }
+
+      const invAmt = Number(inv.amount_invested) || 0;
+      const invCurrent = Number(inv.current_value || invAmt);
+      shareholderMap[shId].totalInvested += invAmt;
+      shareholderMap[shId].totalCommitted += Number(inv.total_committed) || invAmt;
+      shareholderMap[shId].currentPositionValue += invCurrent;
+
+      const oppId = inv.opportunity_id;
+      if (oppId && !shareholderMap[shId].participatedOppIds.has(oppId)) {
+        shareholderMap[shId].participatedOppIds.add(oppId);
+        shareholderMap[shId].participatedOpportunities.push({
+          id: oppId,
+          name: inv.opportunities?.name || `Opportunity #${oppId}`,
+          type: inv.opportunities?.type || 'Portfolio',
+          invested: invAmt,
+          currentValue: invCurrent,
+        });
+      }
+    });
+
+    // 16B: Incorporate payments for cash rollforward (period vs prior inflows)
     allPayments.forEach((p) => {
-      const shId = p.shareholder_id || p.shareholders?.id || 'unknown';
+      const shId = p.shareholder_id || p.shareholders?.id;
+      if (!shId || !isSuccessfulPayment(p)) return;
+
       const amt = Number(p.amount) || 0;
       const pDate = new Date(p.created_at);
-      const isSuccess = ['succeeded', 'completed', 'paid', 'success'].includes(
-        (p.status || '').toLowerCase()
-      );
-      if (!isSuccess) return;
 
       if (!shareholderMap[shId]) {
         shareholderMap[shId] = {
@@ -697,6 +942,11 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
           name: p.shareholders?.fullName || 'Anonymous Investor',
           email: p.shareholders?.email || 'N/A',
           phone: p.shareholders?.telephone || 'N/A',
+          participatedOpportunities: [],
+          participatedOppIds: new Set(),
+          totalInvested: 0,
+          totalCommitted: 0,
+          currentPositionValue: 0,
           beginningBalance: 0,
           periodContributions: 0,
           periodRedemptions: 0,
@@ -710,23 +960,69 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       } else if (pDate >= startDate && pDate <= endDate) {
         shareholderMap[shId].periodContributions += amt;
       }
+
+      const oppId = p.opportunity_id;
+      if (oppId && !shareholderMap[shId].participatedOppIds.has(oppId)) {
+        shareholderMap[shId].participatedOppIds.add(oppId);
+        shareholderMap[shId].participatedOpportunities.push({
+          id: oppId,
+          name: p.opportunities?.name || `Opportunity #${oppId}`,
+          type: p.opportunities?.type || 'Portfolio',
+          invested: amt,
+          currentValue: amt,
+        });
+      }
     });
 
-    // Compute individual ending balances and ownership percentage
+    // 16C: Incorporate redemptions for each shareholder
+    allRedemptions.forEach((r) => {
+      const shId = r.shareholder_id;
+      if (!shId) return;
+      const rAmt = Number(r.amount_redeemed || r.amount) || 0;
+      const rDate = new Date(r.created_at);
+      const isPaid = ['completed', 'succeeded', 'paid'].includes((r.status || '').toLowerCase());
+
+      if (shareholderMap[shId]) {
+        if (isPaid) {
+          if (rDate < startDate) {
+            shareholderMap[shId].beginningBalance = Math.max(
+              0,
+              shareholderMap[shId].beginningBalance - rAmt
+            );
+          } else if (rDate >= startDate && rDate <= endDate) {
+            shareholderMap[shId].periodRedemptions += rAmt;
+          }
+        }
+      }
+    });
+
+    // 16D: Finalize individual ending balances and ownership percentages
     Object.values(shareholderMap).forEach((sh) => {
-      sh.endingBalance = sh.beginningBalance + sh.periodContributions - sh.periodRedemptions;
+      const paymentEnding =
+        sh.beginningBalance + sh.periodContributions - sh.periodRedemptions;
+      // Reconcile with investments table if payments table missed legacy sync
+      sh.endingBalance = Math.max(paymentEnding, sh.totalInvested);
+      if (sh.currentPositionValue === 0) {
+        sh.currentPositionValue = sh.endingBalance;
+      }
+
       sh.ownershipPercent =
         cumulativeCapitalRaised > 0
           ? Number(((sh.endingBalance / cumulativeCapitalRaised) * 100).toFixed(2))
           : 0;
+
+      // Clean up Set for serialization
+      delete sh.participatedOppIds;
     });
 
     const shareholderSchedule = Object.values(shareholderMap).sort(
-      (a, b) => b.endingBalance - a.endingBalance
+      (a, b) => b.endingBalance - a.endingBalance || b.currentPositionValue - a.currentPositionValue
     );
 
     const shareholdersEquity = {
-      title: "Statement of Shareholders' Equity",
+      title: isCompanyScope
+        ? "Consolidated Statement of Shareholders' Equity"
+        : `${selectedOpp.name} - Statement of Shareholders' Equity`,
       subtitle: `For the period ended ${endDate.toISOString().split('T')[0]}`,
       rollforward: {
         beginningContributedCapital,
@@ -747,8 +1043,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
         ? Math.min(100, (cumulativeCapitalRaised / targetCapitalization) * 100)
         : 0;
 
-    const uniqueShareholderIds = new Set(cumulativePayments.map((p) => p.shareholder_id));
-    const activeShareholderCount = uniqueShareholderIds.size;
+    const activeShareholderCount = shareholderSchedule.length;
 
     // Period Transactions Ledger
     const periodTransactions = periodPayments.map((p) => ({
@@ -756,6 +1051,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
       date: p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : 'N/A',
       shareholderName: p.shareholders?.fullName || 'Anonymous Investor',
       email: p.shareholders?.email || 'N/A',
+      opportunityName: p.opportunities?.name || 'Standard Fund',
       method: p.payment_method_type || p.type || 'Standard',
       reference: p.stripe_payment_intent_id || p.id.slice(0, 8),
       amount: Number(p.amount) || 0,
@@ -766,10 +1062,15 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
     return {
       success: true,
       data: {
+        scope: isCompanyScope ? 'COMPANY' : 'OPPORTUNITY',
         opportunity: {
-          id: coreOpp.id,
-          name: coreOpp.name,
-          type: coreOpp.type,
+          id: isCompanyScope ? (coreOpp?.id || 'COMPANY') : selectedOpp.id,
+          name: isCompanyScope
+            ? 'Whole Company Assets (Consolidated)'
+            : selectedOpp.name,
+          type: isCompanyScope
+            ? 'Consolidated Portfolio & Venture Holdings'
+            : selectedOpp.type,
           targetCapitalization,
           minimumInvestment,
         },
@@ -797,7 +1098,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
           beginningCash,
           periodInflows,
           periodRedemptionsPaid,
-          endingCash: cashAndEquivalents,
+          endingCash: unallocatedCash,
           cardInflows,
           legacyInflows,
           otherInflows,
@@ -808,6 +1109,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
           totalLiabilities,
           totalShareholderEquity,
           totalAssets,
+          totalPortfolioAssets,
         },
         incomeStatement,
         balanceSheet,
@@ -817,6 +1119,7 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
         shareholderRegister: shareholderSchedule,
         actualExpenses: tableExpenses,
         isUsingTableExpenses: tableExpenses.length > 0,
+        portfolioBreakdown,
       },
     };
   } catch (err) {
@@ -824,6 +1127,9 @@ export async function getCoreQuarterlyFinancials({ year = 2026, quarter = 'Q3', 
     return { error: err.message || 'Failed to generate financial statements' };
   }
 }
+
+// Alias export for clarity
+export const getCompanyFinancialStatements = getCoreQuarterlyFinancials;
 
 /**
  * Save / Archive Generated Quarterly Statement to Opportunity Documents & Supabase Storage
@@ -834,33 +1140,49 @@ export async function saveQuarterlyFinancialStatementReportAction(formData) {
     if (!session?.user?.adminId) return { error: 'Unauthorized' };
 
     const supabase = createAdminSupabaseClient();
-    const opportunityId = formData.get('opportunityId');
+    const rawOppId = formData.get('opportunityId');
     const quarter = formData.get('quarter') || 'Q3';
     const year = formData.get('year') || '2026';
     const statementType = formData.get('statementType') || 'ALL';
     const customTitle = formData.get('title');
     const file = formData.get('file');
 
-    if (!opportunityId) return { error: 'Missing opportunity ID' };
+    const isCompanyWide = !rawOppId || rawOppId === 'COMPANY' || rawOppId === 'ALL';
+
+    // Resolve target opportunity ID for document linkage
+    let targetOpportunityId = rawOppId && !isNaN(Number(rawOppId)) ? Number(rawOppId) : null;
+    if (!targetOpportunityId) {
+      // Find Core / primary opportunity as anchor for company-wide documents
+      const { data: primaryOpps } = await supabase
+        .from('opportunities')
+        .select('id')
+        .or('type.ilike.%core%,name.ilike.%core%')
+        .limit(1);
+      targetOpportunityId = primaryOpps?.[0]?.id || 9;
+    }
+
     if (!file || !(file instanceof File) || file.size === 0) {
       return { error: 'Missing statement document file.' };
     }
 
-    let defaultPrefix = 'Core Quarterly Financial Statement';
+    const scopePrefix = isCompanyWide ? 'Company-Wide Consolidated' : 'Opportunity';
+    let defaultPrefix = `${scopePrefix} Financial Statement`;
     if (statementType === 'INCOME_STATEMENT') {
-      defaultPrefix = 'Core Income Statement';
+      defaultPrefix = `${scopePrefix} Income Statement`;
     } else if (statementType === 'BALANCE_SHEET') {
-      defaultPrefix = 'Core Balance Sheet';
+      defaultPrefix = `${scopePrefix} Balance Sheet`;
     } else if (statementType === 'CASH_FLOW') {
-      defaultPrefix = 'Core Statement of Cash Flows';
+      defaultPrefix = `${scopePrefix} Statement of Cash Flows`;
     } else if (statementType === 'SHAREHOLDERS_EQUITY') {
-      defaultPrefix = 'Core Statement of Shareholders Equity';
+      defaultPrefix = `${scopePrefix} Statement of Shareholders Equity`;
+    } else if (statementType === 'SHAREHOLDER_REGISTER') {
+      defaultPrefix = `${scopePrefix} Shareholder Ownership Register`;
     }
 
     const title = customTitle || `[General] ${defaultPrefix} - ${year} ${quarter}.pdf`;
     const safeBase = defaultPrefix.replace(/\s+/g, '_');
     const safeFilename = `${safeBase}_${year}_${quarter}_${Date.now()}.pdf`;
-    const storagePath = `reports/opportunity_${opportunityId}/${safeFilename}`;
+    const storagePath = `reports/opportunity_${targetOpportunityId}/${safeFilename}`;
 
     // Upload to Supabase storage 'opportunity-documents'
     const { error: uploadErr } = await supabase.storage
@@ -882,38 +1204,57 @@ export async function saveQuarterlyFinancialStatementReportAction(formData) {
 
     const activeViewUrl = signedData?.signedUrl || urlObj.publicUrl;
 
-    const { data: inserted, error: insertErr } = await supabase
-      .from('opportunity_documents')
-      .insert({
-        opportunity_id: Number(opportunityId),
-        name: title,
-        file_url: urlObj.publicUrl,
-        storage_path: storagePath,
-      })
-      .select(`
-        *,
-        opportunities (
-          id,
-          name,
-          type
-        )
-      `)
-      .single();
+    // Insert database record (resilient to document_type column and relationship cache)
+    let inserted = null;
+    try {
+      const { data, error } = await supabase
+        .from('opportunity_documents')
+        .insert({
+          opportunity_id: targetOpportunityId,
+          name: title,
+          file_url: urlObj.publicUrl,
+          storage_path: storagePath,
+          document_type: 'General',
+        })
+        .select('*')
+        .single();
 
-    if (insertErr) {
-      console.error('Insert statement record error:', insertErr);
-      if (insertErr.message?.includes('unique_document_per_opportunity')) {
-        return { error: 'This quarterly statement has already been archived for this period. Please delete the existing report first if you wish to replace it.' };
+      if (!error && data) {
+        inserted = data;
       }
-      return { error: `Database insert failed: ${insertErr.message}` };
+    } catch (e) {}
+
+    if (!inserted) {
+      const { data, error: insertErr } = await supabase
+        .from('opportunity_documents')
+        .insert({
+          opportunity_id: targetOpportunityId,
+          name: title,
+          file_url: urlObj.publicUrl,
+          storage_path: storagePath,
+        })
+        .select('*')
+        .single();
+
+      if (insertErr) {
+        console.error('Insert statement record error:', insertErr);
+        if (insertErr.message?.includes('unique_document_per_opportunity')) {
+          return { error: 'This quarterly statement has already been archived for this period. Please delete the existing report first if you wish to replace it.' };
+        }
+        return { error: `Database insert failed: ${insertErr.message}` };
+      }
+      inserted = data;
     }
 
     revalidatePath('/admin/reports');
+    revalidatePath('/admin/finance-reports');
 
     return {
       success: true,
       report: {
         ...inserted,
+        document_type: 'General',
+        category: 'GENERAL',
         viewUrl: activeViewUrl,
       },
     };
@@ -1335,11 +1676,16 @@ export async function getOpportunitiesWithValuations() {
       return [];
     }
 
-    const { data: vals } = await supabase
-      .from('opportunity_valuations')
-      .select('*')
-      .order('valuation_date', { ascending: false })
-      .order('created_at', { ascending: false });
+    const [{ data: vals }, { data: invs }] = await Promise.all([
+      supabase
+        .from('opportunity_valuations')
+        .select('*')
+        .order('valuation_date', { ascending: false })
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('investments')
+        .select('opportunity_id, amount_invested, total_committed'),
+    ]);
 
     const valMap = {};
     (vals || []).forEach((v) => {
@@ -1348,10 +1694,16 @@ export async function getOpportunitiesWithValuations() {
       }
     });
 
+    const invMap = {};
+    (invs || []).forEach((inv) => {
+      const oppId = Number(inv.opportunity_id);
+      invMap[oppId] = (invMap[oppId] || 0) + Number(inv.amount_invested ?? inv.total_committed ?? 0);
+    });
+
     return (opps || []).map((opp) => ({
       ...opp,
       current_asset_value:
-        valMap[opp.id]?.total_asset_value ?? opp.total_value ?? 0,
+        valMap[opp.id]?.total_asset_value ?? invMap[Number(opp.id)] ?? 0,
       latest_valuation_date: valMap[opp.id]?.valuation_date ?? null,
     }));
   } catch (err) {

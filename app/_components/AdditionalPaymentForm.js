@@ -57,8 +57,8 @@ export default function AdditionalPaymentForm({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-4">
-      <div className="bg-white text-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative border border-gray-200 overflow-y-auto max-h-[90vh]">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-3 sm:p-4">
+      <div className="bg-white text-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 relative border border-gray-200 overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="text-center mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-primary-800">
@@ -106,7 +106,7 @@ export default function AdditionalPaymentForm({
                 rows={4}
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-600 text-sm border border-gray-100 focus:outline-none resize-none italic leading-relaxed"
               />
-              <p className="text-[10px] text-primary-300 mt-2 italic">
+              <p className="text-xs text-primary-400 mt-2 italic">
                 * This reason is calculated based on your booking changes.
               </p>
             </div>

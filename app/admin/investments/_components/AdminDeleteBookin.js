@@ -28,7 +28,7 @@ export default function AdminDeleteInvestment({ investmentId, deleteAction }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-red-600 hover:underline font-bold uppercase text-[10px]"
+        className="text-red-600 hover:underline font-bold uppercase text-xs"
       >
         Delete
       </button>

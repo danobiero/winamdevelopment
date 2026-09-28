@@ -33,7 +33,7 @@ export default function OpportunityDocumentsClient({
               <DocumentArrowUpIcon className="h-5 w-5 text-emerald-600" />
               Attached Documents
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700">
               {documents.length} Total
             </span>
           </div>

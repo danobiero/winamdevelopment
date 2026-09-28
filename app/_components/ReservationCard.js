@@ -99,7 +99,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
 
           <span
             className={`absolute top-3 left-3 px-3 py-1 rounded-full
-            text-[10px] font-bold uppercase tracking-wider shadow-md z-10
+            text-xs font-bold uppercase tracking-wider shadow-md z-10
             ${statusColors[displayStatus]}`}
           >
             {displayStatus}
@@ -137,7 +137,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                   </span>
                   
                 </div>
-                <span className="block text-[10px] font-mono uppercase opacity-60">
+                <span className="block text-xs font-mono uppercase opacity-60">
                   Booking #{id.toString().slice(-6)}
                 </span>
               </div>
@@ -156,7 +156,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                   hover:bg-amber-100 transition flex items-center justify-center gap-2"
                 >
                   Refund History
-                  <span className="text-[10px] bg-amber-200/60 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-amber-200/60 px-2 py-0.5 rounded-full">
                     {refundsSafe.length}
                   </span>
                 </button>
@@ -185,7 +185,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                   }
                 }}
                 className="flex-1 flex items-center justify-center gap-2
-      px-4 py-4 text-[10px] font-bold uppercase text-primary-600
+      px-4 py-4 text-xs font-bold uppercase text-primary-600
       hover:bg-white transition-all border-r border-primary-100 relative"
               >
                 <ArrowDownTrayIcon className="h-4 w-4" />
@@ -196,7 +196,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                 {/* MINI DROPDOWN (Shown if hasMultiple and toggled) */}
                 {hasMultiple && showMaterialsList && (
                   <div className="absolute bottom-full left-0 w-64 bg-white border border-primary-100 shadow-xl rounded-t-lg z-50 mb-1 overflow-hidden">
-                    <div className="bg-primary-50 px-3 py-2 border-b border-primary-100 text-[9px] text-primary-700">
+                    <div className="bg-primary-50 px-3 py-2 border-b border-primary-100 text-xs text-primary-700">
                       Select Material to Download
                     </div>
                     {materials.map((m, index) => (
@@ -206,7 +206,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                           e.stopPropagation();
                           window.open(m.file_url, '_blank');
                         }}
-                        className="w-full text-left px-4 py-3 text-[10px] hover:bg-primary-50 flex items-center gap-2 border-b last:border-0 border-gray-50"
+                        className="w-full text-left px-4 py-3 text-xs hover:bg-primary-50 flex items-center gap-2 border-b last:border-0 border-gray-50"
                       >
                         <ArrowDownTrayIcon className="h-3 w-3 text-primary-400" />
                         <span className="truncate">{m.name}</span>
@@ -224,7 +224,7 @@ function ReservationCard({ booking, onDelete, isFullWidth }) {
                 <Link
                   href={`/account/reservations/edit/${id}`}
                   className="flex-1 flex items-center justify-center gap-2
-                px-4 py-4 text-[10px] font-bold uppercase text-primary-600
+                px-4 py-4 text-xs font-bold uppercase text-primary-600
                 hover:bg-white transition-all border-r border-primary-100"
                 >
                   <PencilSquareIcon className="h-4 w-4" />

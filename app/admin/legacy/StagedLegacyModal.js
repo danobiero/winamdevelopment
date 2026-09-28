@@ -20,7 +20,7 @@ export default function StagedLegacyModal({ records = [], opportunities = [] }) 
       >
         <UserGroupIcon className="h-4 w-4 text-blue-200" />
         <span>Staged Shareholders</span>
-        <span className="px-2 py-0.5 bg-blue-700/80 rounded-full text-[11px] font-mono font-black">
+        <span className="px-2 py-0.5 bg-blue-700/80 rounded-full text-xs font-mono font-black">
           {records.length}
         </span>
       </button>
@@ -47,7 +47,7 @@ export default function StagedLegacyModal({ records = [], opportunities = [] }) 
                       <h2 className="text-base sm:text-lg font-black text-[#000033] uppercase tracking-tight">
                         Staged Legacy Shareholders
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-800">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 text-blue-800">
                         {records.length} Total
                       </span>
                     </div>

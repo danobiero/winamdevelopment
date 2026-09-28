@@ -20,7 +20,7 @@ export default function Footer() {
       >
         <div className="flex items-center gap-2">
           <InformationCircleIcon className="h-4 w-4 text-[#4ade80]" />
-          <span className="text-[10px] uppercase tracking-widest font-bold">
+          <span className="text-xs uppercase tracking-widest font-bold">
             WINAM Info
           </span>
         </div>
@@ -42,7 +42,7 @@ export default function Footer() {
               >
                 WINAM
               </Link>
-              <p className="text-[11px] leading-tight max-w-sm">
+              <p className="text-xs sm:text-sm leading-tight max-w-sm text-slate-300">
                 Building wealth through collective growth.
               </p>
               <div className="h-1 w-8 bg-blue-600 rounded-full" />
@@ -50,10 +50,10 @@ export default function Footer() {
 
             <div className="flex flex-1 flex-wrap justify-between gap-6">
               <div className="space-y-2 min-w-[120px]">
-                <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">
+                <h4 className="text-white font-bold uppercase tracking-widest text-xs">
                   Explore
                 </h4>
-                <nav className="flex flex-col gap-1 text-[11px]">
+                <nav className="flex flex-col gap-1 text-xs sm:text-sm">
                   <Link href="/opportunities" className="hover:text-white">
                     Opportunities
                   </Link>
@@ -64,10 +64,10 @@ export default function Footer() {
               </div>
 
               <div className="space-y-2 md:text-right min-w-[180px]">
-                <h4 className="text-white font-bold uppercase tracking-widest text-[10px]">
+                <h4 className="text-white font-bold uppercase tracking-widest text-xs">
                   Get in Touch
                 </h4>
-                <div className="space-y-1 text-[11px]">
+                <div className="space-y-1 text-xs sm:text-sm">
                   <p className="text-slate-300">
                     P.O. Box 690887, Houston, TX 77070
                   </p>
@@ -83,10 +83,10 @@ export default function Footer() {
           </div>
 
           <div className="pt-4 flex justify-between items-center gap-2">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+            <p className="text-xs uppercase tracking-[0.15em] text-slate-500 font-medium">
               © {currentYear} WINAM.
             </p>
-            <nav className="flex gap-4 text-[9px] uppercase tracking-[0.2em] font-bold">
+            <nav className="flex gap-4 text-xs uppercase tracking-[0.15em] font-bold">
               <Link href="/terms-of-service" className="hover:text-white">
                 Terms
               </Link>

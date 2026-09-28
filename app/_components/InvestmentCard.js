@@ -51,7 +51,7 @@ function InvestmentCard({ investment }) {
       {/* 1. FINANCIAL VALUES GRID */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3 min-w-0">
         <div className="bg-slate-50/70 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-2xs min-w-0 overflow-hidden">
-          <p className="text-[9px] sm:text-[10px] uppercase text-slate-400 dark:text-slate-500 font-bold mb-0.5 tracking-tight truncate">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500 font-bold mb-0.5 tracking-tight truncate">
             Deployed
           </p>
           <p className="text-sm sm:text-base lg:text-lg font-black text-blue-900 dark:text-blue-400 leading-tight tracking-tight truncate">
@@ -60,7 +60,7 @@ function InvestmentCard({ investment }) {
         </div>
 
         <div className="bg-slate-50/70 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-2xs min-w-0 overflow-hidden">
-          <p className="text-[9px] sm:text-[10px] uppercase text-slate-400 dark:text-slate-500 font-bold mb-0.5 tracking-tight truncate">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500 font-bold mb-0.5 tracking-tight truncate">
             Committed
           </p>
           <p className="text-sm sm:text-base lg:text-lg font-black text-slate-800 dark:text-slate-200 leading-tight tracking-tight truncate">
@@ -72,7 +72,7 @@ function InvestmentCard({ investment }) {
       {/* 2. PROGRESS SECTION */}
       {committed > 0 && (
         <div className="mt-2.5 sm:mt-3 min-w-0">
-          <div className="flex justify-between text-[10px] mb-1 font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+          <div className="flex justify-between text-xs mb-1 font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
             <span>Deployment Progress</span>
             <span className="text-blue-600 dark:text-blue-400 font-black">{deploymentRatio}%</span>
           </div>
@@ -87,7 +87,7 @@ function InvestmentCard({ investment }) {
 
       {/* 3. METADATA FOOTER */}
       <div className="mt-2.5 sm:mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 min-w-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">
           <div className="flex items-center gap-1.5 truncate">
             <CalendarIcon className="h-3 w-3 text-slate-400 dark:text-slate-500 shrink-0" />
             <span className="truncate">
@@ -112,7 +112,7 @@ function InvestmentCard({ investment }) {
             className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition group bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900/60 shrink-0"
           >
             <CalendarDaysIcon className="h-3 w-3 text-blue-500 group-hover:scale-110 transition-transform shrink-0" />
-            <span className="text-[9px] font-black uppercase tracking-tight">
+            <span className="text-xs font-black uppercase tracking-tight">
               Events
             </span>
           </Link>

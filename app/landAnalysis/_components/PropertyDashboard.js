@@ -84,7 +84,7 @@ export default function PropertyDashboard({ properties }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50/50 text-[11px] uppercase tracking-wider text-gray-400 font-bold">
+                  <tr className="bg-gray-50/50 text-xs uppercase tracking-wider text-gray-400 font-bold">
                     <th className="px-6 py-4">Rank</th>
                     <th className="px-6 py-4">Property</th>
                     <th className="px-6 py-4 text-center">Score</th>

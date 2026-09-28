@@ -33,9 +33,9 @@ export default function RedemptionStatusModal({ investment, onClose }) {
           </button>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
           <div>
-            <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+            <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
               Opportunity
             </label>
             <p className="text-sm font-bold text-slate-800">
@@ -45,7 +45,7 @@ export default function RedemptionStatusModal({ investment, onClose }) {
 
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 min-w-0">
             <div className="min-w-0 overflow-hidden">
-              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+              <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
                 Requested Amount
               </label>
               <p className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight break-all sm:break-words">
@@ -53,7 +53,7 @@ export default function RedemptionStatusModal({ investment, onClose }) {
               </p>
             </div>
             <div className="min-w-0 overflow-hidden">
-              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+              <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
                 Status
               </label>
               <span className={`inline-block px-3 py-1 text-xs font-bold uppercase rounded-md border tracking-wider mt-1 ${badgeStyle}`}>
@@ -63,7 +63,7 @@ export default function RedemptionStatusModal({ investment, onClose }) {
           </div>
 
           <div className="min-w-0 overflow-hidden">
-            <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+            <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
               Processed So Far
             </label>
             <p className="text-base sm:text-lg font-bold text-slate-800 tracking-tight break-all sm:break-words">
@@ -73,7 +73,7 @@ export default function RedemptionStatusModal({ investment, onClose }) {
 
           {redemption.admin_notes && (
             <div>
-              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+              <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
                 Administrator Notes
               </label>
               <div className="p-4 bg-slate-50 rounded-2xl text-xs font-semibold text-slate-600 border border-slate-100 leading-relaxed">
@@ -83,7 +83,7 @@ export default function RedemptionStatusModal({ investment, onClose }) {
           )}
 
           <div>
-            <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">
+            <label className="block text-xs font-black uppercase text-slate-400 mb-2 tracking-wider">
               Submission Date
             </label>
             <p className="text-xs font-bold text-slate-500">
@@ -98,10 +98,10 @@ export default function RedemptionStatusModal({ investment, onClose }) {
           </div>
         </div>
 
-        <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+        <div className="p-4 sm:p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-sm"
+            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-colors shadow-sm"
           >
             Close
           </button>

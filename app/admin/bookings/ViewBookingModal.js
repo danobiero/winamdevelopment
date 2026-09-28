@@ -152,11 +152,11 @@ export default function ViewBookingModal({ booking }) {
                         </span>
                         <div className="flex flex-col items-end gap-1">
                           <span
-                            className={`capitalize px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}`}
+                            className={`capitalize px-2 py-0.5 rounded text-xs font-bold border ${colorClass}`}
                           >
                             {refund.status}
                           </span>
-                          <span className="text-[9px] text-gray-400 font-medium">
+                          <span className="text-xs text-gray-400 font-medium">
                             {formatDate(refund.updated_at)}
                           </span>
                         </div>
