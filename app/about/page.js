@@ -122,7 +122,7 @@ export default function Page() {
             </h1>
 
             <p className="text-xs xl:text-sm text-slate-600 leading-relaxed">
-              Winam Development Group is a premier investment collective focused
+              Winam Development Group is a premier investment focused
               on securing the future through{' '}
               <strong className="text-slate-900 font-semibold">
                 strategic real estate and market equity
@@ -138,7 +138,7 @@ export default function Page() {
             <div className="relative border-l-4 border-blue-600 bg-blue-50/70 pl-3.5 pr-3 py-2.5 rounded-r-2xl">
               <p className="text-xs sm:text-sm font-semibold text-blue-950 italic leading-snug">
                 "Building strength through diversified, community-driven
-                investment foundations."
+                investments."
               </p>
               <p className="text-xs uppercase tracking-wider mt-1.5 text-blue-600 font-black">
                 The WINAM Development Motto
