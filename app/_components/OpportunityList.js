@@ -1,5 +1,6 @@
 import { getOpportunities } from '../_lib/data-service';
 import OpportunityCard from './OpportunityCard';
+import OpportunityScroller from './OpportunityScroller';
 
 async function OpportunityList({ filter }) {
   const opportunities = await getOpportunities();
@@ -107,13 +108,21 @@ async function OpportunityList({ filter }) {
   }
 
   return (
-    <div
-      className={`w-full flex items-center justify-center ${containerClasses}`}
-    >
-      <div className={`grid ${gridClasses}`}>
-        {displayOpportunities.map((opportunity) => (
-          <OpportunityCard opportunity={opportunity} key={opportunity.id} />
-        ))}
+    <div className="w-full flex items-center justify-center">
+      {/* 📱 Mobile View: 1 opportunity per slide with horizontal swipe & arrow controls */}
+      <div className="w-full block sm:hidden">
+        <OpportunityScroller opportunities={displayOpportunities} />
+      </div>
+
+      {/* 💻 Tablet & Desktop View: Multi-column responsive grid */}
+      <div
+        className={`hidden sm:flex items-center justify-center ${containerClasses}`}
+      >
+        <div className={`grid ${gridClasses}`}>
+          {displayOpportunities.map((opportunity) => (
+            <OpportunityCard opportunity={opportunity} key={opportunity.id} />
+          ))}
+        </div>
       </div>
     </div>
   );

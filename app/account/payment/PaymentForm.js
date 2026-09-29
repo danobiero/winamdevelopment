@@ -14,6 +14,8 @@ import {
   XMarkIcon,
   ReceiptPercentIcon,
   ArrowTopRightOnSquareIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import ShareholderLedgerModal from '@/app/_components/ShareholderLedgerModal';
 
@@ -64,6 +66,7 @@ export default function PaymentForm({ paymentMethod, user }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
+  const [mobileStep, setMobileStep] = useState(1);
 
   const initialType = paymentMethod?.payment_type || 'zelle';
   const [selectedType, setSelectedType] = useState(initialType);
@@ -186,10 +189,55 @@ export default function PaymentForm({ paymentMethod, user }) {
         {/* Hidden input to guarantee the selected payout type is submitted */}
         <input type="hidden" name="paymentType" value={selectedType} />
 
-        {/* 2-COLUMN ON LARGE SCREENS (lg:), NATURAL VERTICALLY SCROLLING ON SMALL & MEDIUM SCREENS */}
+        {/* MOBILE STEPPER TABS (VISIBLE ONLY ON MOBILE < lg) */}
+        <div className="lg:hidden flex items-center justify-between p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl mb-2.5 shrink-0 border border-slate-200/60 dark:border-slate-700/60">
+          <button
+            type="button"
+            onClick={() => {
+              setMobileStep(1);
+              if (errorMessage) setErrorMessage(null);
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mobileStep === 1
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs font-black'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black ${
+              mobileStep === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+            }`}>
+              1
+            </span>
+            <span className="uppercase tracking-wider">Method</span>
+          </button>
+
+          <span className="text-slate-300 dark:text-slate-600 px-1 text-xs">→</span>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileStep(2);
+              if (errorMessage) setErrorMessage(null);
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mobileStep === 2
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs font-black'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black ${
+              mobileStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+            }`}>
+              2
+            </span>
+            <span className="uppercase tracking-wider">Details</span>
+          </button>
+        </div>
+
+        {/* 2-COLUMN ON LARGE SCREENS (lg:), NATURAL STEP PROGRESSION ON MOBILE */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 flex-1 lg:min-h-0">
           {/* LEFT COLUMN: ACTIVE STATUS + STEP 1 METHOD SELECTION */}
-          <div className="lg:col-span-5 flex flex-col gap-2.5 sm:gap-3 lg:min-h-0">
+          <div className={`lg:col-span-5 flex flex-col gap-2.5 sm:gap-3 lg:min-h-0 ${mobileStep === 1 ? 'flex' : 'hidden lg:flex'}`}>
             {/* CURRENT PAYOUT DESTINATION CARD */}
             {hasActivePayment ? (
               <div className="p-3 sm:p-3.5 bg-gradient-to-br from-[#000033] via-slate-900 to-blue-950 rounded-2xl text-white shadow-xs border border-slate-800 flex items-center gap-3 shrink-0">
@@ -323,133 +371,161 @@ export default function PaymentForm({ paymentMethod, user }) {
                   Encrypted storage with audit logging before dividends or redemptions are released.
                 </p>
               </div>
+
+              {/* MOBILE NEXT BUTTON (< lg) */}
+              <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex justify-end lg:hidden shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileStep(2);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
+                >
+                  <span>Next: Account Details</span>
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-            {/* RIGHT COLUMN: STEP 2 ACCOUNT DETAILS & ACTION */}
-            <div className="lg:col-span-7 flex flex-col lg:min-h-0">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs p-3.5 sm:p-5 flex flex-col justify-between lg:flex-1 lg:min-h-0 transition-colors duration-200">
-                <div className="space-y-3 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-1 custom-scrollbar">
-                  <div className="pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
-                    <div>
-                      <h3 className="text-xs font-black text-[#000033] dark:text-white uppercase tracking-wider">
-                        2. Account Details
-                      </h3>
-                      <p className="text-xs text-slate-400 font-medium">
-                        Parameters for {currentOption.title} disbursements
-                      </p>
-                    </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                      Step 2
-                    </span>
+          {/* RIGHT COLUMN: STEP 2 ACCOUNT DETAILS & ACTION */}
+          <div className={`lg:col-span-7 flex flex-col lg:min-h-0 ${mobileStep === 2 ? 'flex' : 'hidden lg:flex'}`}>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs p-3.5 sm:p-5 flex flex-col justify-between lg:flex-1 lg:min-h-0 transition-colors duration-200">
+              <div className="space-y-3 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-1 custom-scrollbar">
+                <div className="pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+                  <div>
+                    <h3 className="text-xs font-black text-[#000033] dark:text-white uppercase tracking-wider">
+                      2. Account Details
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium">
+                      Parameters for {currentOption.title} disbursements
+                    </p>
                   </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                    Step 2
+                  </span>
+                </div>
 
-                  {/* Account Name */}
+                {/* Account Name */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <label
+                      htmlFor="accountName"
+                      className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
+                    >
+                      Account Name <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-xs text-slate-400 font-medium">Official beneficiary</span>
+                  </div>
+                  <input
+                    id="accountName"
+                    name="accountName"
+                    value={accountName}
+                    onChange={(e) => {
+                      setAccountName(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    required
+                    placeholder="e.g. Johnathan Doe"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs sm:text-sm rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  />
+                </div>
+
+                {/* Account Handle & Account Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  {/* Account Handle */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <label
-                        htmlFor="accountName"
+                        htmlFor="accountHandle"
                         className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
                       >
-                        Account Name <span className="text-rose-500">*</span>
+                        Account Handle
                       </label>
-                      <span className="text-xs text-slate-400 font-medium">Official beneficiary</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase">
+                        {selectedType === 'zelle'
+                          ? 'Email / Phone'
+                          : selectedType === 'cashapp'
+                          ? '$Cashtag'
+                          : 'Address'}
+                      </span>
                     </div>
                     <input
-                      id="accountName"
-                      name="accountName"
-                      value={accountName}
+                      id="accountHandle"
+                      name="accountHandle"
+                      value={accountHandle}
                       onChange={(e) => {
-                        setAccountName(e.target.value);
+                        setAccountHandle(e.target.value);
                         if (errorMessage) setErrorMessage(null);
                       }}
-                      required
-                      placeholder="e.g. Johnathan Doe"
+                      placeholder={currentOption.handlePlaceholder}
                       className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs sm:text-sm rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                   </div>
 
-                  {/* Account Handle & Account Number */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                    {/* Account Handle */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <label
-                          htmlFor="accountHandle"
-                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
-                        >
-                          Account Handle
-                        </label>
-                        <span className="text-xs font-bold text-slate-400 uppercase">
-                          {selectedType === 'zelle'
-                            ? 'Email / Phone'
-                            : selectedType === 'cashapp'
-                            ? '$Cashtag'
-                            : 'Address'}
-                        </span>
-                      </div>
-                      <input
-                        id="accountHandle"
-                        name="accountHandle"
-                        value={accountHandle}
-                        onChange={(e) => {
-                          setAccountHandle(e.target.value);
-                          if (errorMessage) setErrorMessage(null);
-                        }}
-                        placeholder={currentOption.handlePlaceholder}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs sm:text-sm rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                      />
+                  {/* Account Number */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <label
+                        htmlFor="accountNumber"
+                        className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
+                      >
+                        Account / Routing #
+                      </label>
+                      <span className="text-xs font-bold text-slate-400 uppercase">Digits Only</span>
                     </div>
-
-                    {/* Account Number */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <label
-                          htmlFor="accountNumber"
-                          className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-xs"
-                        >
-                          Account / Routing #
-                        </label>
-                        <span className="text-xs font-bold text-slate-400 uppercase">Digits Only</span>
-                      </div>
-                      <input
-                        id="accountNumber"
-                        name="accountNumber"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={accountNumber}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(/\D/g, '');
-                          setAccountNumber(cleaned);
-                          if (errorMessage) setErrorMessage(null);
-                        }}
-                        placeholder="e.g. 9876543210"
-                        className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs sm:text-sm rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono"
-                      />
-                    </div>
+                    <input
+                      id="accountNumber"
+                      name="accountNumber"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={accountNumber}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/\D/g, '');
+                        setAccountNumber(cleaned);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs sm:text-sm rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* ACTION BAR: Clean, single status indicator + SubmitButton */}
-                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 bg-white dark:bg-slate-900 transition-colors duration-200">
-                  <div className="min-w-0 flex-1 flex items-center gap-2">
-                    {errorMessage ? (
-                      <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-lg border border-rose-200/80 dark:border-rose-800 animate-in fade-in">
-                        <ExclamationCircleIcon className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                        <span className="truncate">{errorMessage}</span>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-400 dark:text-slate-400 font-medium">
-                        Updated payment settings apply to all upcoming distributions.
-                      </p>
-                    )}
-                  </div>
-                  <SubmitButton isSubmitting={isSubmitting} showSuccess={showSuccess} hasError={!!errorMessage} />
+              {/* ACTION BAR: Clean status indicator + Back Button (on mobile) + SubmitButton */}
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 bg-white dark:bg-slate-900 transition-colors duration-200">
+                <div className="min-w-0 flex-1 flex items-center gap-2">
+                  {/* MOBILE BACK BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileStep(1);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className="lg:hidden px-3.5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <ArrowLeftIcon className="h-3.5 w-3.5" />
+                    <span>Back</span>
+                  </button>
+
+                  {errorMessage ? (
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-lg border border-rose-200/80 dark:border-rose-800 animate-in fade-in min-w-0">
+                      <ExclamationCircleIcon className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <span className="truncate">{errorMessage}</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 dark:text-slate-400 font-medium truncate sm:whitespace-normal">
+                      Updated payment settings apply to all upcoming distributions.
+                    </p>
+                  )}
                 </div>
+                <SubmitButton isSubmitting={isSubmitting} showSuccess={showSuccess} hasError={!!errorMessage} />
               </div>
             </div>
           </div>
+        </div>
         </form>
 
         {/* SHAREHOLDER TRANSACTION & DIVIDENDS LEDGER MODAL */}
