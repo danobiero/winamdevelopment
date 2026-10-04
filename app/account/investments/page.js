@@ -1,7 +1,9 @@
 import EmptyPortfolioState from '@/app/_components/EmptyPortfolioState';
 import InvestmentList from '@/app/_components/InvestmentList';
+import WithdrawalBanner from '@/app/_components/WithdrawalBanner';
 import { auth } from '@/app/_lib/auth';
 import { getAllInvestments } from '@/app/_lib/data-service';
+import { getActiveWithdrawalFormsForShareholder } from '@/app/_lib/withdrawal-form-actions';
 import { FormatCurrency } from '@/app/_lib/utils';
 import {
   BanknotesIcon,
@@ -17,7 +19,10 @@ export const metadata = {
 export default async function Page() {
   const session = await auth();
 
-  const investments = await getAllInvestments(session.user.shareholderId);
+  const [investments, withdrawalForms] = await Promise.all([
+    getAllInvestments(session.user.shareholderId),
+    getActiveWithdrawalFormsForShareholder(session.user.shareholderId),
+  ]);
 
   // Financial aggregates
   const totalDeployed = (investments || []).reduce(
@@ -54,6 +59,12 @@ export default async function Page() {
           </div>
         </div>
       </header>
+
+      {/* USA Land Project Withdrawal Forms Notice */}
+      <WithdrawalBanner
+        forms={withdrawalForms}
+        shareholderId={session.user.shareholderId}
+      />
 
       {/* 2. SUMMARY KPI METRICS STRIP (COMPACT HORIZONTAL FORMAT, NO VERTICAL BLOAT) */}
       {investments && investments.length > 0 && (

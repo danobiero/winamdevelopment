@@ -252,6 +252,7 @@ export async function getLegacyShareholders() {
             id,
             opportunity_id,
             amount_invested,
+            status,
             start_date,
             opportunities (
               id,

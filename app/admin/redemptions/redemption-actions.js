@@ -26,7 +26,8 @@ export async function getRedemptions({ from, to, searchShareholder }) {
         id,
         opportunities ( name )
       ),
-      redemption_rejection_policies (*)
+      redemption_rejection_policies (*),
+      member_withdrawal_forms ( id, status, part6_admin )
     `
     : `
       *,
@@ -35,7 +36,8 @@ export async function getRedemptions({ from, to, searchShareholder }) {
         id,
         opportunities ( name )
       ),
-      redemption_rejection_policies (*)
+      redemption_rejection_policies (*),
+      member_withdrawal_forms ( id, status, part6_admin )
     `;
 
   let query = supabase
@@ -134,16 +136,80 @@ export async function getInvestmentLedger(investmentId) {
 
     const supabase = createAdminSupabaseClient();
 
-    const { data, error } = await supabase.rpc('get_investment_ledger', {
-      p_investment_id: investmentId, // Matches the expected parameter in your new RPC
-    });
-
-    if (error) {
-      console.error('Investment Ledger RPC error:', error);
-      throw new Error('Failed to load investment ledger');
+    let baseEntries = [];
+    try {
+      const { data, error } = await supabase.rpc('get_investment_ledger', {
+        p_investment_id: investmentId,
+      });
+      if (!error && Array.isArray(data)) {
+        baseEntries = data;
+      }
+    } catch (e) {
+      console.warn('RPC get_investment_ledger fallback to view:', e);
     }
 
-    return data ?? [];
+    if (baseEntries.length === 0) {
+      const { data: viewData } = await supabase
+        .from('investment_ledger')
+        .select('*')
+        .eq('investment_id', investmentId)
+        .order('transaction_date', { ascending: true });
+      baseEntries = viewData || [];
+    }
+
+    // Also fetch any completed or approved redemptions for this investment
+    const { data: redRequests } = await supabase
+      .from('redemption_requests')
+      .select('id, amount, already_redeemed_so_far, status, processed_at, created_at')
+      .eq('investment_id', investmentId)
+      .in('status', ['approved', 'completed']);
+
+    const redReqIds = (redRequests || []).map((r) => r.id);
+    let redemptionEntries = [];
+
+    if (redReqIds.length > 0) {
+      const { data: redPayouts } = await supabase
+        .from('redemptions')
+        .select('*')
+        .in('redemption_request_id', redReqIds)
+        .eq('status', 'succeeded');
+
+      if (redPayouts && redPayouts.length > 0) {
+        redemptionEntries = redPayouts.map((p) => ({
+          entry_id: `RED-${p.id}`,
+          transaction_date: p.created_at || p.updated_at,
+          investment_id: investmentId,
+          amount: -Math.abs(Number(p.amount || 0)),
+          entry_type: 'redemption',
+          status: 'succeeded',
+          currency: p.currency || 'USD',
+        }));
+      }
+    }
+
+    // Merge payment entries and redemption entries without duplicates
+    const combined = [...baseEntries];
+    redemptionEntries.forEach((re) => {
+      const exists = combined.some(
+        (e) => e.entry_type === 'redemption' && (e.entry_id === re.entry_id || Math.abs(e.amount) === Math.abs(re.amount))
+      );
+      if (!exists) {
+        combined.push(re);
+      }
+    });
+
+    // Sort by transaction_date ascending and compute running balance
+    combined.sort((a, b) => new Date(a.transaction_date) - new Date(b.transaction_date));
+    let running = 0;
+    const finalLedger = combined.map((entry) => {
+      running += Number(entry.amount || 0);
+      return {
+        ...entry,
+        running_balance: running,
+      };
+    });
+
+    return finalLedger;
   } catch (err) {
     console.error('getInvestmentLedger failed:', err);
     throw err;
@@ -194,7 +260,7 @@ export async function createStripeRedemptionAction(formData) {
     // 3️⃣ LOAD REDEMPTION
     const { data: redemption, error: redErr } = await supabase
       .from('redemption_requests')
-      .select('id, investment_id, shareholder_id, amount, status, already_redeemed_so_far, investments(opportunity_id)')
+      .select('id, investment_id, shareholder_id, amount, status, already_redeemed_so_far, investments(opportunity_id, amount_invested, current_value)')
       .eq('id', redemptionId)
       .single();
 
@@ -205,6 +271,27 @@ export async function createStripeRedemptionAction(formData) {
 
     if (processedSoFar >= totalGoal || redemption.status === 'completed') {
       throw new Error('This redemption is already fully processed.');
+    }
+
+    const opportunityValue = Number(
+      redemption.investments?.current_value != null && Number(redemption.investments.current_value) > 0
+        ? redemption.investments.current_value
+        : (redemption.investments?.amount_invested || totalGoal)
+    );
+
+    if (chunkAmountDollars > opportunityValue) {
+      throw new Error(`Refund amount ($${chunkAmountDollars.toLocaleString()}) cannot exceed the shareholder value of the opportunity ($${opportunityValue.toLocaleString()}).`);
+    }
+
+    // 3.5️⃣ CHECK PART 6 WITHDRAWAL FORM REQUIREMENT (FOR USA LAND PROJECT)
+    const { checkWithdrawalFormPart6Complete } = await import(
+      '@/app/_lib/withdrawal-form-actions'
+    );
+    const isPart6Done = await checkWithdrawalFormPart6Complete(redemptionId);
+    if (!isPart6Done) {
+      throw new Error(
+        'Redemption cannot be processed: Part 6 (Company Administrative Approval) must be completed before processing payout.'
+      );
     }
 
     // 4️⃣ LOAD PAYMENT
@@ -275,6 +362,16 @@ export async function createStripeRedemptionAction(formData) {
     if (updateErr)
       throw new Error('Stripe succeeded but database update failed.');
 
+    if (isFinished) {
+      await supabase
+        .from('member_withdrawal_forms')
+        .update({
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('redemption_request_id', redemptionId);
+    }
+
     // 🆕 NEW: UPDATE PAYMENT RECORD
     // Increment the 'redeemed_amount' (or 'refunded_amount' based on your schema)
     // to track how much of this specific payment has been used.
@@ -340,6 +437,8 @@ export async function createStripeRedemptionAction(formData) {
         };
         if (newInvested <= 0) {
           invUpdates.status = 'exited';
+          invUpdates.current_value = 0;
+          invUpdates.exited_at = new Date().toISOString();
         }
         await supabase.from('investments').update(invUpdates).eq('id', inv.id);
       }
@@ -364,27 +463,43 @@ export async function createStripeRedemptionAction(formData) {
           const newTotalAssetValue = Math.max(0, currentVal - redeemedDollars);
 
           if (latestVal.valuation_date === today) {
-            await supabase
+            const { error: valUpErr } = await supabase
               .from('opportunity_valuations')
               .update({
                 total_asset_value: newTotalAssetValue,
-                created_at: new Date().toISOString(),
-                notes: latestVal.notes
-                  ? `${latestVal.notes} | Stripe redemption payout of $${redeemedDollars.toLocaleString()} (Req #${redemptionId})`
-                  : `Stripe redemption payout of $${redeemedDollars.toLocaleString()} (Req #${redemptionId})`,
               })
               .eq('id', latestVal.id);
+            if (valUpErr) console.error('Error updating opportunity_valuations in Stripe redemption:', valUpErr);
           } else {
-            await supabase
+            const { error: valInsErr } = await supabase
               .from('opportunity_valuations')
               .insert({
                 opportunity_id: Number(opportunityId),
                 total_asset_value: newTotalAssetValue,
                 valuation_date: today,
-                created_by_admin_id: session.user.adminId,
-                notes: `Reduced by Stripe redemption payout of $${redeemedDollars.toLocaleString()} (Req #${redemptionId})`,
+                created_by_admin_id: session.user.adminId || null,
               });
+            if (valInsErr) console.error('Error inserting opportunity_valuations in Stripe redemption:', valInsErr);
           }
+        } else {
+          // If no opportunity_valuations record exists yet, baseline from opp.total_value
+          const { data: oppRecord } = await supabase
+            .from('opportunities')
+            .select('total_value')
+            .eq('id', Number(opportunityId))
+            .maybeSingle();
+
+          const baseVal = oppRecord?.total_value ? Number(oppRecord.total_value) : 0;
+          const newTotalAssetValue = Math.max(0, baseVal - redeemedDollars);
+          const { error: valInsErr } = await supabase
+            .from('opportunity_valuations')
+            .insert({
+              opportunity_id: Number(opportunityId),
+              total_asset_value: newTotalAssetValue,
+              valuation_date: today,
+              created_by_admin_id: session.user.adminId || null,
+            });
+          if (valInsErr) console.error('Error inserting baseline opportunity_valuations:', valInsErr);
         }
 
         // Also decrement opportunities.total_value if present
@@ -396,13 +511,14 @@ export async function createStripeRedemptionAction(formData) {
 
         if (opp && opp.total_value !== null && opp.total_value !== undefined) {
           const newOppTotal = Math.max(0, Number(opp.total_value || 0) - redeemedDollars);
-          await supabase
+          const { error: oppUpErr } = await supabase
             .from('opportunities')
             .update({ total_value: newOppTotal })
             .eq('id', Number(opportunityId));
+          if (oppUpErr) console.error('Error updating opportunities total_value:', oppUpErr);
         }
       } catch (valErr) {
-        console.warn('Note: Opportunity valuation adjustment warning:', valErr);
+        console.error('Opportunity valuation adjustment failed in Stripe redemption:', valErr);
       }
     }
 
@@ -463,7 +579,8 @@ export async function processManualRedemptionAction(formData) {
         investments (
           id,
           opportunity_id,
-          amount_invested
+          amount_invested,
+          current_value
         )
       `)
       .eq('id', redemptionId)
@@ -476,6 +593,29 @@ export async function processManualRedemptionAction(formData) {
 
     if (processedSoFar >= totalGoal || redemption.status === 'completed') {
       throw new Error('This redemption request is already fully processed.');
+    }
+
+    const opportunityValue = Number(
+      redemption.investments?.current_value != null && Number(redemption.investments.current_value) > 0
+        ? redemption.investments.current_value
+        : (redemption.investments?.amount_invested || totalGoal)
+    );
+
+    if (chunkAmountDollars > opportunityValue) {
+      throw new Error(
+        `Payout amount ($${chunkAmountDollars.toLocaleString()}) cannot exceed the shareholder value of the opportunity ($${opportunityValue.toLocaleString()}).`
+      );
+    }
+
+    // 3.5️⃣ CHECK PART 6 WITHDRAWAL FORM REQUIREMENT (FOR USA LAND PROJECT)
+    const { checkWithdrawalFormPart6Complete } = await import(
+      '@/app/_lib/withdrawal-form-actions'
+    );
+    const isPart6Done = await checkWithdrawalFormPart6Complete(redemptionId);
+    if (!isPart6Done) {
+      throw new Error(
+        'Redemption cannot be processed: Part 6 (Company Administrative Approval) must be completed before processing payout.'
+      );
     }
 
     const remainingGoal = Math.max(0, totalGoal - processedSoFar);
@@ -512,6 +652,16 @@ export async function processManualRedemptionAction(formData) {
 
     if (updateErr) {
       throw new Error(`Database update failed: ${updateErr.message}`);
+    }
+
+    if (isFinished) {
+      await supabase
+        .from('member_withdrawal_forms')
+        .update({
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('redemption_request_id', redemptionId);
     }
 
     // 5️⃣ IF OPTIONAL PAYMENT RECORD SPECIFIED, UPDATE ITS REDEEMED AMOUNT
@@ -595,6 +745,8 @@ export async function processManualRedemptionAction(formData) {
         };
         if (newInvested <= 0) {
           invUpdates.status = 'exited';
+          invUpdates.current_value = 0;
+          invUpdates.exited_at = new Date().toISOString();
         }
         await supabase.from('investments').update(invUpdates).eq('id', inv.id);
       }
@@ -619,27 +771,43 @@ export async function processManualRedemptionAction(formData) {
           const newTotalAssetValue = Math.max(0, currentVal - redeemedDollars);
 
           if (latestVal.valuation_date === today) {
-            await supabase
+            const { error: valUpErr } = await supabase
               .from('opportunity_valuations')
               .update({
                 total_asset_value: newTotalAssetValue,
-                created_at: new Date().toISOString(),
-                notes: latestVal.notes
-                  ? `${latestVal.notes} | Redemption payout of $${redeemedDollars.toLocaleString()} via ${payoutMethod.toUpperCase()} (Req #${redemptionId})`
-                  : `Redemption payout of $${redeemedDollars.toLocaleString()} via ${payoutMethod.toUpperCase()} (Req #${redemptionId})`,
               })
               .eq('id', latestVal.id);
+            if (valUpErr) console.error('Error updating opportunity_valuations in manual redemption:', valUpErr);
           } else {
-            await supabase
+            const { error: valInsErr } = await supabase
               .from('opportunity_valuations')
               .insert({
                 opportunity_id: Number(opportunityId),
                 total_asset_value: newTotalAssetValue,
                 valuation_date: today,
-                created_by_admin_id: session.user.adminId,
-                notes: `Reduced by redemption payout of $${redeemedDollars.toLocaleString()} via ${payoutMethod.toUpperCase()} (Req #${redemptionId})`,
+                created_by_admin_id: session.user.adminId || null,
               });
+            if (valInsErr) console.error('Error inserting opportunity_valuations in manual redemption:', valInsErr);
           }
+        } else {
+          // If no opportunity_valuations record exists yet, baseline from opp.total_value
+          const { data: oppRecord } = await supabase
+            .from('opportunities')
+            .select('total_value')
+            .eq('id', Number(opportunityId))
+            .maybeSingle();
+
+          const baseVal = oppRecord?.total_value ? Number(oppRecord.total_value) : 0;
+          const newTotalAssetValue = Math.max(0, baseVal - redeemedDollars);
+          const { error: valInsErr } = await supabase
+            .from('opportunity_valuations')
+            .insert({
+              opportunity_id: Number(opportunityId),
+              total_asset_value: newTotalAssetValue,
+              valuation_date: today,
+              created_by_admin_id: session.user.adminId || null,
+            });
+          if (valInsErr) console.error('Error inserting baseline opportunity_valuations in manual redemption:', valInsErr);
         }
 
         // Also decrement opportunities.total_value if present
@@ -651,13 +819,14 @@ export async function processManualRedemptionAction(formData) {
 
         if (opp && opp.total_value !== null && opp.total_value !== undefined) {
           const newOppTotal = Math.max(0, Number(opp.total_value || 0) - redeemedDollars);
-          await supabase
+          const { error: oppUpErr } = await supabase
             .from('opportunities')
             .update({ total_value: newOppTotal })
             .eq('id', Number(opportunityId));
+          if (oppUpErr) console.error('Error updating opportunities total_value in manual redemption:', oppUpErr);
         }
       } catch (valErr) {
-        console.warn('Note: Opportunity valuation adjustment warning:', valErr);
+        console.error('Opportunity valuation adjustment failed in manual redemption:', valErr);
       }
     }
 

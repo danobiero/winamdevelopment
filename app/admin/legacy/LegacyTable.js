@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 function getAllocations(r, opportunities = []) {
+  // 1. Direct investments array or JSON on the legacy record
   let invList = r.investments;
   if (typeof invList === 'string') {
     try {
@@ -23,59 +24,85 @@ function getAllocations(r, opportunities = []) {
   }
 
   if (Array.isArray(invList) && invList.length > 0) {
-    return invList.map((inv) => {
-      const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id));
-      return {
-        opportunityId: inv.opportunity_id,
-        opportunityName: opp
-          ? opp.name
-          : r.opportunities?.id === inv.opportunity_id
-          ? r.opportunities.name
-          : `Opportunity #${inv.opportunity_id}`,
-        opportunityType: opp?.type || r.opportunities?.type,
-        amount: Number(inv.amount_invested) || 0,
-        startDate: inv.start_date,
-      };
-    });
+    const valid = invList
+      .filter(
+        (inv) =>
+          Number(inv.amount_invested) > 0 &&
+          inv.status !== 'exited' &&
+          inv.status !== 'cancelled'
+      )
+      .map((inv) => {
+        const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id));
+        return {
+          opportunityId: inv.opportunity_id,
+          opportunityName: opp
+            ? opp.name
+            : r.opportunities?.id === inv.opportunity_id
+            ? r.opportunities.name
+            : `Opportunity #${inv.opportunity_id}`,
+          opportunityType: opp?.type || r.opportunities?.type,
+          amount: Number(inv.amount_invested) || 0,
+          startDate: inv.start_date,
+        };
+      });
+    if (valid.length > 0) return valid;
   }
 
-  // Linked live investments fallback from shareholders table
-  if (Array.isArray(r.shareholders?.investments) && r.shareholders.investments.length > 0) {
-    return r.shareholders.investments.map((inv) => {
-      const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id)) || inv.opportunities;
-      return {
-        opportunityId: inv.opportunity_id,
-        opportunityName: opp?.name || `Opportunity #${inv.opportunity_id}`,
-        opportunityType: opp?.type,
-        amount: Number(inv.amount_invested) || 0,
-        startDate: inv.start_date,
-      };
-    });
-  }
-
+  // 2. Staged allocations from notes JSON (primary source of truth for legacy staging)
   if (r.notes && r.notes.includes('[Allocations JSON]:')) {
     try {
       const parsed = JSON.parse(r.notes.split('[Allocations JSON]:')[1]?.trim());
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((inv) => {
-          const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id));
-          return {
-            opportunityId: inv.opportunity_id,
-            opportunityName: opp
-              ? opp.name
-              : r.opportunities?.id === inv.opportunity_id
-              ? r.opportunities.name
-              : `Opportunity #${inv.opportunity_id}`,
-            opportunityType: opp?.type || r.opportunities?.type,
-            amount: Number(inv.amount_invested) || 0,
-            startDate: inv.start_date,
-          };
-        });
+        const valid = parsed
+          .filter(
+            (inv) =>
+              Number(inv.amount_invested) > 0 &&
+              inv.status !== 'exited' &&
+              inv.status !== 'cancelled'
+          )
+          .map((inv) => {
+            const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id));
+            return {
+              opportunityId: inv.opportunity_id,
+              opportunityName: opp
+                ? opp.name
+                : r.opportunities?.id === inv.opportunity_id
+                ? r.opportunities.name
+                : `Opportunity #${inv.opportunity_id}`,
+              opportunityType: opp?.type || r.opportunities?.type,
+              amount: Number(inv.amount_invested) || 0,
+              startDate: inv.start_date,
+            };
+          });
+        if (valid.length > 0) return valid;
       }
     } catch (e) {}
   }
 
-  if (r.opportunity_id) {
+  // 3. Linked live investments fallback from shareholders table (active only)
+  if (Array.isArray(r.shareholders?.investments) && r.shareholders.investments.length > 0) {
+    const valid = r.shareholders.investments
+      .filter(
+        (inv) =>
+          Number(inv.amount_invested) > 0 &&
+          inv.status !== 'exited' &&
+          inv.status !== 'cancelled'
+      )
+      .map((inv) => {
+        const opp = opportunities.find((o) => String(o.id) === String(inv.opportunity_id)) || inv.opportunities;
+        return {
+          opportunityId: inv.opportunity_id,
+          opportunityName: opp?.name || `Opportunity #${inv.opportunity_id}`,
+          opportunityType: opp?.type,
+          amount: Number(inv.amount_invested) || 0,
+          startDate: inv.start_date,
+        };
+      });
+    if (valid.length > 0) return valid;
+  }
+
+  // 4. Single opportunity fallback
+  if (r.opportunity_id && Number(r.amount_invested) > 0) {
     const opp = opportunities.find((o) => String(o.id) === String(r.opportunity_id));
     return [
       {

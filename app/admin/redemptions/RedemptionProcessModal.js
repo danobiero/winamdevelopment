@@ -3,6 +3,19 @@
 import { useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { processRedemptionAdmin } from './redemption-actions';
+import {
+  submitAdminPart6Approval,
+  adminOverrideMemberConsent,
+} from '@/app/_lib/withdrawal-form-actions';
+import MemberWithdrawalModal from '@/app/_components/MemberWithdrawalModal';
+import AdminOverrideConfirmModal from '@/app/_components/AdminOverrideConfirmModal';
+import {
+  LockClosedIcon,
+  CheckCircleIcon,
+  ScaleIcon,
+  DocumentTextIcon,
+  ClockIcon,
+} from '@heroicons/react/24/outline';
 
 // Helper to format currency consistently
 const formatCurrency = (value, currency = 'USD') =>
@@ -15,6 +28,7 @@ export default function RedemptionProcessModal({
   redemption,
   ledger = [],
   rejectionPolicies = [],
+  withdrawalForm = null,
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,8 +37,81 @@ export default function RedemptionProcessModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionState, setActionState] = useState('idle'); // 'idle' | 'rejecting'
 
+  // Part 6 Admin Signatures state
+  const [pmSig, setPmSig] = useState(
+    withdrawalForm?.part6_admin?.pmSignature || ''
+  );
+  const [officerSig, setOfficerSig] = useState(
+    withdrawalForm?.part6_admin?.officerSignature || ''
+  );
+  const [isSavingPart6, setIsSavingPart6] = useState(false);
+  const [part6Success, setPart6Success] = useState(
+    Boolean(withdrawalForm?.part6_admin?.isCompleted)
+  );
+  const [showFullDoc, setShowFullDoc] = useState(false);
+  const [showConsentsDetail, setShowConsentsDetail] = useState(false);
+  const [overrideTarget, setOverrideTarget] = useState(null);
+
   // Guard clause to prevent undefined errors
   if (!redemption) return null;
+
+  const handleSavePart6 = async (e) => {
+    e.preventDefault();
+    if (!pmSig.trim() || !officerSig.trim()) {
+      alert('Both Project Manager and Authorized Company Officer signatures are required.');
+      return;
+    }
+    try {
+      setIsSavingPart6(true);
+      await submitAdminPart6Approval({
+        formId: withdrawalForm.id,
+        pmSignature: pmSig,
+        officerSignature: officerSig,
+      });
+      setPart6Success(true);
+    } catch (err) {
+      alert(err.message || 'Failed to record administrative approval.');
+    } finally {
+      setIsSavingPart6(false);
+    }
+  };
+
+  const handleAdminOverride = (member) => {
+    setOverrideTarget({ member, isBulk: false });
+  };
+
+  const handleAdminOverrideAll = () => {
+    const pendingCount = withdrawalForm?.consents?.filter((c) => !c.has_consented).length || 0;
+    setOverrideTarget({ isBulk: true, pendingCount });
+  };
+
+  const handleConfirmAdminOverride = async () => {
+    if (!overrideTarget) return;
+    const { member, isBulk } = overrideTarget;
+
+    try {
+      setIsSubmitting(true);
+      if (isBulk) {
+        await adminOverrideMemberConsent({
+          formId: withdrawalForm.id,
+          overrideAll: true,
+          reason: 'Admin Override - Process completed to unlock flow',
+        });
+      } else {
+        await adminOverrideMemberConsent({
+          formId: withdrawalForm.id,
+          shareholderId: member.shareholder_id || member.member_name,
+          reason: 'Admin Override - Process completed to unlock flow',
+        });
+      }
+      setOverrideTarget(null);
+      router.refresh();
+    } catch (err) {
+      alert(err.message || 'Failed to record Admin Override.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleClose = () => {
     // Navigates back, clearing only the redemption param so we don't lose page state
@@ -37,20 +124,26 @@ export default function RedemptionProcessModal({
 
   // NEW: Handler to jump to the Stripe Approval flow
   const handleApprove = () => {
+    if (withdrawalForm && !part6Success) {
+      alert('Part 6 (Company Administrative Approval) must be completed before processing payout.');
+      return;
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('redemption'); // Clear this modal
     params.set('approved', redemption.id); // Trigger the Stripe Payment Choice modal
     router.push(`/admin/redemptions?approved=${redemption.id}`);
-   
   };
 
   const isPending = redemption.status?.toLowerCase() === 'pending';
+  const requiresPart6 = Boolean(withdrawalForm);
+  const isPart6Done = requiresPart6 ? part6Success : true;
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={handleClose}
-    >
+    <>
+      <div
+        className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={handleClose}
+      >
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90dvh] flex flex-col relative overflow-hidden animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
@@ -150,6 +243,216 @@ export default function RedemptionProcessModal({
                 'No specific reason provided by shareholder.'}
             </div>
           </div>
+
+          {/* USA Land Project Withdrawal Form Card */}
+          {withdrawalForm && (
+            <div className="mt-4 border-2 border-blue-200 bg-blue-50/30 rounded-2xl p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-blue-200/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-600 text-white rounded-lg">
+                    <DocumentTextIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 tracking-tight">
+                      MEMBER WITHDRAWAL & INTEREST DISPOSITION FORM
+                    </h3>
+                    <p className="text-[11px] text-blue-800 font-medium">
+                      USA Land Purchase Project • Section 5 & 6 Protocol
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFullDoc(true)}
+                  className="px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  View Full 2-Page Document
+                </button>
+              </div>
+
+              {/* Status Overview Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                {/* 30-Day Clock */}
+                <div className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-0.5">
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Notice Period</p>
+                  <p className="font-bold text-slate-800 flex items-center gap-1">
+                    <ClockIcon className="h-3.5 w-3.5 text-amber-500" />
+                    <span>{withdrawalForm.daysRemaining ?? 30} Days Left</span>
+                  </p>
+                </div>
+
+                {/* Page 1 Status */}
+                <div className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-0.5">
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Page 1 (Member)</p>
+                  <p className={`font-bold flex items-center gap-1 ${
+                    withdrawalForm.page1_data?.submittedAt ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {withdrawalForm.page1_data?.submittedAt ? '✓ Submitted' : '⏳ Pending Submission'}
+                  </p>
+                </div>
+
+                {/* Part 5 Consents */}
+                <div className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-0.5">
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Part 5 Consents</p>
+                  <p className="font-bold text-slate-800">
+                    {Array.isArray(withdrawalForm.consents)
+                      ? `${withdrawalForm.consents.filter((c) => c.has_consented).length} of ${withdrawalForm.consents.length} Signed`
+                      : '0 of 8 Signed'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Consents Breakdown Toggle */}
+              {Array.isArray(withdrawalForm.consents) && withdrawalForm.consents.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowConsentsDetail(!showConsentsDetail)}
+                      className="text-xs text-blue-600 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>
+                        {showConsentsDetail ? '▼ Hide' : '▶ View'} Member Consents Breakdown (
+                        {withdrawalForm.consents.filter((c) => c.has_consented).length}/
+                        {withdrawalForm.consents.length})
+                      </span>
+                    </button>
+
+                    {withdrawalForm.consents.some((c) => !c.has_consented) && (
+                      <button
+                        type="button"
+                        onClick={handleAdminOverrideAll}
+                        disabled={isSubmitting}
+                        className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white transition-all cursor-pointer shadow-2xs"
+                      >
+                        Admin Override All
+                      </button>
+                    )}
+                  </div>
+
+                  {showConsentsDetail && (
+                    <div className="mt-2 bg-white rounded-xl border border-slate-200 p-2.5 space-y-2 max-h-48 overflow-y-auto">
+                      {withdrawalForm.consents.map((c, i) => {
+                        const isOverridden = Boolean(c.is_admin_override || c.signature === 'Admin Override');
+                        return (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between text-xs py-1 border-b last:border-none gap-2"
+                          >
+                            <span className="font-medium text-slate-700">{c.member_name}</span>
+                            <div className="flex items-center gap-2">
+                              {c.has_consented ? (
+                                isOverridden ? (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                                    Admin Override
+                                  </span>
+                                ) : (
+                                  <span className="text-emerald-600 font-bold flex items-center gap-1">
+                                    <CheckCircleIcon className="h-3.5 w-3.5" /> Consented ({new Date(c.signed_at).toLocaleDateString()})
+                                  </span>
+                                )
+                              ) : (
+                                <>
+                                  <span className="text-slate-400 italic">Pending</span>
+                                  <button
+                                    type="button"
+                                    disabled={isSubmitting}
+                                    onClick={() => handleAdminOverride(c)}
+                                    className="px-2 py-0.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold rounded text-[10px] uppercase tracking-wider transition-colors cursor-pointer shadow-2xs"
+                                  >
+                                    Admin Override
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* PART 6: COMPANY ADMINISTRATIVE APPROVAL FORM */}
+              <div className="bg-white rounded-xl border-2 border-blue-200 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                    Part 6: Company Administrative Approval
+                  </h4>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    part6Success
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200 font-black'
+                  }`}>
+                    {part6Success ? '✓ Completed' : 'Action Required'}
+                  </span>
+                </div>
+
+                {part6Success ? (
+                  <div className="space-y-2 text-xs bg-emerald-50/60 p-3 rounded-xl border border-emerald-200">
+                    <p className="font-bold text-emerald-800 flex items-center gap-1.5">
+                      <CheckCircleIcon className="h-4 w-4" /> Part 6 Signatures Recorded & Verified
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600 text-[11px]">
+                      <div>
+                        <span className="font-bold text-slate-700">Project Manager:</span> {pmSig || 'Jephline Okoth'}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-700">Authorized Officer:</span> {officerSig || 'Daniel Obiero'}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSavePart6} className="space-y-3 text-xs">
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      Before this redemption can be processed, administrative sign-off must be completed pursuant to Section 3.1 & Section 4.3:
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                          Project Manager (Jephline Okoth) Signature *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={pmSig}
+                          onChange={(e) => setPmSig(e.target.value)}
+                          placeholder="Type 'Jephline Okoth' as digital signature"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-serif italic text-sm text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                          Company Officer (Daniel Obiero) Signature *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={officerSig}
+                          onChange={(e) => setOfficerSig(e.target.value)}
+                          placeholder="Type 'Daniel Obiero' as digital signature"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-serif italic text-sm text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="submit"
+                        disabled={isSavingPart6 || !pmSig.trim() || !officerSig.trim()}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                      >
+                        {isSavingPart6 ? 'Saving Signatures...' : 'Save & Approve Part 6'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Investment Ledger Table */}
           <div className="mt-6 bg-white border rounded-xl p-4 shadow-sm">
@@ -254,24 +557,40 @@ export default function RedemptionProcessModal({
 
         {/* Footer Actions - Sticky */}
         {isPending ? (
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t space-y-4 shrink-0">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t space-y-3 shrink-0">
             {/* STATE 1: Idle */}
             {actionState === 'idle' && (
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setActionState('rejected')}
-                  className="flex-1 bg-white border border-red-200 text-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-50 transition-all active:scale-[0.98] shadow-sm"
-                >
-                  Reject Request...
-                </button>
-                <button
-                  type="button"
-                  onClick={handleApprove}
-                  className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all active:scale-[0.98] shadow-sm"
-                >
-                  Approve & Process Payout &rarr;
-                </button>
+              <div className="space-y-3">
+                {!isPart6Done && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 text-amber-900 text-xs">
+                    <LockClosedIcon className="h-5 w-5 text-amber-600 shrink-0" />
+                    <p className="font-medium">
+                      <strong>Payout Locked:</strong> Part 6 (Company Administrative Approval) must be completed above before this redemption can be processed. It remains pending.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActionState('rejected')}
+                    className="flex-1 bg-white border border-red-200 text-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-50 transition-all active:scale-[0.98] shadow-sm cursor-pointer"
+                  >
+                    Reject Request...
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isPart6Done}
+                    onClick={handleApprove}
+                    className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${
+                      isPart6Done
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                    }`}
+                  >
+                    {isPart6Done ? 'Approve & Process Payout →' : '🔒 Complete Part 6 First'}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -354,5 +673,30 @@ export default function RedemptionProcessModal({
         )}
       </div>
     </div>
+
+      {/* Full 2-Page Legal Document Modal Viewer */}
+      {showFullDoc && withdrawalForm && (
+        <MemberWithdrawalModal
+          form={withdrawalForm}
+          currentShareholderId={null}
+          isAdmin={true}
+          onClose={() => setShowFullDoc(false)}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
+      )}
+
+      {/* Admin Override Confirmation Modal */}
+      <AdminOverrideConfirmModal
+        isOpen={Boolean(overrideTarget)}
+        targetMember={overrideTarget?.member}
+        isBulk={Boolean(overrideTarget?.isBulk)}
+        pendingCount={overrideTarget?.pendingCount}
+        isSubmitting={isSubmitting}
+        onClose={() => setOverrideTarget(null)}
+        onConfirm={handleConfirmAdminOverride}
+      />
+    </>
   );
 }

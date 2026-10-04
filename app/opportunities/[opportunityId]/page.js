@@ -10,6 +10,8 @@ import {
 import { getPaymentMode } from '@/app/_lib/actions';
 import InvestAction from '@/app/_components/InvestAction';
 import TextExpander from '@/app/_components/TextExpander';
+import WithdrawalBanner from '@/app/_components/WithdrawalBanner';
+import { getActiveWithdrawalFormsForShareholder } from '@/app/_lib/withdrawal-form-actions';
 import {
   ArrowLeftIcon,
   ShieldCheckIcon,
@@ -119,6 +121,16 @@ export default async function Page({ params }) {
   const safeImage =
     image_url && image_url.startsWith('http') ? image_url.trim() : '/logo.png';
 
+  let withdrawalForms = [];
+  if (
+    session?.user?.shareholderId &&
+    (Number(id) === 11 || (name || '').toLowerCase().includes('usa land'))
+  ) {
+    withdrawalForms = await getActiveWithdrawalFormsForShareholder(
+      session.user.shareholderId
+    );
+  }
+
   ////////////////////////////////////////////////////////////
   // UI - FIT TO SCREEN & RESPONSIVE LAYOUT
   ////////////////////////////////////////////////////////////
@@ -161,6 +173,16 @@ export default async function Page({ params }) {
           </span>
         </div>
       </header>
+
+      {/* USA Land Project Withdrawal Forms Notice */}
+      {withdrawalForms && withdrawalForms.length > 0 && (
+        <div className="pt-2 shrink-0">
+          <WithdrawalBanner
+            forms={withdrawalForms}
+            shareholderId={session.user.shareholderId}
+          />
+        </div>
+      )}
 
       {/* 🔹 MAIN SPLIT VIEW (2 COLUMNS ON DESKTOP, FLUID SCROLL ON MOBILE) */}
       <div className="w-full flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3.5 xl:gap-5 py-2.5 sm:py-3 lg:overflow-hidden">

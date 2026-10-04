@@ -25,6 +25,7 @@ import {
   Cog6ToothIcon,
   ClipboardDocumentListIcon,
   ArrowsRightLeftIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/solid';
 
 export default function AdminSideNavigation({ supportCount = 0 }) {
@@ -123,6 +124,11 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
       colorClasses:
         'bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white shadow-sm shadow-purple-500/25',
       items: [
+        {
+          name: 'Maintenance',
+          href: '/admin/system/maintenance',
+          icon: <WrenchScrewdriverIcon className="h-5 w-5" />,
+        },
         {
           name: 'Profile',
           href: '/admin/profile',

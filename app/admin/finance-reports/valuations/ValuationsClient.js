@@ -67,12 +67,14 @@ export default function ValuationsClient({
 
   // Map opportunities to their latest current valuation
   const currentValuations = useMemo(() => {
-    // Calculate total shareholder investments grouped by opportunity_id
+    // Calculate total shareholder investments grouped by opportunity_id (active only)
     const investmentsByOpp = {};
     (investments || []).forEach((inv) => {
-      const oppId = Number(inv.opportunity_id);
-      const amount = Number(inv.amount_invested ?? inv.total_committed ?? 0);
-      investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amount;
+      if (inv.status !== 'exited' && inv.status !== 'cancelled') {
+        const oppId = Number(inv.opportunity_id);
+        const amount = Number(inv.amount_invested ?? inv.total_committed ?? 0);
+        investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amount;
+      }
     });
 
     return opportunities.map((opp) => {

@@ -521,11 +521,22 @@ export async function confirmManualPaymentAction(paymentId, { reference = '', no
             });
         }
       } else {
+        // If no prior valuation record exists, calculate baseline NAV from all investments in this opportunity
+        const { data: oppInvs } = await supabase
+          .from('investments')
+          .select('amount_invested')
+          .eq('opportunity_id', oppId);
+        const totalInvestedSum = (oppInvs || []).reduce(
+          (sum, i) => sum + (Number(i.amount_invested) || 0),
+          0
+        );
+        newTotalAssetValue = Math.max(totalInvestedSum, amountUSD);
+
         await supabase
           .from('opportunity_valuations')
           .insert({
             opportunity_id: oppId,
-            total_asset_value: amountUSD,
+            total_asset_value: newTotalAssetValue,
             valuation_date: today,
             created_by_admin_id: session.user.adminId,
           });

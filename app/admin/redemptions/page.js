@@ -10,6 +10,7 @@ import {
   processManualRedemptionAction,
   getActiveRedemptionRejectionPolicies,
 } from './redemption-actions';
+import { getWithdrawalFormByRedemptionId } from '@/app/_lib/withdrawal-form-actions';
 
 import RedemptionViewModal from './RedemptionViewModal';
 import RedemptionProcessModal from './RedemptionProcessModal';
@@ -42,11 +43,17 @@ export default async function RedemptionsPage({ searchParams }) {
   let approvedRedemption = null;
   let investmentLedger = [];
   let rejectionPolicies = [];
+  let withdrawalForm = null;
 
   // Data Fetching Logic for active modal
   if (viewId || processId || approvedId) {
     const targetId = viewId || processId || approvedId;
-    const red = await getRedemptionById(targetId);
+    const [red, form] = await Promise.all([
+      getRedemptionById(targetId),
+      getWithdrawalFormByRedemptionId(targetId),
+    ]);
+
+    withdrawalForm = form;
 
     if (red?.investment_id) {
       investmentLedger = await getInvestmentLedger(red.investment_id);
@@ -72,6 +79,7 @@ export default async function RedemptionsPage({ searchParams }) {
         <RedemptionViewModal
           redemption={viewedRedemption}
           ledger={investmentLedger}
+          withdrawalForm={withdrawalForm}
         />
       )}
       {processedRedemption && (
@@ -79,6 +87,7 @@ export default async function RedemptionsPage({ searchParams }) {
           redemption={processedRedemption}
           ledger={investmentLedger}
           rejectionPolicies={rejectionPolicies}
+          withdrawalForm={withdrawalForm}
         />
       )}
       {approvedRedemption && (
@@ -142,99 +151,121 @@ export default async function RedemptionsPage({ searchParams }) {
       />
 
       {/* --- MOBILE CARD VIEW --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
-        {redemptions.map((red) => (
-          <div
-            key={red.id}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col space-y-4"
-          >
-            <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-              <span className="text-xs font-mono text-slate-400 font-bold">
-                #{String(red.id).slice(0, 8)}
-              </span>
-              <div className="flex flex-col items-end">
-                <span className="text-sm font-black text-slate-900">
-                  {formatCurrency(red.amount)}
+      <div className="block lg:hidden space-y-4">
+        {redemptions.map((red) => {
+          const isLandProject =
+            red.investments?.opportunities?.name?.toLowerCase().includes('usa land') ||
+            false;
+          const form = Array.isArray(red.member_withdrawal_forms)
+            ? red.member_withdrawal_forms[0]
+            : red.member_withdrawal_forms;
+          const isWorkflowPending =
+            isLandProject &&
+            (!form || form.status !== 'approved' || !form.part6_admin?.isCompleted);
+
+          return (
+            <div
+              key={red.id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col space-y-4"
+            >
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <span className="text-xs font-mono text-slate-400 font-bold">
+                  #{String(red.id).slice(0, 8)}
                 </span>
-                {Number(red.already_redeemed_so_far || 0) > 0 && (
-                  <span className="text-xs text-slate-400 font-bold mt-0.5">
-                    Paid: {formatCurrency(red.already_redeemed_so_far)}
+                <div className="flex flex-col items-end">
+                  <span className="text-sm font-black text-slate-900">
+                    {formatCurrency(red.amount)}
                   </span>
+                  {Number(red.already_redeemed_so_far || 0) > 0 && (
+                    <span className="text-xs text-slate-400 font-bold mt-0.5">
+                      Paid: {formatCurrency(red.already_redeemed_so_far)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-full">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                  Opportunity
+                </p>
+                <div className="flex flex-col gap-0.5">
+                  {/* NEW: Opportunity Name */}
+                  <p className="text-sm font-bold text-slate-900 truncate">
+                    {red.investments?.opportunities?.name ||
+                      'Unknown Opportunity'}
+                  </p>
+                  <Link
+                    href={`/admin/investments?view=${red.investment_id}`}
+                    className="text-xs font-medium text-blue-600 hover:underline"
+                  >
+                    Inv #{red.investment_id}
+                  </Link>
+                </div>
+              </div>
+
+              <div className="w-full">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                  Shareholder
+                </p>
+                <p className="text-sm font-medium text-slate-700">
+                  {red.shareholders?.fullName || 'Unknown Shareholder'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 pt-2">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                    Status
+                  </p>
+                  <div className="flex flex-col gap-1 items-start">
+                    <StatusBadge status={red.status} />
+                    {red.status === 'rejected' &&
+                      red.redemption_rejection_policies && (
+                        <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                          Reason: {red.redemption_rejection_policies.code}
+                        </span>
+                      )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-4 mt-auto border-t border-slate-50">
+                <Link
+                  href={`/admin/redemptions?view=${red.id}&page=${page}`}
+                  className="px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap"
+                >
+                  View Details
+                </Link>
+                {red.status === 'pending' && (
+                  isWorkflowPending ? (
+                    <Link
+                      href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
+                      className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
+                      title="Land Project workflow is pending approval"
+                    >
+                      PENDING
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
+                    >
+                      Process Request
+                    </Link>
+                  )
+                )}
+                {red.status === 'approved' && Number(red.already_redeemed_so_far || 0) < Number(red.amount || 0) && (
+                  <Link
+                    href={`/admin/redemptions?approved=${red.id}&page=${page}`}
+                    className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
+                  >
+                    Process Payout
+                  </Link>
                 )}
               </div>
             </div>
-
-            <div className="w-full">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
-                Opportunity
-              </p>
-              <div className="flex flex-col gap-0.5">
-                {/* NEW: Opportunity Name */}
-                <p className="text-sm font-bold text-slate-900 truncate">
-                  {red.investments?.opportunities?.name ||
-                    'Unknown Opportunity'}
-                </p>
-                <Link
-                  href={`/admin/investments?view=${red.investment_id}`}
-                  className="text-xs font-medium text-blue-600 hover:underline"
-                >
-                  Inv #{red.investment_id}
-                </Link>
-              </div>
-            </div>
-
-            <div className="w-full">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
-                Shareholder
-              </p>
-              <p className="text-sm font-medium text-slate-700">
-                {red.shareholders?.fullName || 'Unknown Shareholder'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 pt-2">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
-                  Status
-                </p>
-                <div className="flex flex-col gap-1 items-start">
-                  <StatusBadge status={red.status} />
-                  {red.status === 'rejected' &&
-                    red.redemption_rejection_policies && (
-                      <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
-                        Reason: {red.redemption_rejection_policies.code}
-                      </span>
-                    )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 pt-4 mt-auto border-t border-slate-50">
-              <Link
-                href={`/admin/redemptions?view=${red.id}&page=${page}`}
-                className="px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap"
-              >
-                View Details
-              </Link>
-              {red.status === 'pending' && (
-                <Link
-                  href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
-                >
-                  Process Request
-                </Link>
-              )}
-              {red.status === 'approved' && Number(red.already_redeemed_so_far || 0) < Number(red.amount || 0) && (
-                <Link
-                  href={`/admin/redemptions?approved=${red.id}&page=${page}`}
-                  className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap shadow-md active:scale-95 transition-all"
-                >
-                  Process Payout
-                </Link>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* --- DESKTOP TABLE VIEW --- */}
@@ -267,11 +298,22 @@ export default async function RedemptionsPage({ searchParams }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {redemptions.map((red) => (
-              <tr
-                key={red.id}
-                className="hover:bg-blue-50/30 transition-colors group"
-              >
+            {redemptions.map((red) => {
+              const isLandProject =
+                red.investments?.opportunities?.name?.toLowerCase().includes('usa land') ||
+                false;
+              const form = Array.isArray(red.member_withdrawal_forms)
+                ? red.member_withdrawal_forms[0]
+                : red.member_withdrawal_forms;
+              const isWorkflowPending =
+                isLandProject &&
+                (!form || form.status !== 'approved' || !form.part6_admin?.isCompleted);
+
+              return (
+                <tr
+                  key={red.id}
+                  className="hover:bg-blue-50/30 transition-colors group"
+                >
                 <td className="px-4 py-4 font-mono text-xs text-slate-400 font-bold truncate">
                   #{String(red.id).slice(0, 8)}
                 </td>
@@ -285,12 +327,19 @@ export default async function RedemptionsPage({ searchParams }) {
                       {red.investments?.opportunities?.name ||
                         'Unknown Opportunity'}
                     </span>
-                    <Link
-                      href={`/admin/investments?view=${red.investment_id}`}
-                      className="text-xs text-blue-600 font-medium hover:underline"
-                    >
-                      Inv #{red.investment_id}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        href={`/admin/investments?view=${red.investment_id}`}
+                        className="text-xs text-blue-600 font-medium hover:underline"
+                      >
+                        Inv #{red.investment_id}
+                      </Link>
+                      {red.investments?.opportunities?.name?.toLowerCase().includes('usa land') && (
+                        <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                          USA Land Form
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-4 font-bold text-slate-900 truncate">
@@ -308,6 +357,11 @@ export default async function RedemptionsPage({ searchParams }) {
                       <StatusIndicator status={red.status} />
                       <StatusBadge status={red.status} />
                     </div>
+                    {red.investments?.opportunities?.name?.toLowerCase().includes('usa land') && red.status === 'pending' && (
+                      <span className="text-[10px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded w-fit">
+                        Form Workflow Active
+                      </span>
+                    )}
                     {red.status === 'rejected' &&
                       red.redemption_rejection_policies && (
                         <div className="text-xs font-bold text-red-500 mt-1 truncate pr-2">
@@ -328,12 +382,22 @@ export default async function RedemptionsPage({ searchParams }) {
                     {red.status === 'pending' && (
                       <>
                         <span className="text-slate-200">|</span>
-                        <Link
-                          href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
-                          className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-black uppercase shadow-sm"
-                        >
-                          Process
-                        </Link>
+                        {isWorkflowPending ? (
+                          <Link
+                            href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
+                            className="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs font-black uppercase tracking-wider shadow-sm transition-all"
+                            title="Land Project workflow is pending approval"
+                          >
+                            PENDING
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/admin/redemptions?redemption=${red.id}&page=${page}`}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-black uppercase shadow-sm"
+                          >
+                            Process
+                          </Link>
+                        )}
                       </>
                     )}
                     {red.status === 'approved' && Number(red.already_redeemed_so_far || 0) < Number(red.amount || 0) && (
@@ -350,7 +414,8 @@ export default async function RedemptionsPage({ searchParams }) {
                   </div>
                 </td>
               </tr>
-            ))}
+            );
+          })}
           </tbody>
         </table>
       </div>

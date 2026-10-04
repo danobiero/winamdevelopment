@@ -283,22 +283,24 @@ export default function PaymentForm({ paymentMethod, user }) {
             <button
               type="button"
               onClick={() => setIsLedgerModalOpen(true)}
-              className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer shrink-0 group"
+              className="w-full flex items-center justify-between gap-2.5 px-3.5 py-3 bg-[#F37F26] hover:bg-[#E06E15] active:bg-[#C95F0E] text-white border border-[#E06E15] rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.99] cursor-pointer shrink-0 group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 ring-1 ring-purple-200 dark:ring-purple-800 shrink-0">
-                  <ReceiptPercentIcon className="h-4 w-4" />
+                <div className="p-2 rounded-xl bg-white/20 text-white ring-1 ring-white/30 shrink-0 shadow-inner">
+                  <ReceiptPercentIcon className="h-5 w-5" />
                 </div>
                 <div className="text-left min-w-0">
-                  <span className="text-xs font-black text-slate-900 dark:text-white truncate block">
+                  <span className="text-xs sm:text-sm font-black text-white truncate block tracking-wide">
                     Transaction Ledger & Dividends
                   </span>
-                  <span className="text-xs text-slate-400 font-medium truncate block">
+                  <span className="text-[11px] sm:text-xs text-orange-100 font-medium truncate block">
                     View payouts, capital investments & statements
                   </span>
                 </div>
               </div>
-              <ArrowTopRightOnSquareIcon className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+              <div className="p-1.5 rounded-lg bg-white/15 group-hover:bg-white/25 transition-colors shrink-0">
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
             </button>
 
             {/* STEP 1: PAYMENT METHOD TILES */}

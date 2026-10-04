@@ -81,10 +81,34 @@ export async function getInvestmentById(id) {
       return status === 'pending'; // Checks for pending redemptions
     }) ?? null;
 
+  // Fetch all other investments for this shareholder
+  let otherInvestments = [];
+  if (data.shareholder_id) {
+    const { data: others } = await supabase
+      .from('investments')
+      .select(`
+        id,
+        opportunity_id,
+        amount_invested,
+        total_committed,
+        status,
+        start_date,
+        end_date,
+        created_at,
+        opportunities(id, name, type)
+      `)
+      .eq('shareholder_id', data.shareholder_id)
+      .neq('id', data.id)
+      .order('created_at', { ascending: false });
+
+    otherInvestments = others || [];
+  }
+
   return {
     ...data,
     activeRedemption, // 👈 derived, reliable
     hasActiveRedemption: Boolean(activeRedemption),
+    otherInvestments,
   };
 }
 
@@ -99,8 +123,8 @@ export async function getInvestmentLedger(investmentId) {
 
     const supabase = createAdminSupabaseClient();
 
-    // Query the new SQL View directly
-    const { data, error } = await supabase
+    // Query the SQL View
+    const { data: viewData, error } = await supabase
       .from('investment_ledger')
       .select('*')
       .eq('investment_id', investmentId)
@@ -111,7 +135,61 @@ export async function getInvestmentLedger(investmentId) {
       throw new Error('Failed to load investment ledger');
     }
 
-    return data ?? [];
+    const baseEntries = viewData || [];
+
+    // Also fetch any completed or approved redemptions for this investment
+    const { data: redRequests } = await supabase
+      .from('redemption_requests')
+      .select('id, amount, already_redeemed_so_far, status, processed_at, created_at')
+      .eq('investment_id', investmentId)
+      .in('status', ['approved', 'completed']);
+
+    const redReqIds = (redRequests || []).map((r) => r.id);
+    let redemptionEntries = [];
+
+    if (redReqIds.length > 0) {
+      const { data: redPayouts } = await supabase
+        .from('redemptions')
+        .select('*')
+        .in('redemption_request_id', redReqIds)
+        .eq('status', 'succeeded');
+
+      if (redPayouts && redPayouts.length > 0) {
+        redemptionEntries = redPayouts.map((p) => ({
+          entry_id: `RED-${p.id}`,
+          transaction_date: p.created_at || p.updated_at,
+          investment_id: investmentId,
+          amount: -Math.abs(Number(p.amount || 0)),
+          entry_type: 'redemption',
+          status: 'succeeded',
+          currency: p.currency || 'USD',
+        }));
+      }
+    }
+
+    // Merge payment entries from view and redemption entries without duplicates
+    const combined = [...baseEntries];
+    redemptionEntries.forEach((re) => {
+      const exists = combined.some(
+        (e) => e.entry_type === 'redemption' && (e.entry_id === re.entry_id || Math.abs(e.amount) === Math.abs(re.amount))
+      );
+      if (!exists) {
+        combined.push(re);
+      }
+    });
+
+    // Sort by transaction_date ascending and compute running balance
+    combined.sort((a, b) => new Date(a.transaction_date) - new Date(b.transaction_date));
+    let running = 0;
+    const finalLedger = combined.map((entry) => {
+      running += Number(entry.amount || 0);
+      return {
+        ...entry,
+        running_balance: running,
+      };
+    });
+
+    return finalLedger;
   } catch (err) {
     console.error('getInvestmentLedger failed:', err);
     throw err;
@@ -274,10 +352,16 @@ export async function beginRedemptionAdmin(formData) {
 
   const supabase = createAdminSupabaseClient();
 
-  // 1️⃣ Fetch current investment to get shareholder_id and amount_invested
+  // 1️⃣ Fetch current investment to get shareholder_id, opportunity_id, amount_invested, status, and opportunity info
   const { data: investment, error: fetchError } = await supabase
     .from('investments')
-    .select('shareholder_id, amount_invested')
+    .select(`
+      shareholder_id,
+      opportunity_id,
+      amount_invested,
+      status,
+      opportunities(id, name, type)
+    `)
     .eq('id', investmentId)
     .single();
 
@@ -286,8 +370,56 @@ export async function beginRedemptionAdmin(formData) {
     throw new Error('Failed to fetch investment details');
   }
 
+  // 1.2️⃣ Idempotency / Double-submit Guard: Check if investment already exited or in redemption
+  const currentStatus = (investment.status || '').toLowerCase().trim();
+  if (currentStatus === 'exited' || currentStatus === 'redemption') {
+    console.warn(`beginRedemptionAdmin: Blocked duplicate attempt. Investment #${investmentId} is already '${currentStatus}'.`);
+    throw new Error('Redemption has already been initiated for this investment.');
+  }
+
+  // 1.3️⃣ Idempotency Guard: Check if an active/pending redemption request already exists for this investment
+  const { data: existingPendingRequests } = await supabase
+    .from('redemption_requests')
+    .select('id, status')
+    .eq('investment_id', investmentId)
+    .in('status', ['pending', 'approved', 'processing']);
+
+  if (existingPendingRequests && existingPendingRequests.length > 0) {
+    console.warn(
+      `beginRedemptionAdmin: Blocked duplicate attempt. An active redemption request (#${existingPendingRequests[0].id}) already exists for investment #${investmentId}.`
+    );
+    throw new Error(
+      `A redemption request is already pending or being processed for this investment (Request #${existingPendingRequests[0].id}).`
+    );
+  }
+
+  // 1.5️⃣ Server guard: If Opportunity type is 'core', disallow redemption if shareholder participates in other opportunity types
+  const oppType = (investment.opportunities?.type || '').toLowerCase().trim();
+  if (oppType === 'core') {
+    const { data: otherInvs } = await supabase
+      .from('investments')
+      .select('id, opportunity_id, amount_invested, status, opportunities(name, type)')
+      .eq('shareholder_id', investment.shareholder_id)
+      .neq('id', investmentId)
+      .neq('status', 'exited');
+
+    const activeOtherInvs = (otherInvs || []).filter((inv) => {
+      const t = (inv.opportunities?.type || '').toLowerCase().trim();
+      return t !== 'core' && t !== 'fees' && Number(inv.amount_invested || 0) > 0;
+    });
+
+    if (activeOtherInvs.length > 0) {
+      const names = activeOtherInvs
+        .map((i) => i.opportunities?.name || `Opportunity #${i.opportunity_id}`)
+        .join(', ');
+      throw new Error(
+        `Redemption not allowed: Shareholder participates in other opportunity types (${names}).`
+      );
+    }
+  }
+
   // 2️⃣ Insert new pending request into redemption_requests
-  const { error: redemptionError } = await supabase
+  const { data: redemption, error: redemptionError } = await supabase
     .from('redemption_requests')
     .insert({
       investment_id: investmentId,
@@ -298,11 +430,28 @@ export async function beginRedemptionAdmin(formData) {
       reason_code: 'ADMIN_BEGIN_REDEMPTION',
       admin_notes: 'Redemption process initiated by Administrator',
       updated_at: new Date().toISOString(),
-    });
+    })
+    .select('id')
+    .single();
 
-  if (redemptionError) {
+  if (redemptionError || !redemption) {
     console.error('Error inserting redemption request:', redemptionError);
     throw new Error('Failed to create redemption request record');
+  }
+
+  // 2.5️⃣ Initialize Member Withdrawal Form if Opportunity is USA Land Project
+  try {
+    const { initializeWithdrawalFormForRedemption } = await import(
+      '@/app/_lib/withdrawal-form-actions'
+    );
+    await initializeWithdrawalFormForRedemption({
+      redemptionRequestId: redemption.id,
+      investmentId: investmentId,
+      shareholderId: investment.shareholder_id,
+      opportunityId: investment.opportunity_id,
+    });
+  } catch (wfErr) {
+    console.warn('Withdrawal form initialization warning:', wfErr.message);
   }
 
   // 3️⃣ Update investment status to 'exited' and record exited_at
@@ -321,5 +470,7 @@ export async function beginRedemptionAdmin(formData) {
   }
 
   revalidatePath('/admin/investments');
+  revalidatePath('/admin/redemptions');
+  revalidatePath('/account');
   revalidatePath('/account/investments');
 }

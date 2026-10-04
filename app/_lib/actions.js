@@ -443,6 +443,9 @@ export async function createLegacyShareholder(prevState, formData) {
               .update({
                 amount_invested: amount,
                 total_committed: amount,
+                status: 'active',
+                exited_at: null,
+                current_value: amount,
                 updated_at: new Date().toISOString(),
               })
               .eq('id', existingInv.id);
@@ -610,6 +613,23 @@ export async function syncMissingLegacyInvestments() {
         const existing = (existingInvs || []).find(
           (i) => i.shareholder_id === sh.id && Number(i.opportunity_id) === oppId
         );
+
+        if (existing?.status === 'exited') {
+          // Re-activate if legacy record specifies an active allocation
+          await adminClient
+            .from('investments')
+            .update({
+              amount_invested: amount,
+              total_committed: Math.max(Number(existing.total_committed || 0), amount),
+              status: 'active',
+              exited_at: null,
+              current_value: amount,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+          syncedCount++;
+          continue;
+        }
 
         if (!existing) {
           const { error: insertErr } = await adminClient.from('investments').insert({
@@ -3512,6 +3532,12 @@ export async function createOpportunityValuation(prevState, formData) {
     created_by_admin_id: session.user.adminId
   });
   if (error) return { error: true, message: error.message };
+
+  await adminClient
+    .from('opportunities')
+    .update({ total_value: Number(totalAssetValue) })
+    .eq('id', Number(opportunityId));
+
   revalidatePath('/admin/finance-reports/valuations');
   return { success: true, message: 'Valuation saved!' };
 }
@@ -3531,25 +3557,43 @@ export async function getShareholderTransactionsLedgerAction() {
   const adminClient = createAdminSupabaseClient();
 
   try {
-    const { data: payments, error: payError } = await adminClient
-      .from('payments')
-      .select(`
-        *,
-        opportunities (
-          id,
-          name,
-          type
-        )
-      `)
-      .eq('shareholder_id', shareholderId)
-      .order('created_at', { ascending: false });
+    const [payRes, redRes] = await Promise.all([
+      adminClient
+        .from('payments')
+        .select(`
+          *,
+          opportunities (
+            id,
+            name,
+            type
+          )
+        `)
+        .eq('shareholder_id', shareholderId)
+        .order('created_at', { ascending: false }),
+      adminClient
+        .from('redemptions')
+        .select('*')
+        .eq('shareholder_id', shareholderId)
+        .order('created_at', { ascending: false }),
+    ]);
 
-    if (payError) {
-      console.error('getShareholderTransactionsLedgerAction error:', payError);
-      return [];
+    const payments = payRes.data || [];
+    const redemptionsList = redRes.data || [];
+
+    // Also load opportunities map if needed for redemptions
+    const oppIds = [...new Set(redemptionsList.map((r) => r.opportunity_id).filter(Boolean))];
+    let oppMap = {};
+    if (oppIds.length > 0) {
+      const { data: opps } = await adminClient
+        .from('opportunities')
+        .select('id, name, type')
+        .in('id', oppIds);
+      (opps || []).forEach((o) => {
+        oppMap[o.id] = o;
+      });
     }
 
-    return (payments || []).map((p) => {
+    const paymentRows = (payments || []).map((p) => {
       const meta = p.metadata || {};
       const method = (p.payment_method_type || meta.mode || meta.payment_method || 'manual').toUpperCase();
       const isDividend = p.type === 'dividend' || p.type === 'dividend_payout' || meta.is_dividend === true;
@@ -3574,6 +3618,7 @@ export async function getShareholderTransactionsLedgerAction() {
         opportunity_type: p.opportunities?.type || 'Equity',
         type: isDividend ? 'dividend' : isFee ? 'fee' : 'investment',
         is_dividend: isDividend,
+        is_redemption: false,
         ledger_category: method,
         amount: Number(p.amount || 0),
         currency: p.currency || 'USD',
@@ -3589,6 +3634,42 @@ export async function getShareholderTransactionsLedgerAction() {
         metadata: meta,
       };
     });
+
+    const redemptionRows = (redemptionsList || []).map((r) => {
+      const meta = r.metadata || {};
+      const opp = oppMap[r.opportunity_id];
+      const method = (meta.payout_rail || (r.stripe_refund_id ? 'STRIPE' : 'MANUAL')).toUpperCase();
+      const oppName = opp?.name || (r.opportunity_id ? `Opportunity #${r.opportunity_id}` : 'General Portfolio');
+
+      return {
+        transaction_id: `red-${r.id}`,
+        transaction_date: r.created_at || r.updated_at,
+        line_item_name: r.description || `Redemption Payout - ${oppName}`,
+        opportunity_name: oppName,
+        opportunity_type: opp?.type || 'Equity',
+        type: 'redemption',
+        is_dividend: false,
+        is_redemption: true,
+        ledger_category: method,
+        amount: -Math.abs(Number(r.amount || 0)),
+        currency: r.currency || 'USD',
+        status: (r.status || 'succeeded').toLowerCase(),
+        receipt_url: null,
+        reference: meta.reference_number || r.stripe_refund_id || (r.redemption_request_id ? `Req #${r.redemption_request_id}` : '—'),
+        payout_details: {
+          account_name: meta.recipient_name,
+          account_handle: meta.recipient_handle,
+          payout_rail: meta.payout_rail || method,
+        },
+        metadata: meta,
+      };
+    });
+
+    const combined = [...paymentRows, ...redemptionRows].sort(
+      (a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)
+    );
+
+    return combined;
   } catch (err) {
     console.error('getShareholderTransactionsLedgerAction exception:', err);
     return [];

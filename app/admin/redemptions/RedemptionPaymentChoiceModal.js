@@ -45,6 +45,31 @@ export default function RedemptionPaymentChoiceModal({
     return Number(redemption.investments?.amount_invested ?? requestedTotal);
   }, [ledger, redemption, requestedTotal]);
 
+  // 2.5 Shareholder Value of the Opportunity
+  const shareholderOpportunityValue = useMemo(() => {
+    const rawVal = redemption.investments?.current_value;
+    if (rawVal != null && Number(rawVal) > 0) {
+      return Number(rawVal);
+    }
+    if (ledgerBalance > 0) {
+      return ledgerBalance;
+    }
+    const invAmount = Number(redemption.investments?.amount_invested || 0);
+    if (invAmount > 0) {
+      return invAmount;
+    }
+    return requestedTotal;
+  }, [redemption, ledgerBalance, requestedTotal]);
+
+  // Max Allowed Payout (capped by remaining requested goal AND the shareholder value of the opportunity)
+  const maxPayoutAllowed = Math.max(
+    0,
+    Math.min(
+      remainingGoal,
+      shareholderOpportunityValue > 0 ? shareholderOpportunityValue : remainingGoal
+    )
+  );
+
   // 3. Filter Payments for Stripe vs Offline
   const sortedStripePayments = useMemo(() => {
     if (!payments) return [];
@@ -112,10 +137,54 @@ export default function RedemptionPaymentChoiceModal({
   );
   const [referenceNumber, setReferenceNumber] = useState('');
   const [manualAmount, setManualAmount] = useState(
-    remainingGoal > 0 ? remainingGoal.toString() : '0'
+    maxPayoutAllowed > 0 ? maxPayoutAllowed.toString() : '0'
+  );
+  const [displayAmount, setDisplayAmount] = useState(
+    maxPayoutAllowed > 0 ? FormatCurrency(maxPayoutAllowed, currency) : ''
   );
   const [manualNotes, setManualNotes] = useState('');
   const [selectedOfflinePaymentId, setSelectedOfflinePaymentId] = useState('');
+
+  // Currency formatted input handlers
+  const handleAmountChange = (e) => {
+    const rawVal = e.target.value;
+    const cleanDigits = rawVal.replace(/[^0-9.]/g, '');
+
+    if (!cleanDigits) {
+      setDisplayAmount('');
+      setManualAmount('0');
+      return;
+    }
+
+    const parts = cleanDigits.split('.');
+    if (parts.length > 2) return;
+
+    const numeric = parseFloat(cleanDigits) || 0;
+    setManualAmount(numeric.toString());
+
+    const formattedInteger = parts[0] ? Number(parts[0]).toLocaleString('en-US') : '0';
+    if (parts.length > 1) {
+      const dec = parts[1].slice(0, 2);
+      setDisplayAmount(`$${formattedInteger}.${dec}`);
+    } else if (rawVal.endsWith('.')) {
+      setDisplayAmount(`$${formattedInteger}.`);
+    } else {
+      setDisplayAmount(`$${formattedInteger}`);
+    }
+  };
+
+  const handleAmountBlur = () => {
+    const numeric = parseFloat(manualAmount) || 0;
+    if (numeric > 0) {
+      setDisplayAmount(FormatCurrency(numeric, currency));
+    } else {
+      setDisplayAmount('');
+    }
+  };
+
+  const handleAmountFocus = (e) => {
+    e.target.select();
+  };
 
   // Stripe Form States
   const [selectedStripeId, setSelectedStripeId] = useState(
@@ -132,7 +201,12 @@ export default function RedemptionPaymentChoiceModal({
 
   const stripeRefundableNow = Math.max(
     0,
-    Math.min(remainingGoal, stripePaymentCapacity, ledgerBalance > 0 ? ledgerBalance : remainingGoal)
+    Math.min(
+      remainingGoal,
+      stripePaymentCapacity,
+      shareholderOpportunityValue > 0 ? shareholderOpportunityValue : remainingGoal,
+      ledgerBalance > 0 ? ledgerBalance : remainingGoal
+    )
   );
 
   const [successData, setSuccessData] = useState(null);
@@ -149,8 +223,12 @@ export default function RedemptionPaymentChoiceModal({
       setError('Please specify a valid redemption amount greater than $0.');
       return;
     }
+    if (numAmount > shareholderOpportunityValue) {
+      setError(`Payout amount cannot exceed the shareholder value of the opportunity (${FormatCurrency(shareholderOpportunityValue, currency)}).`);
+      return;
+    }
     if (numAmount > remainingGoal) {
-      setError(`Amount cannot exceed the remaining requested balance of ${FormatCurrency(remainingGoal, currency)}.`);
+      setError(`Payout amount cannot exceed the remaining requested balance of ${FormatCurrency(remainingGoal, currency)}.`);
       return;
     }
 
@@ -195,6 +273,10 @@ export default function RedemptionPaymentChoiceModal({
     setError(null);
     if (!selectedStripeId || stripeRefundableNow <= 0) {
       setError('No eligible Stripe payment selected or refund balance is zero.');
+      return;
+    }
+    if (stripeRefundableNow > shareholderOpportunityValue) {
+      setError(`Stripe refund amount cannot exceed the shareholder value of the opportunity (${FormatCurrency(shareholderOpportunityValue, currency)}).`);
       return;
     }
 
@@ -339,13 +421,13 @@ export default function RedemptionPaymentChoiceModal({
               color="text-emerald-600"
             />
             <StatCard
-              label="Remaining"
+              label="Remaining Goal"
               value={FormatCurrency(remainingGoal, currency)}
               color="text-rose-600"
             />
             <StatCard
-              label="Ledger Balance"
-              value={FormatCurrency(ledgerBalance, currency)}
+              label="Opportunity Value"
+              value={FormatCurrency(shareholderOpportunityValue, currency)}
               color="text-blue-600"
             />
           </div>
@@ -356,6 +438,18 @@ export default function RedemptionPaymentChoiceModal({
               <span className="text-slate-500 font-medium">Shareholder:</span>
               <span className="font-bold text-slate-900 text-sm">
                 {redemption.shareholders?.fullName || 'Unknown Shareholder'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Shareholder Opportunity Value:</span>
+              <span className="font-bold text-blue-700 font-mono text-sm">
+                {FormatCurrency(shareholderOpportunityValue, currency)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 font-medium">Requested Redemption:</span>
+              <span className="font-bold text-slate-800 font-mono text-sm">
+                {FormatCurrency(requestedTotal, currency)}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -557,22 +651,62 @@ export default function RedemptionPaymentChoiceModal({
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">
-                    Payout Amount ($ USD) *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    max={remainingGoal}
-                    required
-                    value={manualAmount}
-                    onChange={(e) => setManualAmount(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-900"
-                  />
-                  <span className="text-xs text-slate-400 mt-1 block">
-                    Max remaining: {FormatCurrency(remainingGoal, currency)}
-                  </span>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">
+                      Payout Amount *
+                    </label>
+                    <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                      {FormatCurrency(Number(manualAmount || 0), currency)}
+                    </span>
+                  </div>
+                  <div className="relative rounded-xl shadow-2xs">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      required
+                      value={displayAmount}
+                      onChange={handleAmountChange}
+                      onBlur={handleAmountBlur}
+                      onFocus={handleAmountFocus}
+                      placeholder="$0.00"
+                      className="w-full border border-slate-200 rounded-xl py-3 px-4 pr-16 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-900 font-mono tracking-tight"
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
+                        {currency}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mt-1.5 gap-1">
+                    <span className="text-slate-400">
+                      Max allowable payout: <strong className="text-slate-700 font-mono">{FormatCurrency(maxPayoutAllowed, currency)}</strong>
+                      {shareholderOpportunityValue < remainingGoal && (
+                        <span className="text-rose-600 font-semibold ml-1">
+                          (Capped by Opp Value: {FormatCurrency(shareholderOpportunityValue, currency)})
+                        </span>
+                      )}
+                    </span>
+                    {Number(manualAmount) !== maxPayoutAllowed && maxPayoutAllowed > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setManualAmount(maxPayoutAllowed.toString());
+                          setDisplayAmount(FormatCurrency(maxPayoutAllowed, currency));
+                        }}
+                        className="text-blue-600 hover:text-blue-800 font-semibold underline text-xs cursor-pointer text-left sm:text-right"
+                      >
+                        Set to max {FormatCurrency(maxPayoutAllowed, currency)}
+                      </button>
+                    )}
+                  </div>
+                  {Number(manualAmount) > shareholderOpportunityValue && (
+                    <div className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-2.5 mt-2 flex items-center gap-1.5">
+                      <span>⚠️</span>
+                      <span>
+                        Payout amount ({FormatCurrency(Number(manualAmount), currency)}) cannot exceed the shareholder value of the opportunity ({FormatCurrency(shareholderOpportunityValue, currency)}).
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -616,7 +750,12 @@ export default function RedemptionPaymentChoiceModal({
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isPending || Number(manualAmount) <= 0}
+                  disabled={
+                    isPending ||
+                    Number(manualAmount) <= 0 ||
+                    Number(manualAmount) > shareholderOpportunityValue ||
+                    Number(manualAmount) > remainingGoal
+                  }
                   className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                 >
                   {isPending ? (

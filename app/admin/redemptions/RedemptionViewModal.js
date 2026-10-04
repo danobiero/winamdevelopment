@@ -1,6 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MemberWithdrawalModal from '@/app/_components/MemberWithdrawalModal';
+import {
+  DocumentTextIcon,
+  CheckCircleIcon,
+  ClockIcon,
+} from '@heroicons/react/24/outline';
 
 const formatCurrency = (value, currency = 'USD') =>
   new Intl.NumberFormat('en-US', {
@@ -8,8 +15,13 @@ const formatCurrency = (value, currency = 'USD') =>
     currency: currency,
   }).format(value ?? 0);
 
-export default function RedemptionViewModal({ redemption, ledger = [] }) {
+export default function RedemptionViewModal({
+  redemption,
+  ledger = [],
+  withdrawalForm = null,
+}) {
   const router = useRouter();
+  const [showFullDoc, setShowFullDoc] = useState(false);
 
   // ADDED: Guard clause to prevent crashes if data is loading
   if (!redemption) return null;
@@ -19,10 +31,11 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={handleClose}
-    >
+    <>
+      <div
+        className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={handleClose}
+      >
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
@@ -139,6 +152,47 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
                 {redemption.admin_notes || 'No notes provided.'}
               </div>
             </div>
+
+            {/* USA Land Project Withdrawal Form Card */}
+            {withdrawalForm && (
+              <div className="mt-3 p-3.5 bg-blue-50/50 rounded-xl border border-blue-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <DocumentTextIcon className="h-4 w-4 text-blue-600" />
+                    <p className="text-xs font-bold text-slate-900">
+                      Withdrawal Form (USA Land Project)
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                    {withdrawalForm.daysRemaining ?? 30} Days Left
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="bg-white p-2 rounded-lg border border-slate-100">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Page 1 (Member)</span>
+                    <span className={`font-bold ${withdrawalForm.page1_data?.submittedAt ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {withdrawalForm.page1_data?.submittedAt ? '✓ Submitted' : '⏳ Pending'}
+                    </span>
+                  </div>
+
+                  <div className="bg-white p-2 rounded-lg border border-slate-100">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Part 6 (Admin)</span>
+                    <span className={`font-bold ${withdrawalForm.part6_admin?.isCompleted ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {withdrawalForm.part6_admin?.isCompleted ? '✓ Completed' : 'Pending'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFullDoc(true)}
+                  className="w-full py-2 bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  View Full 2-Page Document
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Investment Ledger */}
@@ -234,12 +288,26 @@ export default function RedemptionViewModal({ redemption, ledger = [] }) {
         <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
           <button
             onClick={handleClose}
-            className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all"
+            className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all cursor-pointer"
           >
             CLOSE
           </button>
         </div>
       </div>
     </div>
+
+      {/* Full 2-Page Legal Document Modal Viewer */}
+      {showFullDoc && withdrawalForm && (
+        <MemberWithdrawalModal
+          form={withdrawalForm}
+          currentShareholderId={null}
+          isAdmin={true}
+          onClose={() => setShowFullDoc(false)}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
+      )}
+    </>
   );
 }

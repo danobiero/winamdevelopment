@@ -31,44 +31,50 @@ DECLARE
     v_investment RECORD;
     v_new_value NUMERIC;
 BEGIN
-    -- Step A: Calculate the total initial capital raised for the opportunity
+    -- Step A: Calculate the total initial capital raised for the opportunity (ACTIVE ONLY)
     SELECT COALESCE(SUM(amount_invested), 0)
     INTO v_total_capital
     FROM public.investments
-    WHERE opportunity_id = NEW.opportunity_id;
+    WHERE opportunity_id = NEW.opportunity_id
+      AND status = 'active';
 
-    -- Step B: Prevent division by zero if there are no investments yet
+    -- Step B: Prevent division by zero if there are no active investments yet
     IF v_total_capital > 0 THEN
         -- Step C: Loop through each investment for this opportunity
         FOR v_investment IN 
-            SELECT id, shareholder_id, amount_invested 
+            SELECT id, shareholder_id, amount_invested, status 
             FROM public.investments 
             WHERE opportunity_id = NEW.opportunity_id
         LOOP
-            -- Step D: Calculate the new proportional value for this specific user
-            v_new_value := (v_investment.amount_invested / v_total_capital) * NEW.total_asset_value;
+            IF v_investment.status = 'active' THEN
+                -- Step D: Calculate the new proportional value for active investors (rounded to cents)
+                v_new_value := ROUND((v_investment.amount_invested / v_total_capital) * NEW.total_asset_value, 2);
 
-            -- Step E: Insert a new historical record into the investment_valuations table
-            INSERT INTO public.investment_valuations (
-                investment_id, 
-                shareholder_id, 
-                opportunity_id, 
-                current_value, 
-                valuation_date
-            ) VALUES (
-                v_investment.id,
-                v_investment.shareholder_id,
-                NEW.opportunity_id,
-                v_new_value,
-                NEW.valuation_date
-            );
-            
-            -- Step F (Bonus): Update the `current_value` column on the main investments table 
-            -- so your frontend can just read `investment.current_value` without doing a JOIN
-            UPDATE public.investments 
-            SET current_value = v_new_value 
-            WHERE id = v_investment.id;
-            
+                -- Step E: Insert a new historical record into the investment_valuations table
+                INSERT INTO public.investment_valuations (
+                    investment_id, 
+                    shareholder_id, 
+                    opportunity_id, 
+                    current_value, 
+                    valuation_date
+                ) VALUES (
+                    v_investment.id,
+                    v_investment.shareholder_id,
+                    NEW.opportunity_id,
+                    v_new_value,
+                    NEW.valuation_date
+                );
+                
+                -- Step F: Update the `current_value` column on the main investments table
+                UPDATE public.investments 
+                SET current_value = v_new_value 
+                WHERE id = v_investment.id;
+            ELSE
+                -- Exited or cancelled investments have 0 current value
+                UPDATE public.investments 
+                SET current_value = 0 
+                WHERE id = v_investment.id;
+            END IF;
         END LOOP;
     END IF;
 

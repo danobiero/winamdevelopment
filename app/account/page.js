@@ -10,10 +10,25 @@ import { requestRedemption, getInvestmentValuations } from '@/app/_lib/actions';
 
 import Spinner from '../_components/Spinner';
 import PortfolioClientView from '../_components/PortfolioClientView';
+import WithdrawalBanner from '../_components/WithdrawalBanner';
+import { getActiveWithdrawalFormsForShareholder } from '@/app/_lib/withdrawal-form-actions';
+import { getMaintenanceStatus } from '@/app/_lib/maintenance-actions';
+import AccountMaintenanceView from '../_components/AccountMaintenanceView';
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user?.email) redirect('/login');
+
+  // Check system maintenance status
+  const maintenanceStatus = await getMaintenanceStatus();
+  if (maintenanceStatus.isMaintenanceActive) {
+    return (
+      <AccountMaintenanceView
+        config={maintenanceStatus.config}
+        shareholderName={session.user.name}
+      />
+    );
+  }
 
   // 1. Fetch membership status and the computed completion flag
   const membershipRecord = await getMemberStatusByEmail(session.user.email);
@@ -25,6 +40,11 @@ export default async function AccountPage() {
 
   // 3. ONLY fetch investments if they pass the gatekeeper
   const activeInvestments = await getInvestments(session.user.shareholderId);
+
+  // 4. Fetch any active withdrawal forms (USA Land Project)
+  const withdrawalForms = await getActiveWithdrawalFormsForShareholder(
+    session.user.shareholderId
+  );
 
   return (
     <div className="w-full h-full flex flex-col min-h-0">
@@ -43,6 +63,12 @@ export default async function AccountPage() {
           </span>
         </div>
       </header>
+ 
+      {/* USA Land Project Withdrawal Forms Notice */}
+      <WithdrawalBanner
+        forms={withdrawalForms}
+        shareholderId={session.user.shareholderId}
+      />
 
       <div className="flex-1 min-h-0 flex flex-col">
         <Suspense fallback={<Spinner />}>

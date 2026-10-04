@@ -433,12 +433,14 @@ export async function getCoreQuarterlyFinancials({
     if (invErr) console.error('Error fetching investments:', invErr);
     const allInvestments = investments || [];
 
-    // Group investments by opportunity_id to calculate shareholder invested sum
+    // Group investments by opportunity_id to calculate shareholder invested sum (active only)
     const investmentsByOpp = {};
     (allInvestments || []).forEach((inv) => {
-      const oppId = Number(inv.opportunity_id);
-      const amt = Number(inv.amount_invested ?? inv.total_committed ?? 0);
-      investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amt;
+      if (inv.status !== 'exited' && inv.status !== 'cancelled') {
+        const oppId = Number(inv.opportunity_id);
+        const amt = Number(inv.amount_invested ?? inv.total_committed ?? 0);
+        investmentsByOpp[oppId] = (investmentsByOpp[oppId] || 0) + amt;
+      }
     });
 
     // 6. Fetch Latest Valuations for All Opportunities up to period end
@@ -1684,7 +1686,7 @@ export async function getOpportunitiesWithValuations() {
         .order('created_at', { ascending: false }),
       supabase
         .from('investments')
-        .select('opportunity_id, amount_invested, total_committed'),
+        .select('opportunity_id, amount_invested, total_committed, status'),
     ]);
 
     const valMap = {};
@@ -1696,8 +1698,10 @@ export async function getOpportunitiesWithValuations() {
 
     const invMap = {};
     (invs || []).forEach((inv) => {
-      const oppId = Number(inv.opportunity_id);
-      invMap[oppId] = (invMap[oppId] || 0) + Number(inv.amount_invested ?? inv.total_committed ?? 0);
+      if (inv.status !== 'exited' && inv.status !== 'cancelled') {
+        const oppId = Number(inv.opportunity_id);
+        invMap[oppId] = (invMap[oppId] || 0) + Number(inv.amount_invested ?? inv.total_committed ?? 0);
+      }
     });
 
     return (opps || []).map((opp) => ({
