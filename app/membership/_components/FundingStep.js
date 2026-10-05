@@ -6,12 +6,15 @@ import {
   getCoreInvestmentProgress,
   createCheckoutSessionForInvestment,
 } from '@/app/_lib/actions';
+import InvestModal from '@/app/_components/InvestModal';
 
 export const dynamic = 'force-dynamic';
 
-export default function FundingStep({ session }) {
+export default function FundingStep({ session, membershipRecord, paymentMode = 'manual' }) {
   const [loadingAmount, setLoadingAmount] = useState(null);
   const [fundingData, setFundingData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -38,6 +41,20 @@ export default function FundingStep({ session }) {
   dynamicOptions.sort((a, b) => a - b);
 
   const handlePay = async (amount) => {
+    // If admin set payments to manual (Zelle / Cash App), open manual investment modal
+    if (paymentMode === 'manual') {
+      setSelectedOpportunity({
+        id: fundingData?.id || 9,
+        name: 'Core Portfolio Equity',
+        minimum_investment: 200,
+        total_value: goal,
+        remaining_capacity: remaining,
+        expected_return: 12,
+      });
+      setIsModalOpen(true);
+      return;
+    }
+
     try {
       setLoadingAmount(amount);
       const targetId = fundingData?.id;
@@ -181,6 +198,15 @@ export default function FundingStep({ session }) {
           Step 6 of 7
         </div>
       </div>
+
+      {isModalOpen && selectedOpportunity && (
+        <InvestModal
+          opportunity={selectedOpportunity}
+          user={session?.user}
+          initialPaymentMode={paymentMode}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

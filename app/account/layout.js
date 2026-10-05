@@ -3,8 +3,10 @@ import SideNavigation from '@/app/_components/SideNavigation.js';
 import { ThemeProvider } from '@/app/_lib/ThemeContext';
 import { auth } from '@/app/_lib/auth';
 import { getMaintenanceStatus } from '@/app/_lib/maintenance-actions';
+import { getShareholderPaymentMethod, getUserProfile } from '@/app/_lib/data-service';
 import AccountMaintenanceView from '@/app/_components/AccountMaintenanceView';
 import MaintenanceAdvanceNoticeModal from '@/app/_components/MaintenanceAdvanceNoticeModal';
+import IncompletePaymentAlertModal from '@/app/_components/IncompletePaymentAlertModal';
 
 export default async function Layout({ children }) {
   const session = await auth();
@@ -25,6 +27,29 @@ export default async function Layout({ children }) {
     );
   }
 
+  // Check if shareholder's payment/disbursement information is incomplete
+  let isPaymentIncomplete = false;
+  let paymentMethod = null;
+  let userProfile = null;
+
+  if (session?.user?.shareholderId) {
+    try {
+      [paymentMethod, userProfile] = await Promise.all([
+        getShareholderPaymentMethod(session.user.shareholderId),
+        getUserProfile().catch(() => null),
+      ]);
+
+      isPaymentIncomplete =
+        !paymentMethod ||
+        !paymentMethod.payment_type ||
+        paymentMethod.payment_type === 'none' ||
+        !paymentMethod.account_handle ||
+        !paymentMethod.account_name;
+    } catch (e) {
+      console.warn('Payment check warning in account layout:', e?.message);
+    }
+  }
+
   return (
     <ThemeProvider initialTheme={savedTheme}>
       {/* 8-Hour Advance Notice Popup for Shareholders */}
@@ -34,6 +59,13 @@ export default async function Layout({ children }) {
           hoursUntilStart={maintenanceStatus.hoursUntilStart}
         />
       )}
+
+      {/* Alert popup & modal for incomplete payment info (shows 5s after login) */}
+      <IncompletePaymentAlertModal
+        isIncomplete={isPaymentIncomplete}
+        user={userProfile || { fullName: session?.user?.name, email: session?.user?.email }}
+        initialPaymentMethod={paymentMethod}
+      />
 
       <div className="flex-1 flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 h-full overflow-hidden transition-colors duration-200">
         {/* SIDEBAR: DESKTOP */}

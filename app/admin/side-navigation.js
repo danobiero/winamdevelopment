@@ -18,6 +18,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserGroupIcon,
+  UsersIcon,
   ChevronDownIcon,
   ShieldCheckIcon,
   BriefcaseIcon,
@@ -26,6 +27,7 @@ import {
   ClipboardDocumentListIcon,
   ArrowsRightLeftIcon,
   WrenchScrewdriverIcon,
+  CircleStackIcon,
 } from '@heroicons/react/24/solid';
 
 export default function AdminSideNavigation({ supportCount = 0 }) {
@@ -39,6 +41,11 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
       colorClasses:
         'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm shadow-blue-500/25',
       items: [
+        {
+          name: 'Shareholders',
+          href: '/admin/shareholders',
+          icon: <UsersIcon className="h-5 w-5" />,
+        },
         {
           name: 'Applications',
           href: '/admin/applications',
@@ -124,6 +131,11 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
       colorClasses:
         'bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white shadow-sm shadow-purple-500/25',
       items: [
+        {
+          name: 'Database',
+          href: '/admin/system/database',
+          icon: <CircleStackIcon className="h-5 w-5" />,
+        },
         {
           name: 'Maintenance',
           href: '/admin/system/maintenance',

@@ -151,7 +151,7 @@ export default async function PaymentsPage({ searchParams }) {
                 </p>
 
                 <h3 className="text-sm font-bold text-slate-900">
-                  {pay.shareholders?.fullName || 'Unknown Shareholder'}
+                  {pay.shareholders?.fullName || pay.metadata?.applicant_name || pay.metadata?.email || 'Applicant / Shareholder'}
                 </h3>
               </div>
 
@@ -252,7 +252,7 @@ export default async function PaymentsPage({ searchParams }) {
                   </td>
 
                   <td className="px-6 py-4 font-semibold text-slate-800">
-                    {pay.shareholders?.fullName}
+                    {pay.shareholders?.fullName || pay.metadata?.applicant_name || pay.metadata?.email || '—'}
                   </td>
 
                   <td className="px-6 py-4 text-slate-700">

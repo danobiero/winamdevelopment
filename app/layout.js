@@ -1,5 +1,5 @@
 import '@/app/_styles/globals.css';
-import { Roboto } from 'next/font/google';
+import { Open_Sans } from 'next/font/google';
 import Header from './_components/Header';
 import { ReservationProvider } from './_components/ReservationContext';
 import PWARegister from './_components/PWARegister';
@@ -37,10 +37,11 @@ export const metadata = {
   },
 };
 
-const roboto = Roboto({
+const openSans = Open_Sans({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-open-sans',
   display: 'swap',
-  weight: ['400', '700'],
 });
 
 export default function RootLayout({ children }) {
@@ -48,9 +49,9 @@ export default function RootLayout({ children }) {
   const isLanding = pathname === '/';
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`${openSans.variable} h-full`}>
       <body
-        className={`${roboto.className} antialiased text-primary-950 h-dvh flex flex-col overflow-hidden`}
+        className="font-sans antialiased text-primary-950 h-dvh flex flex-col overflow-hidden"
       >
         <PWARegister />
         <InstallPrompt />

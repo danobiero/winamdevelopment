@@ -123,6 +123,12 @@ export default function RedemptionPaymentChoiceModal({
     sortedStripePayments.length > 0 && !paymentMethod ? 'stripe' : 'manual'
   );
 
+  // Helper to generate a logical default confirmation reference
+  const generateDefaultRef = (rail) => {
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    return `${(rail || defaultRail).toUpperCase()}-${todayStr}-REQ${redemption.id}`;
+  };
+
   // Manual Form States
   const [payoutRail, setPayoutRail] = useState(defaultRail);
   const [recipientHandle, setRecipientHandle] = useState(
@@ -135,15 +141,29 @@ export default function RedemptionPaymentChoiceModal({
   const [recipientName, setRecipientName] = useState(
     paymentMethod?.account_name || redemption.shareholders?.fullName || ''
   );
-  const [referenceNumber, setReferenceNumber] = useState('');
+  const [referenceNumber, setReferenceNumber] = useState(() =>
+    generateDefaultRef(defaultRail)
+  );
   const [manualAmount, setManualAmount] = useState(
     maxPayoutAllowed > 0 ? maxPayoutAllowed.toString() : '0'
   );
   const [displayAmount, setDisplayAmount] = useState(
     maxPayoutAllowed > 0 ? FormatCurrency(maxPayoutAllowed, currency) : ''
   );
-  const [manualNotes, setManualNotes] = useState('');
+  const [manualNotes, setManualNotes] = useState(
+    `Approved redemption payout for Request #${redemption.id} (${redemption.shareholders?.fullName || 'Shareholder'})`
+  );
   const [selectedOfflinePaymentId, setSelectedOfflinePaymentId] = useState('');
+
+  const handleSelectRail = (railId) => {
+    setPayoutRail(railId);
+    setReferenceNumber((prev) => {
+      if (!prev || /^[A-Z]+-\d{8}-REQ\d+$/.test(prev)) {
+        return generateDefaultRef(railId);
+      }
+      return prev;
+    });
+  };
 
   // Currency formatted input handlers
   const handleAmountChange = (e) => {
@@ -587,7 +607,7 @@ export default function RedemptionPaymentChoiceModal({
                     <button
                       key={rail.id}
                       type="button"
-                      onClick={() => setPayoutRail(rail.id)}
+                      onClick={() => handleSelectRail(rail.id)}
                       className={`p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${
                         payoutRail === rail.id
                           ? 'border-blue-600 bg-blue-50 text-blue-900 shadow-sm'

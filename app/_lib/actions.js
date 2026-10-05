@@ -220,6 +220,7 @@ export async function savePaymentMethod(prevState, formData) {
     }
 
     revalidatePath('/account/payment');
+    revalidatePath('/account');
     return {
       success: true,
       message: 'Payment information saved successfully!',
@@ -3675,4 +3676,164 @@ export async function getShareholderTransactionsLedgerAction() {
     return [];
   }
 }
+
+/**
+ * GET PENDING APPLICATION FEE PAYMENT NOTICE
+ */
+export async function getPendingFeePayment(email, shareholderId) {
+  noStore();
+  try {
+    const supabaseAdmin = createAdminSupabaseClient();
+    let query = supabaseAdmin
+      .from('payments')
+      .select('*')
+      .eq('type', 'FEE')
+      .eq('status', 'pending');
+
+    if (shareholderId && email) {
+      query = query.or(`shareholder_id.eq.${shareholderId},metadata->>email.eq.${email}`);
+    } else if (shareholderId) {
+      query = query.eq('shareholder_id', shareholderId);
+    } else if (email) {
+      query = query.eq('metadata->>email', email);
+    } else {
+      return null;
+    }
+
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('getPendingFeePayment query error:', error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('getPendingFeePayment error:', err);
+    return null;
+  }
+}
+
+/**
+ * SUBMIT MANUAL APPLICATION FEE PAYMENT NOTICE (Zelle / Cash App)
+ */
+export async function submitManualFeeNotice({
+  feeId,
+  paymentMethod,
+  memoNote,
+  amount,
+  email,
+  shareholderId,
+}) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { ok: false, message: 'Authentication required to submit payment notice.' };
+    }
+
+    const targetEmail = email || session.user.email;
+    let targetShareholderId = shareholderId || session.user.shareholderId;
+
+    const supabaseAdmin = createAdminSupabaseClient();
+
+    // 1. Resolve shareholder ID if missing
+    if (!targetShareholderId && targetEmail) {
+      const { data: sh } = await supabaseAdmin
+        .from('shareholders')
+        .select('id')
+        .eq('email', targetEmail)
+        .maybeSingle();
+      if (sh?.id) targetShareholderId = sh.id;
+    }
+
+    if (!targetShareholderId && targetEmail) {
+      const { data: memberApp } = await supabaseAdmin
+        .from('membership_applications')
+        .select('shareholder_id')
+        .eq('email', targetEmail)
+        .maybeSingle();
+      if (memberApp?.shareholder_id) targetShareholderId = memberApp.shareholder_id;
+    }
+
+    // 2. Resolve fee amount and name
+    let feeAmount = Number(amount || 0);
+    let feeName = 'Membership Application Fee';
+
+    if (feeId) {
+      const { data: feeData } = await supabaseAdmin
+        .from('fees')
+        .select('*')
+        .eq('id', feeId)
+        .maybeSingle();
+
+      if (feeData) {
+        feeAmount = Number(feeData.amount || feeAmount || 100);
+        feeName = feeData.name || feeName;
+      }
+    }
+
+    if (!feeAmount || feeAmount <= 0) {
+      feeAmount = 100;
+    }
+
+    const methodLabel =
+      paymentMethod === 'cashapp'
+        ? 'Cash App ($Winam)'
+        : paymentMethod === 'zelle'
+          ? 'Zelle'
+          : 'Manual Transfer';
+
+    // 3. Insert payment notice record
+    const { data: paymentRecord, error: payError } = await supabaseAdmin
+      .from('payments')
+      .insert({
+        shareholder_id: targetShareholderId ? Number(targetShareholderId) : null,
+        amount: feeAmount,
+        currency: 'USD',
+        status: 'pending',
+        type: 'FEE',
+        payment_method_type: paymentMethod,
+        description: `Application Fee (${feeName}) via ${methodLabel}`,
+        opportunity_id: 999,
+        metadata: {
+          memo: memoNote || '',
+          mode: 'manual',
+          method: paymentMethod,
+          fee_id: feeId || null,
+          email: targetEmail,
+          applicant_name: session.user.name || '',
+          payee: 'Winam Development Group',
+          submitted_at: new Date().toISOString(),
+        },
+      })
+      .select()
+      .maybeSingle();
+
+    if (payError) {
+      console.error('Error inserting fee payment notice:', payError);
+      return { ok: false, message: payError.message || 'Failed to record payment notice.' };
+    }
+
+    // 4. Revalidate cache
+    revalidatePath('/membership');
+    revalidatePath('/admin/payments');
+    revalidatePath('/admin/applications');
+
+    return {
+      ok: true,
+      message:
+        'Payment notice submitted successfully. Winam Treasury will review and verify your payment.',
+      payment: paymentRecord,
+    };
+  } catch (err) {
+    console.error('submitManualFeeNotice error:', err);
+    return {
+      ok: false,
+      message: err.message || 'An unexpected error occurred.',
+    };
+  }
+}
+
 

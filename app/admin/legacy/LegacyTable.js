@@ -438,20 +438,37 @@ export default function LegacyTable({
 
                   {/* Payout Rail */}
                   <td className="py-4 px-4 align-top">
-                    {r.payment_type && r.payment_type !== 'none' ? (
-                      <div>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
-                          {r.payment_type}
-                        </span>
-                        {r.account_handle && (
-                          <span className="block text-xs text-slate-400 mt-0.5 truncate max-w-[120px]" title={r.account_handle}>
-                            {r.account_handle}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-slate-300 text-xs">—</span>
-                    )}
+                    {(() => {
+                      const livePm = r.shareholders?.shareholder_payment_methods;
+                      const hasStaged = r.payment_type && r.payment_type !== 'none';
+                      const pType = hasStaged ? r.payment_type : livePm?.payment_type;
+                      const handle = hasStaged ? r.account_handle : livePm?.account_handle;
+                      const isLive = !hasStaged && Boolean(livePm?.payment_type);
+
+                      if (pType && pType !== 'none') {
+                        return (
+                          <div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 capitalize">
+                                {pType}
+                              </span>
+                              {isLive && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200" title="Configured in live shareholder portal">
+                                  Live
+                                </span>
+                              )}
+                            </div>
+                            {handle && (
+                              <span className="block text-xs text-slate-500 font-mono mt-0.5 truncate max-w-[130px]" title={handle}>
+                                {handle}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return <span className="text-slate-300 text-xs">—</span>;
+                    })()}
                   </td>
 
                   {/* Sync Status */}

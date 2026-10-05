@@ -23,7 +23,13 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export default function BecomingAMember({ session, membershipRecord, fee }) {
+export default function BecomingAMember({
+  session,
+  membershipRecord,
+  fee,
+  paymentMode = 'manual',
+  pendingFeePayment = null,
+}) {
   const router = useRouter();
 
   const [showForm, setShowForm] = useState(false);
@@ -101,7 +107,15 @@ export default function BecomingAMember({ session, membershipRecord, fee }) {
     // 1. APPLIED STATE
     if (status === 'applied') {
       if (!application_fee_paid) {
-        return <PaymentStep session={session} fee={fee} status={status} />;
+        return (
+          <PaymentStep
+            session={session}
+            fee={fee}
+            status={status}
+            paymentMode={paymentMode}
+            pendingFeePayment={pendingFeePayment}
+          />
+        );
       }
       return <ReviewStep session={session} />;
     }
@@ -143,7 +157,11 @@ export default function BecomingAMember({ session, membershipRecord, fee }) {
     // 5. ACTIVE STATE (Funding Stage Only)
     if (status === 'active') {
       return (
-        <FundingStep session={session} membershipRecord={membershipRecord} />
+        <FundingStep
+          session={session}
+          membershipRecord={membershipRecord}
+          paymentMode={paymentMode}
+        />
       );
     }
 

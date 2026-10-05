@@ -260,7 +260,7 @@ export async function createStripeRedemptionAction(formData) {
     // 3️⃣ LOAD REDEMPTION
     const { data: redemption, error: redErr } = await supabase
       .from('redemption_requests')
-      .select('id, investment_id, shareholder_id, amount, status, already_redeemed_so_far, investments(opportunity_id, amount_invested, current_value)')
+      .select('id, investment_id, shareholder_id, amount, status, already_redeemed_so_far, shareholders(id, fullName, email), investments(id, shareholder_id, opportunity_id, amount_invested, current_value)')
       .eq('id', redemptionId)
       .single();
 
@@ -386,10 +386,20 @@ export async function createStripeRedemptionAction(formData) {
       throw new Error('Stripe succeeded but payment tracking failed.');
 
     // 🆕 NEW: INSERT REFUND/REDEMPTION ENTRY INTO REDEMPTIONS TABLE
+    const resolvedShareholderId =
+      redemption.shareholder_id ||
+      redemption.investments?.shareholder_id ||
+      payment.shareholder_id ||
+      null;
+
+    const shareholderName =
+      redemption.shareholders?.fullName ||
+      'Shareholder';
+
     const { error: redemptionInsertErr } = await supabase
       .from('redemptions')
       .insert({
-        shareholder_id: redemption.shareholder_id,
+        shareholder_id: resolvedShareholderId,
         redemption_request_id: redemptionId,
         stripe_refund_id: stripeRefund.id,
         stripe_payment_intent_id: payment.stripe_payment_intent_id,
@@ -397,7 +407,7 @@ export async function createStripeRedemptionAction(formData) {
         status: 'succeeded',
         amount: -redeemedDollars, // Store directly as negative value in the redemptions table
         currency: 'USD',
-        description: `Redemption refund processed via Stripe for Request #${redemptionId}`,
+        description: `Redemption refund processed via Stripe for Request #${redemptionId} - ${shareholderName}`,
         metadata: {
           original_payment_id: paymentUuid,
           stripe_event: 'charge.refunded',
@@ -576,8 +586,14 @@ export async function processManualRedemptionAction(formData) {
         status,
         already_redeemed_so_far,
         admin_notes,
+        shareholders (
+          id,
+          fullName,
+          email
+        ),
         investments (
           id,
+          shareholder_id,
           opportunity_id,
           amount_invested,
           current_value
@@ -684,27 +700,45 @@ export async function processManualRedemptionAction(formData) {
     }
 
     // 6️⃣ INSERT INTO REDEMPTIONS TABLE (Negative amount indicates outflow)
+    const resolvedShareholderId =
+      redemption.shareholder_id ||
+      redemption.investments?.shareholder_id ||
+      null;
+
+    const oppId = redemption.investments?.opportunity_id || null;
+    const railUpper = payoutMethod.toUpperCase();
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const safeRef = referenceNumber || `${railUpper}-${todayStr}-REQ${redemptionId}`;
+    const shareholderName =
+      redemption.shareholders?.fullName ||
+      recipientName ||
+      'Shareholder';
+
     const { error: redemptionInsertErr } = await supabase
       .from('redemptions')
       .insert({
-        shareholder_id: redemption.shareholder_id,
+        shareholder_id: resolvedShareholderId,
         redemption_request_id: redemptionId,
+        // Synthetic identifiers to prevent NULLs and fit table expectations:
+        stripe_refund_id: `MANUAL_REF_${railUpper}_REQ_${redemptionId}_${Date.now()}`,
+        stripe_payment_intent_id: `offline_redemption_req_${redemptionId}_opp_${oppId || 'general'}`,
+        stripe_charge_id: `offline_${payoutMethod.toLowerCase()}_payout`,
         status: 'succeeded',
         amount: -redeemedDollars,
         currency: 'USD',
-        description: `Redemption payout via ${payoutMethod.toUpperCase()}${referenceNumber ? ` (Ref: ${referenceNumber})` : ''}`,
+        description: `Redemption payout via ${railUpper} (Ref: ${safeRef}) for Request #${redemptionId} - ${shareholderName}`,
         metadata: {
           payout_rail: payoutMethod,
           recipient_handle: recipientHandle,
           recipient_name: recipientName,
-          reference_number: referenceNumber,
+          reference_number: safeRef,
           original_payment_id: paymentUuid,
           admin_notes: adminNotes,
           is_manual: true,
           is_non_stripe: true,
           processed_by: session.user.adminId || session.user.email,
         },
-        opportunity_id: redemption.investments?.opportunity_id || null,
+        opportunity_id: oppId,
         updated_at: new Date().toISOString(),
       });
 

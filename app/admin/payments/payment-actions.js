@@ -35,13 +35,12 @@ export async function getPaymentById(id) {
       opportunity_id,
       shareholder_id,
 
-      shareholders (
+      shareholders!payments_shareholder_id_fkey (
         id,
         fullName,
         email,
         telephone,
         nationality,
-        countryFlag,
         shareholderStatus,
         sharePercentage,
         isDirector,
@@ -140,7 +139,7 @@ export async function getPayments({ from, to, searchShareholder, filterOpportuni
       metadata,
       opportunity_id,
       shareholder_id,
-      shareholders!inner (
+      shareholders!payments_shareholder_id_fkey!inner (
         id,
         fullName,
         email,
@@ -178,7 +177,7 @@ export async function getPayments({ from, to, searchShareholder, filterOpportuni
       metadata,
       opportunity_id,
       shareholder_id,
-      shareholders (
+      shareholders!payments_shareholder_id_fkey (
         id,
         fullName,
         email,
@@ -328,7 +327,7 @@ export async function confirmManualPaymentAction(paymentId, { reference = '', no
     .from('payments')
     .select(`
       *,
-      shareholders ( id, fullName, email ),
+      shareholders!payments_shareholder_id_fkey ( id, fullName, email ),
       opportunities ( id, name, type, minimum_investment )
     `)
     .eq('id', paymentId)
@@ -611,7 +610,7 @@ export async function failManualPaymentAction(paymentId, { reason = '' } = {}) {
     .from('payments')
     .select(`
       *,
-      shareholders ( id, fullName, email ),
+      shareholders!payments_shareholder_id_fkey ( id, fullName, email ),
       opportunities ( id, name, type )
     `)
     .eq('id', paymentId)

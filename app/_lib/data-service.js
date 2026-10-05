@@ -248,6 +248,11 @@ export async function getLegacyShareholders() {
           id,
           fullName,
           email,
+          shareholder_payment_methods (
+            payment_type,
+            account_handle,
+            account_name
+          ),
           investments (
             id,
             opportunity_id,
@@ -693,7 +698,7 @@ export async function getCountries() {
   // ⬅️ 2. Fetch from the API (only ONCE)
   try {
     const res = await fetch(
-      'https://restcountries.com/v2/all?fields=name,flag'
+      'https://restcountries.com/v2/all?fields=name'
     );
 
     if (!res.ok) {
