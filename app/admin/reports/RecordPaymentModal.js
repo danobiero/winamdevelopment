@@ -15,7 +15,18 @@ import {
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { recordPaymentAction, getShareholdersList } from './actions';
+import { updatePaymentAction } from '@/app/admin/payments/payment-actions';
 import { getOpportunities } from '@/app/admin/opportunities/actions';
+
+const getCoreOpportunityId = (opps) => {
+  if (!opps || opps.length === 0) return 9;
+  const coreOpp = opps.find(
+    (o) =>
+      o.type?.toLowerCase() === 'core' ||
+      o.name?.toLowerCase().includes('core')
+  );
+  return coreOpp ? coreOpp.id : (opps[0]?.id ?? 9);
+};
 
 export default function RecordPaymentModal({
   isOpen,
@@ -24,71 +35,121 @@ export default function RecordPaymentModal({
   opportunityId,
   opportunities = [],
   shareholders = [],
+  paymentToEdit = null,
 }) {
   const { showToast } = useToast();
 
   const [oppList, setOppList] = useState(opportunities || []);
   const [shareholderList, setShareholderList] = useState(shareholders || []);
 
-  const [selectedOpportunityId, setSelectedOpportunityId] = useState(
-    opportunityId || (opportunities?.[0]?.id ?? 9)
+  const [selectedOpportunityId, setSelectedOpportunityId] = useState(() =>
+    paymentToEdit?.opportunity_id || opportunityId || getCoreOpportunityId(opportunities)
   );
-  const [selectedShareholderId, setSelectedShareholderId] = useState('');
+  const [selectedShareholderId, setSelectedShareholderId] = useState(() =>
+    paymentToEdit?.shareholder_id ? String(paymentToEdit.shareholder_id) : ''
+  );
   const [shareholderSearch, setShareholderSearch] = useState('');
 
-  const [amount, setAmount] = useState('');
-  const [paymentDate, setPaymentDate] = useState(
-    () => new Date().toISOString().split('T')[0]
+  const [amount, setAmount] = useState(() =>
+    paymentToEdit?.amount != null ? String(paymentToEdit.amount) : ''
   );
-  const [paymentMethod, setPaymentMethod] = useState('Wire');
-  const [paymentType, setPaymentType] = useState('capital_subscription');
-  const [reference, setReference] = useState('');
-  const [description, setDescription] = useState('');
-  const [notes, setNotes] = useState('');
+  const [paymentDate, setPaymentDate] = useState(() =>
+    paymentToEdit?.created_at
+      ? paymentToEdit.created_at.split('T')[0]
+      : new Date().toISOString().split('T')[0]
+  );
+  const [paymentMethod, setPaymentMethod] = useState(() =>
+    paymentToEdit?.metadata?.payment_method ||
+    (paymentToEdit?.payment_method_type
+      ? paymentToEdit.payment_method_type.charAt(0).toUpperCase() + paymentToEdit.payment_method_type.slice(1)
+      : 'Wire')
+  );
+  const [paymentType, setPaymentType] = useState(() =>
+    paymentToEdit?.type || 'capital_subscription'
+  );
+  const [paymentStatus, setPaymentStatus] = useState(() =>
+    paymentToEdit?.status || 'succeeded'
+  );
+  const [reference, setReference] = useState(() =>
+    paymentToEdit?.stripe_payment_intent_id || paymentToEdit?.metadata?.reference || ''
+  );
+  const [description, setDescription] = useState(() =>
+    paymentToEdit?.description || ''
+  );
+  const [notes, setNotes] = useState(() =>
+    paymentToEdit?.metadata?.notes || ''
+  );
   const [loading, setLoading] = useState(false);
 
   // Load opportunities fallback if not provided
   useEffect(() => {
     if (opportunities && opportunities.length > 0) {
       setOppList(opportunities);
+      if (!paymentToEdit && !opportunityId && !selectedOpportunityId) {
+        setSelectedOpportunityId(getCoreOpportunityId(opportunities));
+      }
     } else {
       getOpportunities()
         .then((data) => {
-          if (data && data.length > 0) setOppList(data);
-        })
-        .catch(() => {});
-    }
-  }, [opportunities]);
-
-  // Load shareholders fallback if not provided
-  useEffect(() => {
-    if (shareholders && shareholders.length > 0) {
-      setShareholderList(shareholders);
-      if (!selectedShareholderId && shareholders[0]?.id) {
-        setSelectedShareholderId(String(shareholders[0].id));
-      }
-    } else {
-      getShareholdersList()
-        .then((data) => {
           if (data && data.length > 0) {
-            setShareholderList(data);
-            if (!selectedShareholderId) {
-              setSelectedShareholderId(String(data[0].id));
+            setOppList(data);
+            if (!paymentToEdit && !opportunityId && !selectedOpportunityId) {
+              setSelectedOpportunityId(getCoreOpportunityId(data));
             }
           }
         })
         .catch(() => {});
     }
-  }, [shareholders, selectedShareholderId]);
+  }, [opportunities, paymentToEdit, opportunityId, selectedOpportunityId]);
+
+  // Load shareholders fallback if not provided (DO NOT pre-populate shareholder)
+  useEffect(() => {
+    if (shareholders && shareholders.length > 0) {
+      setShareholderList(shareholders);
+    } else {
+      getShareholdersList()
+        .then((data) => {
+          if (data && data.length > 0) {
+            setShareholderList(data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [shareholders]);
+
+  // Sync edit mode fields when paymentToEdit changes
+  useEffect(() => {
+    if (paymentToEdit) {
+      setSelectedOpportunityId(paymentToEdit.opportunity_id || getCoreOpportunityId(oppList));
+      setSelectedShareholderId(paymentToEdit.shareholder_id ? String(paymentToEdit.shareholder_id) : '');
+      setAmount(paymentToEdit.amount != null ? String(paymentToEdit.amount) : '');
+      setPaymentDate(paymentToEdit.created_at ? paymentToEdit.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
+      const method = paymentToEdit.metadata?.payment_method ||
+        (paymentToEdit.payment_method_type
+          ? paymentToEdit.payment_method_type.charAt(0).toUpperCase() + paymentToEdit.payment_method_type.slice(1)
+          : 'Wire');
+      setPaymentMethod(method);
+      setPaymentType(paymentToEdit.type || 'capital_subscription');
+      setPaymentStatus(paymentToEdit.status || 'succeeded');
+      setReference(paymentToEdit.stripe_payment_intent_id || paymentToEdit.metadata?.reference || '');
+      setDescription(paymentToEdit.description || '');
+      setNotes(paymentToEdit.metadata?.notes || '');
+    } else {
+      if (!opportunityId) {
+        setSelectedOpportunityId(getCoreOpportunityId(oppList));
+      }
+      setSelectedShareholderId('');
+    }
+  }, [paymentToEdit, oppList, opportunityId]);
 
   // Sync opportunityId prop
   useEffect(() => {
     if (opportunityId) {
       setSelectedOpportunityId(opportunityId);
-    } else if (oppList.length > 0 && !selectedOpportunityId) {
-      setSelectedOpportunityId(oppList[0].id);
+    } else if (oppList.length > 0 && !selectedOpportunityId && !paymentToEdit) {
+      setSelectedOpportunityId(getCoreOpportunityId(oppList));
     }
-  }, [opportunityId, oppList, selectedOpportunityId]);
+  }, [opportunityId, oppList, selectedOpportunityId, paymentToEdit]);
 
   // Filtered shareholders based on search query
   const filteredShareholders = useMemo(() => {
@@ -131,17 +192,25 @@ export default function RecordPaymentModal({
       formData.append('payment_date', paymentDate);
       formData.append('payment_method', paymentMethod);
       formData.append('type', paymentType);
-      formData.append('status', 'succeeded');
+      formData.append('status', paymentStatus);
       if (reference.trim()) formData.append('reference', reference.trim());
       if (description.trim()) formData.append('description', description.trim());
       if (notes.trim()) formData.append('notes', notes.trim());
 
-      const res = await recordPaymentAction(formData);
+      let res;
+      if (paymentToEdit?.id) {
+        res = await updatePaymentAction(paymentToEdit.id, formData);
+      } else {
+        res = await recordPaymentAction(formData);
+      }
 
       if (res?.error) {
         showToast(res.error, 'error');
       } else {
-        showToast('Payment recorded and synced successfully.', 'success');
+        showToast(
+          paymentToEdit ? 'Payment updated successfully.' : 'Payment recorded and synced successfully.',
+          'success'
+        );
         if (onPaymentAdded) onPaymentAdded(res.payment);
         onClose();
       }
@@ -162,9 +231,13 @@ export default function RecordPaymentModal({
               <BanknotesIcon className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Record a Payment</h3>
+              <h3 className="text-base font-bold text-white">
+                {paymentToEdit ? 'Edit Payment Record' : 'Record a Payment'}
+              </h3>
               <p className="text-xs text-slate-300">
-                Record investor capital contributions and subscription payments
+                {paymentToEdit
+                  ? 'Update payment details and allocation in the ledger'
+                  : 'Record investor capital contributions and subscription payments'}
               </p>
             </div>
           </div>
@@ -303,19 +376,33 @@ export default function RecordPaymentModal({
             </div>
           </div>
 
-          {/* Payment Type & Reference Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Payment Type, Status & Reference Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Payment Classification</label>
+              <label className="block font-bold text-slate-700 mb-1">Classification</label>
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all cursor-pointer"
               >
                 <option value="capital_subscription">Capital Subscription</option>
                 <option value="investment">Direct Investment</option>
                 <option value="fee">Application / Service Fee</option>
-                <option value="manual">Manual Admin Adjustment</option>
+                <option value="dividend">Dividend Payout</option>
+                <option value="manual">Manual Adjustment</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Status</label>
+              <select
+                value={paymentStatus}
+                onChange={(e) => setPaymentStatus(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all cursor-pointer"
+              >
+                <option value="succeeded">Succeeded / Paid</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed / Cancelled</option>
               </select>
             </div>
 
@@ -325,7 +412,7 @@ export default function RecordPaymentModal({
               </label>
               <input
                 type="text"
-                placeholder="e.g. Wire Ref #, Check #, Stripe Intent"
+                placeholder="e.g. Wire Ref #, Check #"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all"
@@ -352,7 +439,7 @@ export default function RecordPaymentModal({
             <label className="block font-bold text-slate-700 mb-1">Internal Notes (Optional)</label>
             <input
               type="text"
-              placeholder="e.g. Confirmed bank clearing on Morgan Stanley / Chase statement"
+              placeholder="e.g. Confirmed bank clearing on statement"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all"
@@ -377,12 +464,16 @@ export default function RecordPaymentModal({
               {loading ? (
                 <>
                   <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                  <span>Recording...</span>
+                  <span>{paymentToEdit ? 'Saving...' : 'Recording...'}</span>
                 </>
               ) : (
                 <>
-                  <PlusIcon className="h-4 w-4" />
-                  <span>Record Payment</span>
+                  {paymentToEdit ? (
+                    <CheckCircleIcon className="h-4 w-4" />
+                  ) : (
+                    <PlusIcon className="h-4 w-4" />
+                  )}
+                  <span>{paymentToEdit ? 'Save Changes' : 'Record Payment'}</span>
                 </>
               )}
             </button>

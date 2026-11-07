@@ -24,6 +24,16 @@ const formatUSD = (val) =>
     maximumFractionDigits: 2,
   })}`;
 
+const getCoreOpportunityId = (opps) => {
+  if (!opps || opps.length === 0) return '';
+  const coreOpp = opps.find(
+    (o) =>
+      o.type?.toLowerCase() === 'core' ||
+      o.name?.toLowerCase().includes('core')
+  );
+  return coreOpp ? String(coreOpp.id) : String(opps[0]?.id || '');
+};
+
 export default function RecordDividendPayoutModal({
   isOpen,
   onClose,
@@ -33,12 +43,10 @@ export default function RecordDividendPayoutModal({
 }) {
   const { showToast } = useToast();
 
-  const [selectedOpportunityId, setSelectedOpportunityId] = useState(
-    opportunities?.[0]?.id ? String(opportunities[0].id) : ''
+  const [selectedOpportunityId, setSelectedOpportunityId] = useState(() =>
+    getCoreOpportunityId(opportunities)
   );
-  const [selectedShareholderId, setSelectedShareholderId] = useState(
-    shareholders?.[0]?.id ? String(shareholders[0].id) : ''
-  );
+  const [selectedShareholderId, setSelectedShareholderId] = useState('');
   const [shareholderSearch, setShareholderSearch] = useState('');
 
   const [amount, setAmount] = useState('');
@@ -57,10 +65,10 @@ export default function RecordDividendPayoutModal({
 
   const [loading, setLoading] = useState(false);
 
-  // Sync default opportunity
+  // Sync default opportunity to Core Opportunity
   useEffect(() => {
     if (!selectedOpportunityId && opportunities.length > 0) {
-      setSelectedOpportunityId(String(opportunities[0].id));
+      setSelectedOpportunityId(getCoreOpportunityId(opportunities));
     }
   }, [opportunities, selectedOpportunityId]);
 
@@ -86,6 +94,7 @@ export default function RecordDividendPayoutModal({
 
   // Selected Shareholder Info & Registered Payout Method
   const selectedShareholder = useMemo(() => {
+    if (!selectedShareholderId) return null;
     return (
       shareholders.find((sh) => String(sh.id) === String(selectedShareholderId)) ||
       null
@@ -106,6 +115,10 @@ export default function RecordDividendPayoutModal({
         setAccountNumber('');
         setAccountHandle(selectedShareholder.email || '');
       }
+    } else {
+      setAccountName('');
+      setAccountNumber('');
+      setAccountHandle('');
     }
   }, [selectedShareholder]);
 
@@ -271,7 +284,7 @@ export default function RecordDividendPayoutModal({
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 outline-none focus:bg-white focus:border-purple-500 transition-all cursor-pointer"
             >
               <option value="" disabled>
-                -- Select Shareholder --
+                -- Select Recipient Shareholder --
               </option>
               {filteredShareholders.map((sh) => {
                 const hasPm = !!sh.payment_method;

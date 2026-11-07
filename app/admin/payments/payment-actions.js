@@ -668,3 +668,148 @@ export async function failManualPaymentAction(paymentId, { reason = '' } = {}) {
     message: `Payment marked as failed. Reason recorded: "${failureReason}". The shareholder will see this in their payment statements.`,
   };
 }
+
+/**
+ * Delete a payment record from the ledger
+ */
+export async function deletePaymentAction(paymentId) {
+  try {
+    const session = await auth();
+    if (!session?.user?.adminId) {
+      return { error: 'Unauthorized' };
+    }
+
+    const supabase = createAdminSupabaseClient();
+
+    const { error } = await supabase
+      .from('payments')
+      .delete()
+      .eq('id', paymentId);
+
+    if (error) {
+      console.error('Delete payment error:', error);
+      return { error: error.message || 'Failed to delete payment' };
+    }
+
+    revalidatePath('/admin/transactions');
+    revalidatePath('/admin/payments');
+    revalidatePath('/admin/investments');
+    revalidatePath('/admin/reports');
+    revalidatePath('/account/payment');
+    revalidatePath('/account/investments');
+
+    return { success: true };
+  } catch (err) {
+    console.error('deletePaymentAction error:', err);
+    return { error: err.message || 'Failed to delete payment' };
+  }
+}
+
+/**
+ * Update an existing payment record
+ */
+export async function updatePaymentAction(paymentId, formData) {
+  try {
+    const session = await auth();
+    if (!session?.user?.adminId) return { error: 'Unauthorized' };
+
+    const supabase = createAdminSupabaseClient();
+
+    const opportunityId = formData.get('opportunity_id');
+    const shareholderId = formData.get('shareholder_id');
+    const amountStr = formData.get('amount');
+    const paymentDateStr = formData.get('payment_date');
+    const paymentMethod = formData.get('payment_method') || 'Card';
+    const paymentType = formData.get('type') || 'capital_subscription';
+    const status = formData.get('status') || 'succeeded';
+    const reference = formData.get('reference')?.trim() || '';
+    const description = formData.get('description')?.trim() || '';
+    const notes = formData.get('notes')?.trim() || '';
+
+    if (!opportunityId) {
+      return { error: 'Please select an opportunity.' };
+    }
+    if (!shareholderId) {
+      return { error: 'Please select a shareholder / investor.' };
+    }
+
+    const numAmount = parseFloat(amountStr);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return { error: 'Please enter a valid payment amount greater than 0.' };
+    }
+
+    // Lookup existing payment to preserve metadata
+    const { data: existingPayment, error: fetchErr } = await supabase
+      .from('payments')
+      .select('id, metadata')
+      .eq('id', paymentId)
+      .maybeSingle();
+
+    if (fetchErr || !existingPayment) {
+      return { error: 'Payment record not found.' };
+    }
+
+    const existingMeta = existingPayment.metadata || {};
+    const updatedMeta = {
+      ...existingMeta,
+      reference,
+      notes,
+      payment_method: paymentMethod,
+      updated_by: session.user.email || session.user.adminId,
+      updated_at: new Date().toISOString(),
+    };
+
+    const updatePayload = {
+      opportunity_id: Number(opportunityId),
+      shareholder_id: Number(shareholderId),
+      amount: numAmount,
+      status,
+      type: paymentType,
+      payment_method_type: paymentMethod.toLowerCase(),
+      description,
+      stripe_payment_intent_id: reference,
+      updated_at: new Date().toISOString(),
+      metadata: updatedMeta,
+    };
+
+    if (paymentDateStr) {
+      updatePayload.created_at = new Date(`${paymentDateStr}T12:00:00Z`).toISOString();
+    }
+
+    const { data: updatedPayment, error: updateErr } = await supabase
+      .from('payments')
+      .update(updatePayload)
+      .eq('id', paymentId)
+      .select(`
+        *,
+        shareholders (
+          id,
+          fullName,
+          email,
+          telephone
+        ),
+        opportunities (
+          id,
+          name,
+          type
+        )
+      `)
+      .single();
+
+    if (updateErr) {
+      console.error('Update payment error:', updateErr);
+      return { error: `Could not update payment: ${updateErr.message}` };
+    }
+
+    revalidatePath('/admin/transactions');
+    revalidatePath('/admin/payments');
+    revalidatePath('/admin/investments');
+    revalidatePath('/admin/reports');
+
+    return { success: true, payment: updatedPayment };
+  } catch (err) {
+    console.error('updatePaymentAction error:', err);
+    return { error: err.message || 'Failed to update payment.' };
+  }
+}
+

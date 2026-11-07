@@ -28,13 +28,14 @@ import {
 import AddExpenseModal from '@/app/admin/reports/AddExpenseModal';
 import DeleteExpenseModal from '@/app/admin/reports/DeleteExpenseModal';
 import RecordPaymentModal from '@/app/admin/reports/RecordPaymentModal';
+import DeletePaymentModal from './DeletePaymentModal';
 import PaymentViewModal from '@/app/admin/payments/PaymentViewModal';
 import RecordDividendPayoutModal from './RecordDividendPayoutModal';
 import {
   getAllOperatingExpenses,
   deleteOperatingExpenseAction,
 } from '@/app/admin/reports/actions';
-import { getPayments } from '@/app/admin/payments/payment-actions';
+import { getPayments, deletePaymentAction } from '@/app/admin/payments/payment-actions';
 
 const formatUSD = (amount) => {
   return `$${Number(amount || 0).toLocaleString('en-US', {
@@ -130,6 +131,9 @@ export default function TransactionsClient({
   const [isDeletingExpense, setIsDeletingExpense] = useState(false);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentToEdit, setPaymentToEdit] = useState(null);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
+  const [isDeletingPayment, setIsDeletingPayment] = useState(false);
   const [isDividendModalOpen, setIsDividendModalOpen] = useState(false);
   const [viewedPayment, setViewedPayment] = useState(null);
 
@@ -181,6 +185,26 @@ export default function TransactionsClient({
       showToast(err.message || 'Failed to delete expense', 'error');
     } finally {
       setIsDeletingExpense(false);
+    }
+  };
+
+  // Delete Payment Confirmation Handler
+  const handleConfirmDeletePayment = async () => {
+    if (!paymentToDelete) return;
+    try {
+      setIsDeletingPayment(true);
+      const res = await deletePaymentAction(paymentToDelete.id);
+      if (res?.error) {
+        showToast(res.error, 'error');
+      } else {
+        showToast('Payment record deleted.', 'warning');
+        setPaymentToDelete(null);
+        await reloadPayments();
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to delete payment', 'error');
+    } finally {
+      setIsDeletingPayment(false);
     }
   };
 
@@ -324,7 +348,10 @@ export default function TransactionsClient({
           {/* Action 1: Record a Payment */}
           <button
             type="button"
-            onClick={() => setIsPaymentModalOpen(true)}
+            onClick={() => {
+              setPaymentToEdit(null);
+              setIsPaymentModalOpen(true);
+            }}
             className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg shadow-emerald-600/20 transition-all cursor-pointer text-center"
           >
             <PlusIcon className="h-4 w-4 shrink-0 text-emerald-200" />
@@ -884,7 +911,10 @@ export default function TransactionsClient({
                 </p>
                 <button
                   type="button"
-                  onClick={() => setIsPaymentModalOpen(true)}
+                  onClick={() => {
+                    setPaymentToEdit(null);
+                    setIsPaymentModalOpen(true);
+                  }}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
                   <PlusIcon className="h-4 w-4" />
@@ -981,14 +1011,40 @@ export default function TransactionsClient({
                             {pay.type === 'dividend' || pay.type === 'dividend_payout' ? `- ${formatUSD(pay.amount)}` : formatUSD(pay.amount)}
                           </td>
                           <td className="px-3.5 py-2.5 text-center whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => setViewedPayment(pay)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                              title="View Payment Details"
-                            >
-                              <EyeIcon className="h-4 w-4" />
-                            </button>
+                            <div className="flex items-center justify-center gap-1">
+                              {/* View Button */}
+                              <button
+                                type="button"
+                                onClick={() => setViewedPayment(pay)}
+                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="View Payment Details"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </button>
+
+                              {/* Edit Button */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPaymentToEdit(pay);
+                                  setIsPaymentModalOpen(true);
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Payment"
+                              >
+                                <PencilSquareIcon className="h-4 w-4" />
+                              </button>
+
+                              {/* Delete Button */}
+                              <button
+                                type="button"
+                                onClick={() => setPaymentToDelete(pay)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Payment"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1091,16 +1147,21 @@ export default function TransactionsClient({
         </div>
       </div>
 
-      {/* RECORD PAYMENT MODAL */}
+      {/* RECORD / EDIT PAYMENT MODAL */}
       {isPaymentModalOpen && (
         <RecordPaymentModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setPaymentToEdit(null);
+          }}
+          paymentToEdit={paymentToEdit}
           opportunities={opportunities}
           shareholders={shareholders}
           onPaymentAdded={async () => {
             await reloadPayments();
             setActiveTab('payments');
+            setPaymentToEdit(null);
           }}
         />
       )}
@@ -1145,6 +1206,17 @@ export default function TransactionsClient({
           isDeleting={isDeletingExpense}
           onClose={() => setExpenseToDelete(null)}
           onConfirm={handleConfirmDeleteExpense}
+        />
+      )}
+
+      {/* DELETE PAYMENT CONFIRMATION POP UP MODAL */}
+      {paymentToDelete && (
+        <DeletePaymentModal
+          isOpen={!!paymentToDelete}
+          payment={paymentToDelete}
+          isDeleting={isDeletingPayment}
+          onClose={() => setPaymentToDelete(null)}
+          onConfirm={handleConfirmDeletePayment}
         />
       )}
 
