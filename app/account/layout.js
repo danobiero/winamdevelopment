@@ -4,9 +4,11 @@ import { ThemeProvider } from '@/app/_lib/ThemeContext';
 import { auth } from '@/app/_lib/auth';
 import { getMaintenanceStatus } from '@/app/_lib/maintenance-actions';
 import { getShareholderPaymentMethod, getUserProfile } from '@/app/_lib/data-service';
+import { getUpcomingShareholderMeetings } from '@/app/_lib/actions';
 import AccountMaintenanceView from '@/app/_components/AccountMaintenanceView';
 import MaintenanceAdvanceNoticeModal from '@/app/_components/MaintenanceAdvanceNoticeModal';
 import IncompletePaymentAlertModal from '@/app/_components/IncompletePaymentAlertModal';
+import UpcomingMeetingAlert from '@/app/_components/UpcomingMeetingAlert';
 
 export default async function Layout({ children }) {
   const session = await auth();
@@ -27,16 +29,20 @@ export default async function Layout({ children }) {
     );
   }
 
-  // Check if shareholder's payment/disbursement information is incomplete
+  // Check if shareholder's payment/disbursement information is incomplete and fetch upcoming meetings
   let isPaymentIncomplete = false;
   let paymentMethod = null;
   let userProfile = null;
+  let upcomingMeetings = [];
 
   if (session?.user?.shareholderId) {
     try {
-      [paymentMethod, userProfile] = await Promise.all([
+      [paymentMethod, userProfile, upcomingMeetings] = await Promise.all([
         getShareholderPaymentMethod(session.user.shareholderId),
         getUserProfile().catch(() => null),
+        getUpcomingShareholderMeetings(session.user.shareholderId).catch(
+          () => []
+        ),
       ]);
 
       isPaymentIncomplete =
@@ -77,7 +83,10 @@ export default async function Layout({ children }) {
         <div className="flex-1 flex flex-col min-w-0 relative h-full overflow-hidden">
           {/* CONTENT */}
           <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-5 pb-32 lg:pb-4 scroll-smooth h-full">
-            <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col">{children}</div>
+            <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col">
+              <UpcomingMeetingAlert meetings={upcomingMeetings} />
+              {children}
+            </div>
           </main>
 
           {/* MOBILE NAV */}

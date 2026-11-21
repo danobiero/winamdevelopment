@@ -209,9 +209,16 @@ export default function BookingModal({
           {ev.source_event_id &&
             (ev.status === 'published' || ev.status === 'exported') && (
               <div className="flex flex-col sm:flex-row gap-2 flex-1">
-                <Tooltip text={'Remove session'}>
+                <Tooltip
+                  text={
+                    hasEnded
+                      ? 'Session has ended'
+                      : 'Remove session'
+                  }
+                >
                   <UnpublishButton
                     eventId={ev.source_event_id}
+                    disabled={hasEnded}
                     onError={onError}
                     onSuccess={() => {
                       router.refresh();
@@ -220,9 +227,16 @@ export default function BookingModal({
                   />
                 </Tooltip>
 
-                <Tooltip text={'Permanently cancel'}>
+                <Tooltip
+                  text={
+                    hasEnded
+                      ? 'Session has ended'
+                      : 'Permanently cancel'
+                  }
+                >
                   <CancelSessionButton
                     eventId={ev.source_event_id}
+                    disabled={hasEnded}
                     onError={onError}
                     onSuccess={() => {
                       router.refresh();

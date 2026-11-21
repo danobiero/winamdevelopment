@@ -3869,4 +3869,133 @@ export async function submitManualFeeNotice({
   }
 }
 
+/**
+ * GET UPCOMING MEETINGS FOR LOGGED-IN SHAREHOLDER (TODAY & TOMORROW WINDOW)
+ */
+export async function getUpcomingShareholderMeetings(shareholderId) {
+  noStore();
+  if (!shareholderId) return [];
+
+  try {
+    const supabaseAdmin = createAdminSupabaseClient();
+
+    // 1. Fetch shareholder's active investments (not exited, amount_invested > 0)
+    const { data: investments } = await supabaseAdmin
+      .from('investments')
+      .select(`
+        id,
+        opportunity_id,
+        opportunities (
+          id,
+          name
+        )
+      `)
+      .eq('shareholder_id', Number(shareholderId))
+      .neq('status', 'exited')
+      .gt('amount_invested', 0);
+
+    const activeInvIds = new Set(
+      (investments || []).map((i) => Number(i.id)).filter(Boolean)
+    );
+    const activeOppIds = new Set(
+      (investments || []).map((i) => Number(i.opportunity_id)).filter(Boolean)
+    );
+    const activeOppNames = (investments || [])
+      .map((i) => i.opportunities?.name?.toLowerCase()?.trim())
+      .filter(Boolean);
+
+    // 2. Fetch candidate calendar events within a wide window (-24h to +72h)
+    // so client-side local timezone evaluation of "Today" and "Tomorrow" is exact
+    const now = new Date();
+    const minWindow = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const maxWindow = new Date(now.getTime() + 72 * 60 * 60 * 1000).toISOString();
+
+    const { data: events, error: calErr } = await supabaseAdmin
+      .from('calendar')
+      .select(`
+        id,
+        title,
+        description,
+        start_time,
+        end_time,
+        meet_link,
+        session_key,
+        source_event_id,
+        calendar_events:source_event_id (
+          opportunity_id,
+          status
+        )
+      `)
+      .gte('start_time', minWindow)
+      .lte('start_time', maxWindow)
+      .order('start_time', { ascending: true });
+
+    if (calErr || !events || events.length === 0) {
+      return [];
+    }
+
+    // 3. Check calendar_investments junction for direct links
+    let linkedCalIds = new Set();
+    if (activeInvIds.size > 0) {
+      const { data: calLinks } = await supabaseAdmin
+        .from('calendar_investments')
+        .select('calendar_id, investment_id')
+        .in('investment_id', Array.from(activeInvIds));
+
+      (calLinks || []).forEach((l) => linkedCalIds.add(Number(l.calendar_id)));
+    }
+
+    // 4. Filter to meetings relevant to this shareholder's active portfolio
+    const matchedMeetings = [];
+
+    for (const ev of events) {
+      if (!ev.start_time) continue;
+
+      const rawEvent = Array.isArray(ev.calendar_events)
+        ? ev.calendar_events[0]
+        : ev.calendar_events;
+
+      if (rawEvent?.status === 'cancelled') continue;
+
+      const eventOppId = rawEvent?.opportunity_id
+        ? Number(rawEvent.opportunity_id)
+        : null;
+
+      // Also parse opportunity ID from session_key (e.g. WINAM-OPP-9-20261121) if needed
+      let sessionKeyOppId = null;
+      if (ev.session_key) {
+        const m = String(ev.session_key).match(/OPP-(\d+)-/i);
+        if (m) sessionKeyOppId = Number(m[1]);
+      }
+
+      const resolvedOppId = eventOppId || sessionKeyOppId;
+      const titleLower = (ev.title || '').toLowerCase();
+
+      const isRelevant =
+        linkedCalIds.has(Number(ev.id)) ||
+        (resolvedOppId && activeOppIds.has(resolvedOppId)) ||
+        activeOppNames.some((name) => titleLower.includes(name)) ||
+        (!resolvedOppId && activeOppIds.size > 0);
+
+      if (!isRelevant) continue;
+
+      matchedMeetings.push({
+        id: ev.id,
+        title: ev.title || 'Shareholder Briefing',
+        description: ev.description || '',
+        start_time: ev.start_time,
+        end_time: ev.end_time,
+        meet_link: ev.meet_link || null,
+        opportunity_id: resolvedOppId,
+      });
+    }
+
+    return matchedMeetings;
+  } catch (err) {
+    console.error('getUpcomingShareholderMeetings error:', err);
+    return [];
+  }
+}
+
+
 

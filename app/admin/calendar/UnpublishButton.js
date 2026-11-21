@@ -6,14 +6,21 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { unpublishCalendarEvent } from './actions';
 
-export default function UnpublishButton({ eventId, onError, onSuccess }) {
+export default function UnpublishButton({
+  eventId,
+  disabled = false,
+  onError,
+  onSuccess,
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const isDisabled = isPending || disabled;
 
   const handleConfirm = () => {
+    if (disabled) return;
     setConfirmOpen(false);
 
     startTransition(async () => {
@@ -42,9 +49,9 @@ export default function UnpublishButton({ eventId, onError, onSuccess }) {
   return (
     <>
       <button
-        onClick={() => setConfirmOpen(true)}
-        disabled={isPending}
-        className="px-3 py-2 rounded-md bg-gray-600 text-white text-xs font-bold hover:bg-gray-700 disabled:opacity-50"
+        onClick={() => !isDisabled && setConfirmOpen(true)}
+        disabled={isDisabled}
+        className="px-3 py-2 rounded-md bg-gray-600 text-white text-xs font-bold hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Unpublishing…' : 'Unpublish'}
       </button>

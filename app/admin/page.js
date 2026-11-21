@@ -9,6 +9,7 @@ import {
   CalendarIcon,
   ChevronRightIcon,
   ChartBarIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 const adminCards = [
@@ -56,6 +57,15 @@ const adminCards = [
     color: 'bg-rose-500',
     lightColor: 'bg-rose-50',
     textColor: 'text-rose-700',
+  },
+  {
+    name: 'Dividends',
+    href: '/admin/dividends',
+    icon: BanknotesIcon,
+    description: 'Declare & disburse annual dividends',
+    color: 'bg-teal-500',
+    lightColor: 'bg-teal-50',
+    textColor: 'text-teal-700',
   },
   {
     name: 'Reports',

@@ -760,6 +760,21 @@ export async function cancelCalendarEvent_old(eventId) {
 
     if (!event) return { ok: true };
 
+    // Prevent cancelling a session that has already ended
+    const startVal = event.start_time || event.start_at || event.created_at;
+    const endVal = event.end_time || event.end_at;
+    const endDate = endVal
+      ? new Date(endVal)
+      : startVal
+        ? new Date(new Date(startVal).getTime() + 60 * 60 * 1000)
+        : null;
+    if (endDate && new Date() > endDate) {
+      return {
+        ok: false,
+        error: 'Cannot cancel a session that has already ended.',
+      };
+    }
+
     if (event.google_event_id) {
       await calendar.events
         .delete({
@@ -801,6 +816,21 @@ export async function cancelCalendarEvent(eventId) {
       .single();
 
     if (!event) return { ok: true };
+
+    // Prevent cancelling a session that has already ended
+    const startVal = event.start_time || event.start_at || event.created_at;
+    const endVal = event.end_time || event.end_at;
+    const endDate = endVal
+      ? new Date(endVal)
+      : startVal
+        ? new Date(new Date(startVal).getTime() + 60 * 60 * 1000)
+        : null;
+    if (endDate && new Date() > endDate) {
+      return {
+        ok: false,
+        error: 'Cannot cancel a session that has already ended.',
+      };
+    }
 
     // 2. Talk to the Outside World (Google)
     if (event.google_event_id) {
@@ -919,6 +949,30 @@ export async function publishCalendarEvents() {
 export async function unpublishCalendarEvent(eventId) {
   const supabase = createAdminSupabaseClient();
   try {
+    const { data: event } = await supabase
+      .from('calendar_events')
+      .select('id, start_time, end_time, created_at')
+      .eq('id', eventId)
+      .maybeSingle();
+
+    if (event) {
+      const startVal = event.start_time || event.created_at;
+      const endDate = event.end_time
+        ? new Date(event.end_time)
+        : startVal
+          ? new Date(new Date(startVal).getTime() + 60 * 60 * 1000)
+          : null;
+      if (endDate && new Date() > endDate) {
+        return {
+          ok: false,
+          error: {
+            message: 'Cannot unpublish a session that has already ended.',
+            severity: 'error',
+          },
+        };
+      }
+    }
+
     // 1. Change the status away from published/exported
     const { error: updateError } = await supabase
       .from('calendar_events')

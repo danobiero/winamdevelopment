@@ -123,6 +123,11 @@ export default function AdminSideNavigation({ supportCount = 0 }) {
           href: '/admin/finance-reports/valuations',
           icon: <ChartBarIcon className="h-5 w-5" />,
         },
+        {
+          name: 'Dividends',
+          href: '/admin/dividends',
+          icon: <BanknotesIcon className="h-5 w-5" />,
+        },
       ],
     },
     {

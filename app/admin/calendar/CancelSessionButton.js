@@ -6,14 +6,21 @@ import { cancelCalendarEvent } from './actions';
 import { useToast } from '@/app/_lib/ToastContext';
 import ConfirmModal from './_components/ConfirmModal';
 
-export default function CancelSessionButton({ eventId, onError, onSuccess }) {
+export default function CancelSessionButton({
+  eventId,
+  disabled = false,
+  onError,
+  onSuccess,
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const isDisabled = isPending || disabled;
 
   const handleConfirm = () => {
+    if (disabled) return;
     setConfirmOpen(false);
 
     startTransition(async () => {
@@ -41,9 +48,9 @@ export default function CancelSessionButton({ eventId, onError, onSuccess }) {
   return (
     <>
       <button
-        onClick={() => setConfirmOpen(true)}
-        disabled={isPending}
-        className="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700 disabled:opacity-50"
+        onClick={() => !isDisabled && setConfirmOpen(true)}
+        disabled={isDisabled}
+        className="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Cancelling…' : 'Cancel Session'}
       </button>
