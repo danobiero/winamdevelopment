@@ -5,13 +5,112 @@ import { createAdminSupabaseClient } from '@/app/_lib/supabase-admin';
 import { revalidatePath } from 'next/cache';
 
 //-------------------------------------------------------
+// RECONCILE COMPLETED REDEMPTIONS AGAINST INVESTMENTS
+//-------------------------------------------------------
+export async function reconcileRedeemedInvestments(supabase, opportunityId = null) {
+  try {
+    let invQuery = supabase
+      .from('investments')
+      .select(`
+        id,
+        shareholder_id,
+        opportunity_id,
+        amount_invested,
+        total_committed,
+        current_value,
+        status,
+        exited_at,
+        redemption_requests (
+          id,
+          amount,
+          already_redeemed_so_far,
+          status,
+          processed_at,
+          updated_at
+        )
+      `);
+
+    if (opportunityId) {
+      invQuery = invQuery.eq('opportunity_id', opportunityId);
+    }
+
+    const { data: allInvs } = await invQuery;
+    if (!allInvs || allInvs.length === 0) return;
+
+    for (const inv of allInvs) {
+      const redReqs = (inv.redemption_requests || []).filter((r) => {
+        const st = (r.status || '').toLowerCase();
+        return st === 'completed' || st === 'approved' || Number(r.already_redeemed_so_far || 0) > 0;
+      });
+
+      const totalRedeemed = redReqs.reduce((sum, r) => {
+        const st = (r.status || '').toLowerCase();
+        const paid = Number(r.already_redeemed_so_far || 0);
+        const reqAmt = Number(r.amount || 0);
+        return sum + (st === 'completed' ? Math.max(paid, reqAmt) : paid);
+      }, 0);
+
+      const currentInvested = Number(inv.amount_invested || 0);
+      const basePrincipal = Math.max(Number(inv.total_committed || 0), currentInvested);
+      const expectedInvested =
+        totalRedeemed > 0 ? Math.max(0, basePrincipal - totalRedeemed) : currentInvested;
+
+      const needsAmountReduction = totalRedeemed > 0 && currentInvested > expectedInvested;
+      const needsExitStatus = expectedInvested <= 0 && (inv.status || '').toLowerCase() !== 'exited';
+
+      if (needsAmountReduction || needsExitStatus) {
+        const latestProcessed =
+          redReqs.find((r) => r.processed_at)?.processed_at ||
+          redReqs[0]?.updated_at ||
+          new Date().toISOString();
+
+        const updates = {
+          amount_invested: expectedInvested,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (expectedInvested <= 0) {
+          updates.status = 'exited';
+          updates.current_value = 0;
+          updates.exited_at = inv.exited_at || latestProcessed;
+        } else if (inv.current_value != null && needsAmountReduction) {
+          updates.current_value = Math.max(0, Number(inv.current_value) - (currentInvested - expectedInvested));
+        }
+
+        await supabase.from('investments').update(updates).eq('id', inv.id);
+
+        if (expectedInvested <= 0) {
+          try {
+            await supabase
+              .from('calendar_investments')
+              .delete()
+              .eq('investment_id', inv.id);
+          } catch (_) {}
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('reconcileRedeemedInvestments warning:', err?.message);
+  }
+}
+
+//-------------------------------------------------------
 // GET ALL INVESTMENTS
 //-------------------------------------------------------
-export async function getInvestments({ from, to, searchShareholder, filterOpportunity }) {
+export async function getInvestments({
+  from,
+  to,
+  searchShareholder,
+  filterOpportunity,
+  filterStatus = 'participating',
+}) {
   const session = await auth();
   if (!session?.user?.adminId) throw new Error('Unauthorized');
 
   const supabase = createAdminSupabaseClient();
+
+  // Auto-reconcile any investments where redemptions were completed
+  await reconcileRedeemedInvestments(supabase, filterOpportunity);
 
   // If searching by shareholder nested field, PostgREST requires 'shareholders!inner(*)'
   const selectQuery = searchShareholder
@@ -19,13 +118,13 @@ export async function getInvestments({ from, to, searchShareholder, filterOpport
       *,
       opportunities(*),
       shareholders!inner(*),
-      redemption_requests(id, status)
+      redemption_requests(id, status, amount, already_redeemed_so_far)
     `
     : `
       *,
       opportunities(*),
       shareholders(*),
-      redemption_requests(id, status)
+      redemption_requests(id, status, amount, already_redeemed_so_far)
     `;
 
   let query = supabase
@@ -34,6 +133,13 @@ export async function getInvestments({ from, to, searchShareholder, filterOpport
 
   if (filterOpportunity) {
     query = query.eq('opportunity_id', filterOpportunity);
+  }
+
+  // If investment amount is reduced to 0 (or status is 'exited'), shareholder is not participating
+  if (filterStatus === 'participating') {
+    query = query.neq('status', 'exited').gt('amount_invested', 0);
+  } else if (filterStatus === 'exited') {
+    query = query.or('status.eq.exited,amount_invested.lte.0');
   }
 
   if (searchShareholder) {
@@ -58,6 +164,8 @@ export async function getInvestmentById(id) {
 
   const supabase = createAdminSupabaseClient();
 
+  await reconcileRedeemedInvestments(supabase);
+
   const { data, error } = await supabase
     .from('investments')
     .select(
@@ -74,11 +182,11 @@ export async function getInvestmentById(id) {
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  // Find if there is an active (pending) redemption request
+  // Find if there is an active (pending or approved) redemption request
   const activeRedemption =
     data.redemption_requests?.find((r) => {
       const status = r.status?.toLowerCase().trim();
-      return status === 'pending'; // Checks for pending redemptions
+      return status === 'pending' || status === 'approved';
     }) ?? null;
 
   // Fetch all other investments for this shareholder
@@ -251,10 +359,17 @@ export async function adminUpdateInvestment({
   if (
     amount_invested !== undefined &&
     amount_invested !== investment.amount_invested
-  )
-    updatedFields.amount_invested = amount_invested;
+  ) {
+    const safeAmount = Math.max(0, Number(amount_invested) || 0);
+    updatedFields.amount_invested = safeAmount;
+    if (safeAmount <= 0) {
+      updatedFields.status = 'exited';
+      updatedFields.current_value = 0;
+      updatedFields.exited_at = new Date().toISOString();
+    }
+  }
 
-  if (status !== undefined && status !== investment.status)
+  if (status !== undefined && status !== investment.status && !updatedFields.status)
     updatedFields.status = status;
 
   if (Object.keys(updatedFields).length === 0)
@@ -454,12 +569,11 @@ export async function beginRedemptionAdmin(formData) {
     console.warn('Withdrawal form initialization warning:', wfErr.message);
   }
 
-  // 3️⃣ Update investment status to 'exited' and record exited_at
+  // 3️⃣ Keep investment active while redemption request is pending;
+  // amount_invested is reduced by the amount redeemed upon payout, and if 0, status transitions to 'exited'.
   const { error: updateError } = await supabase
     .from('investments')
     .update({
-      status: 'exited',
-      exited_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', investmentId);

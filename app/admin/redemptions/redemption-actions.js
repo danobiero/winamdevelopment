@@ -430,109 +430,22 @@ export async function createStripeRedemptionAction(formData) {
       amount: -redeemedDollars,
     });
 
-    // 🔟 UPDATE INVESTMENT AMOUNT_INVESTED
-    if (redemption.investment_id) {
-      const { data: inv } = await supabase
-        .from('investments')
-        .select('id, amount_invested, status')
-        .eq('id', redemption.investment_id)
-        .maybeSingle();
-
-      if (inv) {
-        const currentInvested = Number(inv.amount_invested || 0);
-        const newInvested = Math.max(0, currentInvested - redeemedDollars);
-        const invUpdates = {
-          amount_invested: newInvested,
-          updated_at: new Date().toISOString(),
-        };
-        if (newInvested <= 0) {
-          invUpdates.status = 'exited';
-          invUpdates.current_value = 0;
-          invUpdates.exited_at = new Date().toISOString();
-        }
-        await supabase.from('investments').update(invUpdates).eq('id', inv.id);
-      }
-    }
-
-    // 1️⃣1️⃣ UPDATE OPPORTUNITY VALUATION AND TOTAL_VALUE
-    const opportunityId = redemption.investments?.opportunity_id;
-    if (opportunityId) {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: latestVal } = await supabase
-          .from('opportunity_valuations')
-          .select('*')
-          .eq('opportunity_id', Number(opportunityId))
-          .order('valuation_date', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (latestVal) {
-          const currentVal = Number(latestVal.total_asset_value || 0);
-          const newTotalAssetValue = Math.max(0, currentVal - redeemedDollars);
-
-          if (latestVal.valuation_date === today) {
-            const { error: valUpErr } = await supabase
-              .from('opportunity_valuations')
-              .update({
-                total_asset_value: newTotalAssetValue,
-              })
-              .eq('id', latestVal.id);
-            if (valUpErr) console.error('Error updating opportunity_valuations in Stripe redemption:', valUpErr);
-          } else {
-            const { error: valInsErr } = await supabase
-              .from('opportunity_valuations')
-              .insert({
-                opportunity_id: Number(opportunityId),
-                total_asset_value: newTotalAssetValue,
-                valuation_date: today,
-                created_by_admin_id: session.user.adminId || null,
-              });
-            if (valInsErr) console.error('Error inserting opportunity_valuations in Stripe redemption:', valInsErr);
-          }
-        } else {
-          // If no opportunity_valuations record exists yet, baseline from opp.total_value
-          const { data: oppRecord } = await supabase
-            .from('opportunities')
-            .select('total_value')
-            .eq('id', Number(opportunityId))
-            .maybeSingle();
-
-          const baseVal = oppRecord?.total_value ? Number(oppRecord.total_value) : 0;
-          const newTotalAssetValue = Math.max(0, baseVal - redeemedDollars);
-          const { error: valInsErr } = await supabase
-            .from('opportunity_valuations')
-            .insert({
-              opportunity_id: Number(opportunityId),
-              total_asset_value: newTotalAssetValue,
-              valuation_date: today,
-              created_by_admin_id: session.user.adminId || null,
-            });
-          if (valInsErr) console.error('Error inserting baseline opportunity_valuations:', valInsErr);
-        }
-
-        // Also decrement opportunities.total_value if present
-        const { data: opp } = await supabase
-          .from('opportunities')
-          .select('id, total_value')
-          .eq('id', Number(opportunityId))
-          .maybeSingle();
-
-        if (opp && opp.total_value !== null && opp.total_value !== undefined) {
-          const newOppTotal = Math.max(0, Number(opp.total_value || 0) - redeemedDollars);
-          const { error: oppUpErr } = await supabase
-            .from('opportunities')
-            .update({ total_value: newOppTotal })
-            .eq('id', Number(opportunityId));
-          if (oppUpErr) console.error('Error updating opportunities total_value:', oppUpErr);
-        }
-      } catch (valErr) {
-        console.error('Opportunity valuation adjustment failed in Stripe redemption:', valErr);
-      }
-    }
+    // 🔟 UPDATE INVESTMENT AMOUNT_INVESTED, LEGACY ALLOCATIONS, AND OPPORTUNITY VALUATION
+    await applyRedemptionToInvestmentAndLegacy({
+      supabase,
+      investmentId: redemption.investment_id,
+      shareholderId: resolvedShareholderId,
+      shareholderEmail: redemption.shareholders?.email || null,
+      opportunityId: redemption.investments?.opportunity_id || null,
+      redeemedDollars,
+      adminId: session.user.adminId || null,
+    });
 
     revalidatePath('/admin/redemptions');
+    revalidatePath('/admin/investments');
+    revalidatePath('/admin/legacy');
+    revalidatePath('/admin/shareholders');
+    revalidatePath('/account');
     revalidatePath('/account/investments');
     revalidatePath('/account/payment');
     revalidatePath('/admin/finance-reports/valuations');
@@ -680,7 +593,13 @@ export async function processManualRedemptionAction(formData) {
         .eq('redemption_request_id', redemptionId);
     }
 
-    // 5️⃣ IF OPTIONAL PAYMENT RECORD SPECIFIED, UPDATE ITS REDEEMED AMOUNT
+    // 5️⃣ UPDATE PAYMENT REDEEMED AMOUNT (Explicit paymentUuid or auto-matched payment for shareholder + opportunity)
+    const resolvedShareholderId =
+      redemption.shareholder_id ||
+      redemption.investments?.shareholder_id ||
+      null;
+    const oppId = redemption.investments?.opportunity_id || null;
+
     if (paymentUuid) {
       const { data: payRecord } = await supabase
         .from('payments')
@@ -697,15 +616,34 @@ export async function processManualRedemptionAction(formData) {
           })
           .eq('id', paymentUuid);
       }
+    } else if (resolvedShareholderId && oppId) {
+      const { data: matchingPayments } = await supabase
+        .from('payments')
+        .select('id, amount, redeemed_amount, status, type')
+        .eq('shareholder_id', resolvedShareholderId)
+        .eq('opportunity_id', oppId)
+        .eq('status', 'succeeded')
+        .order('created_at', { ascending: true });
+
+      let remainingToDebit = redeemedDollars;
+      for (const pay of matchingPayments || []) {
+        if (remainingToDebit <= 0) break;
+        if ((pay.type || '').toLowerCase().includes('dividend')) continue;
+        const avail = Math.max(0, Number(pay.amount || 0) - Number(pay.redeemed_amount || 0));
+        if (avail <= 0) continue;
+        const debit = Math.min(avail, remainingToDebit);
+        await supabase
+          .from('payments')
+          .update({
+            redeemed_amount: Number(pay.redeemed_amount || 0) + debit,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', pay.id);
+        remainingToDebit -= debit;
+      }
     }
 
     // 6️⃣ INSERT INTO REDEMPTIONS TABLE (Negative amount indicates outflow)
-    const resolvedShareholderId =
-      redemption.shareholder_id ||
-      redemption.investments?.shareholder_id ||
-      null;
-
-    const oppId = redemption.investments?.opportunity_id || null;
     const railUpper = payoutMethod.toUpperCase();
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const safeRef = referenceNumber || `${railUpper}-${todayStr}-REQ${redemptionId}`;
@@ -762,109 +700,22 @@ export async function processManualRedemptionAction(formData) {
       console.warn('Note: investment_ledger_entries insert error:', ledgerErr);
     }
 
-    // 8️⃣ UPDATE INVESTMENT AMOUNT_INVESTED
-    if (redemption.investment_id) {
-      const { data: inv } = await supabase
-        .from('investments')
-        .select('id, amount_invested, status')
-        .eq('id', redemption.investment_id)
-        .maybeSingle();
-
-      if (inv) {
-        const currentInvested = Number(inv.amount_invested || 0);
-        const newInvested = Math.max(0, currentInvested - redeemedDollars);
-        const invUpdates = {
-          amount_invested: newInvested,
-          updated_at: new Date().toISOString(),
-        };
-        if (newInvested <= 0) {
-          invUpdates.status = 'exited';
-          invUpdates.current_value = 0;
-          invUpdates.exited_at = new Date().toISOString();
-        }
-        await supabase.from('investments').update(invUpdates).eq('id', inv.id);
-      }
-    }
-
-    // 9️⃣ UPDATE OPPORTUNITY VALUATION AND TOTAL_VALUE
-    const opportunityId = redemption.investments?.opportunity_id;
-    if (opportunityId) {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: latestVal } = await supabase
-          .from('opportunity_valuations')
-          .select('*')
-          .eq('opportunity_id', Number(opportunityId))
-          .order('valuation_date', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (latestVal) {
-          const currentVal = Number(latestVal.total_asset_value || 0);
-          const newTotalAssetValue = Math.max(0, currentVal - redeemedDollars);
-
-          if (latestVal.valuation_date === today) {
-            const { error: valUpErr } = await supabase
-              .from('opportunity_valuations')
-              .update({
-                total_asset_value: newTotalAssetValue,
-              })
-              .eq('id', latestVal.id);
-            if (valUpErr) console.error('Error updating opportunity_valuations in manual redemption:', valUpErr);
-          } else {
-            const { error: valInsErr } = await supabase
-              .from('opportunity_valuations')
-              .insert({
-                opportunity_id: Number(opportunityId),
-                total_asset_value: newTotalAssetValue,
-                valuation_date: today,
-                created_by_admin_id: session.user.adminId || null,
-              });
-            if (valInsErr) console.error('Error inserting opportunity_valuations in manual redemption:', valInsErr);
-          }
-        } else {
-          // If no opportunity_valuations record exists yet, baseline from opp.total_value
-          const { data: oppRecord } = await supabase
-            .from('opportunities')
-            .select('total_value')
-            .eq('id', Number(opportunityId))
-            .maybeSingle();
-
-          const baseVal = oppRecord?.total_value ? Number(oppRecord.total_value) : 0;
-          const newTotalAssetValue = Math.max(0, baseVal - redeemedDollars);
-          const { error: valInsErr } = await supabase
-            .from('opportunity_valuations')
-            .insert({
-              opportunity_id: Number(opportunityId),
-              total_asset_value: newTotalAssetValue,
-              valuation_date: today,
-              created_by_admin_id: session.user.adminId || null,
-            });
-          if (valInsErr) console.error('Error inserting baseline opportunity_valuations in manual redemption:', valInsErr);
-        }
-
-        // Also decrement opportunities.total_value if present
-        const { data: opp } = await supabase
-          .from('opportunities')
-          .select('id, total_value')
-          .eq('id', Number(opportunityId))
-          .maybeSingle();
-
-        if (opp && opp.total_value !== null && opp.total_value !== undefined) {
-          const newOppTotal = Math.max(0, Number(opp.total_value || 0) - redeemedDollars);
-          const { error: oppUpErr } = await supabase
-            .from('opportunities')
-            .update({ total_value: newOppTotal })
-            .eq('id', Number(opportunityId));
-          if (oppUpErr) console.error('Error updating opportunities total_value in manual redemption:', oppUpErr);
-        }
-      } catch (valErr) {
-        console.error('Opportunity valuation adjustment failed in manual redemption:', valErr);
-      }
-    }
+    // 8️⃣ UPDATE INVESTMENT AMOUNT_INVESTED, LEGACY ALLOCATIONS, AND OPPORTUNITY VALUATION
+    await applyRedemptionToInvestmentAndLegacy({
+      supabase,
+      investmentId: redemption.investment_id,
+      shareholderId: resolvedShareholderId,
+      shareholderEmail: redemption.shareholders?.email || null,
+      opportunityId: oppId,
+      redeemedDollars,
+      adminId: session.user.adminId || null,
+    });
 
     revalidatePath('/admin/redemptions');
+    revalidatePath('/admin/investments');
+    revalidatePath('/admin/legacy');
+    revalidatePath('/admin/shareholders');
+    revalidatePath('/account');
     revalidatePath('/account/investments');
     revalidatePath('/account/payment');
     revalidatePath('/admin/finance-reports/valuations');
@@ -884,14 +735,271 @@ export async function processManualRedemptionAction(formData) {
 }
 
 /* ---------------------------------------------------------
+   HELPER: REDUCE INVESTMENT AMOUNT, EXIT IF 0, SYNC LEGACY & VALUATION
+------------------------------------------------------------ */
+async function applyRedemptionToInvestmentAndLegacy({
+  supabase,
+  investmentId,
+  shareholderId,
+  shareholderEmail,
+  opportunityId,
+  redeemedDollars,
+  adminId,
+}) {
+  const numericRedeemed = Math.max(0, Number(redeemedDollars || 0));
+  if (numericRedeemed <= 0 && !investmentId) return;
+
+  // Snapshot latest valuation BEFORE updating investments.amount_invested
+  // (to detect whether the DB trigger trg_add_investment_to_opportunity_valuation already adjusted it)
+  let valBefore = null;
+  if (opportunityId) {
+    const { data: vBefore } = await supabase
+      .from('opportunity_valuations')
+      .select('id, total_asset_value, valuation_date')
+      .eq('opportunity_id', Number(opportunityId))
+      .order('valuation_date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    valBefore = vBefore || null;
+  }
+
+  let resolvedShId = shareholderId ? Number(shareholderId) : null;
+  let resolvedOppId = opportunityId ? Number(opportunityId) : null;
+  let newInvestedAmount = 0;
+
+  // 1. Reduce investment amount_invested; if 0, mark status = 'exited' (not participating)
+  if (investmentId) {
+    const { data: inv } = await supabase
+      .from('investments')
+      .select('id, shareholder_id, opportunity_id, amount_invested, current_value, status')
+      .eq('id', investmentId)
+      .maybeSingle();
+
+    if (inv) {
+      if (!resolvedShId && inv.shareholder_id) resolvedShId = Number(inv.shareholder_id);
+      if (!resolvedOppId && inv.opportunity_id) resolvedOppId = Number(inv.opportunity_id);
+
+      const currentInvested = Number(inv.amount_invested || 0);
+      newInvestedAmount = Math.max(0, currentInvested - numericRedeemed);
+
+      const invUpdates = {
+        amount_invested: newInvestedAmount,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (newInvestedAmount <= 0) {
+        invUpdates.status = 'exited';
+        invUpdates.current_value = 0;
+        invUpdates.exited_at = new Date().toISOString();
+      } else {
+        invUpdates.status = 'active';
+        invUpdates.exited_at = null;
+        if (inv.current_value != null) {
+          invUpdates.current_value = Math.max(0, Number(inv.current_value) - numericRedeemed);
+        }
+      }
+
+      await supabase.from('investments').update(invUpdates).eq('id', inv.id);
+
+      // If remaining investment is 0, remove from calendar_investments so shareholder is no longer a participant
+      if (newInvestedAmount <= 0) {
+        try {
+          await supabase
+            .from('calendar_investments')
+            .delete()
+            .eq('investment_id', inv.id);
+        } catch (calErr) {
+          console.warn('Notice removing exited investment from calendar_investments:', calErr?.message);
+        }
+      }
+    }
+  }
+
+  // 2. Keep legacy_shareholders staging allocation in sync so Legacy Sync never re-activates an exited/reduced investment
+  if ((resolvedShId || shareholderEmail) && resolvedOppId) {
+    try {
+      let legQuery = supabase.from('legacy_shareholders').select('*');
+      if (resolvedShId && shareholderEmail) {
+        legQuery = legQuery.or(
+          `claimed_by_shareholder_id.eq.${resolvedShId},email.ilike.${shareholderEmail}`
+        );
+      } else if (resolvedShId) {
+        legQuery = legQuery.eq('claimed_by_shareholder_id', resolvedShId);
+      } else {
+        legQuery = legQuery.ilike('email', shareholderEmail);
+      }
+
+      const { data: legacyRows } = await legQuery;
+
+      for (const leg of legacyRows || []) {
+        let allocations = [];
+        let hasJsonInNotes = false;
+        let cleanNotes = leg.notes || '';
+
+        if (Array.isArray(leg.investments) && leg.investments.length > 0) {
+          allocations = [...leg.investments];
+        } else if (leg.notes && leg.notes.includes('[Allocations JSON]:')) {
+          hasJsonInNotes = true;
+          const parts = leg.notes.split('[Allocations JSON]:');
+          cleanNotes = parts[0]?.trim() || '';
+          try {
+            const parsed = JSON.parse(parts[1]?.trim() || '[]');
+            if (Array.isArray(parsed)) allocations = parsed;
+          } catch (e) {
+            console.warn('Could not parse legacy notes allocations JSON:', e);
+          }
+        } else if (leg.opportunity_id && Number(leg.amount_invested) > 0) {
+          allocations = [
+            {
+              opportunity_id: Number(leg.opportunity_id),
+              amount_invested: Number(leg.amount_invested),
+              start_date: leg.start_date,
+            },
+          ];
+        }
+
+        if (allocations.length > 0) {
+          const updatedAllocations = allocations
+            .map((alloc) => {
+              if (Number(alloc.opportunity_id) === Number(resolvedOppId)) {
+                return {
+                  ...alloc,
+                  amount_invested: newInvestedAmount,
+                };
+              }
+              return alloc;
+            })
+            .filter((alloc) => Number(alloc.amount_invested || 0) > 0);
+
+          const newTotalLegacyInvested = updatedAllocations.reduce(
+            (sum, a) => sum + Number(a.amount_invested || 0),
+            0
+          );
+          const primaryAlloc = updatedAllocations[0] || null;
+
+          const legacyUpdate = {
+            amount_invested: newTotalLegacyInvested,
+            opportunity_id: primaryAlloc ? Number(primaryAlloc.opportunity_id) : leg.opportunity_id,
+            updated_at: new Date().toISOString(),
+          };
+
+          if (Array.isArray(leg.investments)) {
+            legacyUpdate.investments = updatedAllocations;
+          }
+          if (hasJsonInNotes || !Array.isArray(leg.investments)) {
+            legacyUpdate.notes = cleanNotes
+              ? `${cleanNotes}\n[Allocations JSON]: ${JSON.stringify(updatedAllocations)}`
+              : `[Allocations JSON]: ${JSON.stringify(updatedAllocations)}`;
+          }
+
+          const { error: legUpErr } = await supabase
+            .from('legacy_shareholders')
+            .update(legacyUpdate)
+            .eq('id', leg.id);
+
+          if (legUpErr && legUpErr.message?.includes('investments')) {
+            delete legacyUpdate.investments;
+            await supabase
+              .from('legacy_shareholders')
+              .update(legacyUpdate)
+              .eq('id', leg.id);
+          }
+        }
+      }
+    } catch (legSyncErr) {
+      console.warn('Notice syncing legacy_shareholders after redemption:', legSyncErr?.message);
+    }
+  }
+
+  // 3. Adjust opportunity_valuations and opportunities.total_value ONLY if DB trigger did not already deduct it
+  if (resolvedOppId && numericRedeemed > 0) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: latestValAfter } = await supabase
+        .from('opportunity_valuations')
+        .select('*')
+        .eq('opportunity_id', Number(resolvedOppId))
+        .order('valuation_date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const triggerAlreadyAdjusted =
+        valBefore &&
+        latestValAfter &&
+        Number(valBefore.total_asset_value || 0) - Number(latestValAfter.total_asset_value || 0) >=
+          numericRedeemed - 0.01;
+
+      if (!triggerAlreadyAdjusted) {
+        if (latestValAfter) {
+          const currentVal = Number(latestValAfter.total_asset_value || 0);
+          const newTotalAssetValue = Math.max(0, currentVal - numericRedeemed);
+
+          if (latestValAfter.valuation_date === today) {
+            await supabase
+              .from('opportunity_valuations')
+              .update({ total_asset_value: newTotalAssetValue })
+              .eq('id', latestValAfter.id);
+          } else {
+            await supabase
+              .from('opportunity_valuations')
+              .insert({
+                opportunity_id: Number(resolvedOppId),
+                total_asset_value: newTotalAssetValue,
+                valuation_date: today,
+                created_by_admin_id: adminId || null,
+              });
+          }
+        } else {
+          const { data: oppRecord } = await supabase
+            .from('opportunities')
+            .select('total_value')
+            .eq('id', Number(resolvedOppId))
+            .maybeSingle();
+
+          const baseVal = oppRecord?.total_value ? Number(oppRecord.total_value) : 0;
+          const newTotalAssetValue = Math.max(0, baseVal - numericRedeemed);
+          await supabase
+            .from('opportunity_valuations')
+            .insert({
+              opportunity_id: Number(resolvedOppId),
+              total_asset_value: newTotalAssetValue,
+              valuation_date: today,
+              created_by_admin_id: adminId || null,
+            });
+        }
+
+        const { data: opp } = await supabase
+          .from('opportunities')
+          .select('id, total_value')
+          .eq('id', Number(resolvedOppId))
+          .maybeSingle();
+
+        if (opp && opp.total_value !== null && opp.total_value !== undefined) {
+          const newOppTotal = Math.max(0, Number(opp.total_value || 0) - numericRedeemed);
+          await supabase
+            .from('opportunities')
+            .update({ total_value: newOppTotal })
+            .eq('id', Number(resolvedOppId));
+        }
+      }
+    } catch (valErr) {
+      console.error('Opportunity valuation adjustment failed:', valErr);
+    }
+  }
+}
+
+/* ---------------------------------------------------------
    BEGIN PROCESS REDEMPTION
 ------------------------------------------------------------ */
 
 export async function processRedemptionAdmin(formData) {
   try {
+    const session = await auth();
     const redemptionId = formData.get('redemptionId');
     const action = formData.get('action') || formData.get('status');
-    const adminNotes = formData.get('admin_notes');
+    const adminNotes = formData.get('admin_notes') || formData.get('rejectionNotes');
 
     // Grab the new policy ID (will be null if action === 'completed')
     const rejectionPolicyId = formData.get('rejectionPolicyId');
@@ -900,18 +1008,39 @@ export async function processRedemptionAdmin(formData) {
 
     const supabase = createAdminSupabaseClient();
 
+    const { data: existingRedemption, error: fetchErr } = await supabase
+      .from('redemption_requests')
+      .select(`
+        *,
+        shareholders ( id, fullName, email ),
+        investments ( id, shareholder_id, opportunity_id, amount_invested, status )
+      `)
+      .eq('id', redemptionId)
+      .maybeSingle();
+
+    if (fetchErr || !existingRedemption) {
+      throw new Error('Redemption request not found');
+    }
+
     // Dynamically build the update payload
     const payload = {
       status: action,
-      admin_notes: adminNotes,
+      ...(adminNotes !== null && adminNotes !== undefined ? { admin_notes: adminNotes } : {}),
       processed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
+
+    const totalGoal = Number(existingRedemption.amount || 0);
+    const alreadyRedeemed = Number(existingRedemption.already_redeemed_so_far || 0);
+    const remainingToRedeem = Math.max(0, totalGoal - alreadyRedeemed);
+
+    if (action === 'completed') {
+      payload.already_redeemed_so_far = Math.max(totalGoal, alreadyRedeemed);
+    }
 
     // If rejected, map the selected policy to the database record
     if (action === 'rejected') {
       if (!rejectionPolicyId) throw new Error('Rejection policy is required');
-
-      // Assumes your redemption_requests table has this column:
       payload.rejection_policy_id = rejectionPolicyId;
     }
 
@@ -922,7 +1051,36 @@ export async function processRedemptionAdmin(formData) {
 
     if (error) throw new Error(error.message);
 
+    if (action === 'completed' && existingRedemption.investment_id) {
+      await applyRedemptionToInvestmentAndLegacy({
+        supabase,
+        investmentId: existingRedemption.investment_id,
+        shareholderId: existingRedemption.shareholder_id || existingRedemption.investments?.shareholder_id,
+        shareholderEmail: existingRedemption.shareholders?.email || null,
+        opportunityId: existingRedemption.investments?.opportunity_id || null,
+        redeemedDollars: remainingToRedeem,
+        adminId: session?.user?.adminId || null,
+      });
+    } else if (action === 'rejected' && existingRedemption.investment_id) {
+      // If redemption was rejected and the shareholder still has positive capital invested, ensure status is active
+      const currentInvAmt = Number(existingRedemption.investments?.amount_invested || 0);
+      if (currentInvAmt > 0) {
+        await supabase
+          .from('investments')
+          .update({
+            status: 'active',
+            exited_at: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingRedemption.investment_id);
+      }
+    }
+
     revalidatePath('/admin/redemptions');
+    revalidatePath('/admin/investments');
+    revalidatePath('/admin/legacy');
+    revalidatePath('/account');
+    revalidatePath('/account/investments');
     return { success: true };
   } catch (err) {
     console.error('processRedemptionAdmin error:', err);

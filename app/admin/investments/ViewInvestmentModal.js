@@ -50,9 +50,14 @@ export default function ViewInvestmentModal({ investment }) {
   const formattedInvested = FormatCurrency(investment.amount_invested);
   const formattedCommitted = FormatCurrency(investment.total_committed);
 
+  const isExited =
+    investment.status?.toUpperCase() === 'EXITED' ||
+    Number(investment.amount_invested ?? 0) <= 0;
+
   const isRedemption =
+    isExited ||
     investment.status?.toUpperCase() === 'REDEMPTION' ||
-    investment.status?.toUpperCase() === 'EXITED';
+    Boolean(investment.hasActiveRedemption);
 
   // Rule: Opportunity type 'core' cannot begin redemption if shareholder participates in other opportunity types
   const isCoreOpportunity =
@@ -114,7 +119,11 @@ export default function ViewInvestmentModal({ investment }) {
                       : 'bg-orange-100 text-orange-700 border-orange-200'
                 }`}
               >
-                {investment.status || 'PENDING'}
+                {isExited
+                  ? 'EXITED (Not Participating)'
+                  : investment.hasActiveRedemption
+                    ? 'REDEMPTION PENDING'
+                    : investment.status || 'PENDING'}
               </span>
             </div>
           </div>
@@ -231,7 +240,9 @@ export default function ViewInvestmentModal({ investment }) {
           <div className="pt-4 space-y-3">
             {isRedemption ? (
               <div className="p-3 bg-red-50 text-red-700 text-center rounded-lg border border-red-100 font-bold">
-                Redemption Process Began on {formatDate(investment.exited_at)}
+                {isExited
+                  ? `Fully Redeemed / Exited (Not Participating)${investment.exited_at ? ` on ${formatDate(investment.exited_at)}` : ''}`
+                  : `Redemption Process Began on ${formatDate(investment.activeRedemption?.created_at || investment.exited_at)}`}
               </div>
             ) : isRedemptionBlockedForCore ? (
               <div className="space-y-3">

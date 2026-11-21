@@ -39,7 +39,9 @@ export async function syncAllCalendarInvestments() {
         opportunity_id,
         opportunities ( id, name )
       `
-      );
+      )
+      .neq('status', 'exited')
+      .gt('amount_invested', 0);
 
     if (invErr || !investments || investments.length === 0) return { linked: 0 };
 
@@ -1039,7 +1041,7 @@ export async function getInvestorsForOpportunity(opportunityId) {
 
   const supabase = createAdminSupabaseClient();
 
-  // Joins the investments table with the shareholders table
+  // Joins the investments table with the shareholders table (only active participating investors)
   const { data, error } = await supabase
     .from('investments')
     .select(
@@ -1059,7 +1061,9 @@ export async function getInvestorsForOpportunity(opportunityId) {
       )
     `
     )
-    .eq('opportunity_id', opportunityId);
+    .eq('opportunity_id', opportunityId)
+    .neq('status', 'exited')
+    .gt('amount_invested', 0);
 
   if (error) {
     console.error('Supabase Query Error:', error);

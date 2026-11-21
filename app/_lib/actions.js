@@ -439,14 +439,27 @@ export async function createLegacyShareholder(prevState, formData) {
             .maybeSingle();
 
           if (existingInv) {
+            const { data: redReqs } = await adminClient
+              .from('redemption_requests')
+              .select('amount, already_redeemed_so_far, status')
+              .eq('investment_id', existingInv.id)
+              .in('status', ['approved', 'completed']);
+
+            const totalRedeemedForInv = (redReqs || []).reduce((sum, r) => {
+              const paid = Number(r.already_redeemed_so_far || 0);
+              const reqAmt = Number(r.amount || 0);
+              return sum + (r.status === 'completed' ? Math.max(paid, reqAmt) : paid);
+            }, 0);
+            const netInvested = Math.max(0, amount - totalRedeemedForInv);
+
             await adminClient
               .from('investments')
               .update({
-                amount_invested: amount,
+                amount_invested: netInvested,
                 total_committed: amount,
-                status: 'active',
-                exited_at: null,
-                current_value: amount,
+                status: netInvested > 0 ? 'active' : 'exited',
+                exited_at: netInvested > 0 ? null : new Date().toISOString(),
+                current_value: netInvested,
                 updated_at: new Date().toISOString(),
               })
               .eq('id', existingInv.id);
@@ -547,6 +560,11 @@ export async function syncMissingLegacyInvestments() {
       .select('*');
     if (invErr) throw invErr;
 
+    const { data: redemptionRequests } = await adminClient
+      .from('redemption_requests')
+      .select('id, investment_id, shareholder_id, amount, already_redeemed_so_far, status')
+      .in('status', ['approved', 'completed']);
+
     let syncedCount = 0;
 
     for (const leg of (legacy || [])) {
@@ -615,20 +633,31 @@ export async function syncMissingLegacyInvestments() {
           (i) => i.shareholder_id === sh.id && Number(i.opportunity_id) === oppId
         );
 
-        if (existing?.status === 'exited') {
-          // Re-activate if legacy record specifies an active allocation
-          await adminClient
-            .from('investments')
-            .update({
-              amount_invested: amount,
-              total_committed: Math.max(Number(existing.total_committed || 0), amount),
-              status: 'active',
-              exited_at: null,
-              current_value: amount,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existing.id);
-          syncedCount++;
+        const invRedemptions = (redemptionRequests || []).filter(
+          (r) =>
+            (existing && Number(r.investment_id) === Number(existing.id))
+        );
+        const totalRedeemed = invRedemptions.reduce((sum, r) => {
+          const paid = Number(r.already_redeemed_so_far || 0);
+          const reqAmt = Number(r.amount || 0);
+          return sum + (r.status === 'completed' ? Math.max(paid, reqAmt) : paid);
+        }, 0);
+        const netAmount = Math.max(0, amount - totalRedeemed);
+
+        if (netAmount <= 0) {
+          if (existing && (existing.status !== 'exited' || Number(existing.amount_invested) > 0)) {
+            await adminClient
+              .from('investments')
+              .update({
+                amount_invested: 0,
+                current_value: 0,
+                status: 'exited',
+                exited_at: existing.exited_at || new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', existing.id);
+            syncedCount++;
+          }
           continue;
         }
 
@@ -636,7 +665,7 @@ export async function syncMissingLegacyInvestments() {
           const { error: insertErr } = await adminClient.from('investments').insert({
             shareholder_id: sh.id,
             opportunity_id: oppId,
-            amount_invested: amount,
+            amount_invested: netAmount,
             total_committed: amount,
             status: 'active',
             start_date: startDate,
@@ -648,12 +677,14 @@ export async function syncMissingLegacyInvestments() {
           } else {
             console.error(`Failed to insert investment for shareholder ${sh.id} opp ${oppId}:`, insertErr);
           }
-        } else if (Number(existing.amount_invested) !== amount) {
+        } else if (Number(existing.amount_invested) !== netAmount) {
           const { error: updateErr } = await adminClient
             .from('investments')
             .update({
-              amount_invested: amount,
-              total_committed: amount,
+              amount_invested: netAmount,
+              total_committed: Math.max(Number(existing.total_committed || 0), amount),
+              status: 'active',
+              exited_at: null,
               updated_at: new Date().toISOString(),
             })
             .eq('id', existing.id);
@@ -2282,7 +2313,9 @@ export async function getInvestorCalendar(shareholderId) {
         )
       `
       )
-      .eq('shareholder_id', shareholderId);
+      .eq('shareholder_id', shareholderId)
+      .neq('status', 'exited')
+      .gt('amount_invested', 0);
 
     if (!invError && invData) {
       investments = invData;

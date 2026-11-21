@@ -563,8 +563,8 @@ export async function getInvestments(shareholderId) {
     `
     )
     .eq('shareholder_id', shareholderId)
-    
     .in('status', ['active', 'pending'])
+    .gt('amount_invested', 0)
     // 2. Filter for investments that haven't ended yet
     .or(`end_date.is.null,end_date.gte.${today}`)
     .order('start_date');
@@ -637,7 +637,9 @@ export async function getShareholderDocuments(shareholderId) {
   const { data: investments, error: invError } = await supabase
     .from('investments')
     .select('opportunity_id')
-    .eq('shareholder_id', shareholderId);
+    .eq('shareholder_id', shareholderId)
+    .neq('status', 'exited')
+    .gt('amount_invested', 0);
 
   if (invError) {
     console.error('Error fetching shareholder investments:', invError);

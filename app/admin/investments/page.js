@@ -35,19 +35,29 @@ const formatDate = (dateString) => {
   });
 };
 
-const getStatusBadge = (status) => {
-  const s = (status || '').toUpperCase().trim();
+const getStatusBadge = (status, amountInvested) => {
+  const isZeroOrExited =
+    Number(amountInvested ?? 0) <= 0 ||
+    (status || '').toUpperCase().trim() === 'EXITED';
+  const s = isZeroOrExited ? 'EXITED' : (status || '').toUpperCase().trim();
   const map = {
     ACTIVE: 'text-emerald-700 bg-emerald-50 border-emerald-100',
     PENDING: 'text-amber-700 bg-amber-50 border-amber-100',
-    EXITED: 'text-slate-600 bg-slate-50 border-slate-100',
+    EXITED: 'text-slate-600 bg-slate-100 border-slate-200',
   };
   const style = map[s] || 'text-slate-500 bg-slate-50 border-slate-100';
 
   return (
-    <span className={`text-xs font-black uppercase tracking-wider border px-2 py-0.5 rounded ${style}`}>
-      {status}
-    </span>
+    <div className="flex flex-col items-start gap-0.5">
+      <span className={`text-xs font-black uppercase tracking-wider border px-2 py-0.5 rounded ${style}`}>
+        {isZeroOrExited ? 'EXITED' : status}
+      </span>
+      {isZeroOrExited && (
+        <span className="text-[10px] font-bold text-slate-400">
+          Not Participating
+        </span>
+      )}
+    </div>
   );
 };
 
@@ -61,6 +71,7 @@ export default async function InvestmentsPage({ searchParams }) {
   const redemptionId = params?.redemption || null;
   const searchShareholder = params?.searchShareholder || null;
   const filterOpportunity = params?.filterOpportunity || null;
+  const filterStatus = params?.filterStatus || 'participating';
 
   let ledger = [];
 
@@ -74,6 +85,7 @@ export default async function InvestmentsPage({ searchParams }) {
       to,
       searchShareholder,
       filterOpportunity,
+      filterStatus,
     }),
     getOpportunities(),
     viewId ? getInvestmentById(viewId) : null,
@@ -84,6 +96,17 @@ export default async function InvestmentsPage({ searchParams }) {
   if (viewedRedemption?.investment_id) {
     ledger = await getInvestmentLedger(viewedRedemption.investment_id);
   }
+
+  const buildStatusHref = (nextStatus) => {
+    const q = new URLSearchParams();
+    if (filterOpportunity) q.set('filterOpportunity', filterOpportunity);
+    if (searchShareholder) q.set('searchShareholder', searchShareholder);
+    if (nextStatus && nextStatus !== 'participating') {
+      q.set('filterStatus', nextStatus);
+    }
+    const qs = q.toString();
+    return qs ? `/admin/investments?${qs}` : '/admin/investments';
+  };
 
   return (
     <div className="space-y-6 px-2 py-4 sm:px-4 lg:px-6 max-w-[1600px] mx-auto h-full">
@@ -105,8 +128,42 @@ export default async function InvestmentsPage({ searchParams }) {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Investments <span className="text-blue-600">Ledger</span>
           </h1>
-          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
-            {investments.length} Total Records
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+              <Link
+                href={buildStatusHref('participating')}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  filterStatus === 'participating'
+                    ? 'bg-white text-blue-600 shadow-2xs font-black'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Participating Investors
+              </Link>
+              <Link
+                href={buildStatusHref('exited')}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  filterStatus === 'exited'
+                    ? 'bg-white text-slate-900 shadow-2xs font-black'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Exited / Redeemed ($0)
+              </Link>
+              <Link
+                href={buildStatusHref('all')}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  filterStatus === 'all'
+                    ? 'bg-white text-slate-900 shadow-2xs font-black'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All
+              </Link>
+            </div>
+            <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full w-fit uppercase tracking-wider">
+              {investments.length} {filterStatus === 'participating' ? 'Active Participating' : 'Total'} Records
+            </div>
           </div>
         </div>
       </div>
@@ -182,7 +239,7 @@ export default async function InvestmentsPage({ searchParams }) {
                     {formatCurrency(investment.amount_invested ?? 0)}
                   </td>
                   <td className="px-4 py-4">
-                    {getStatusBadge(investment.status)}
+                    {getStatusBadge(investment.status, investment.amount_invested)}
                   </td>
                   <td className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">

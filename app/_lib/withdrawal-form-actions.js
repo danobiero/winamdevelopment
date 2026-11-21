@@ -48,7 +48,8 @@ export async function initializeWithdrawalFormForRedemption({
     .from('investments')
     .select('id, shareholder_id, amount_invested, current_value, status, shareholders(id, fullName, email)')
     .eq('opportunity_id', targetOppId)
-    .neq('status', 'exited');
+    .neq('status', 'exited')
+    .gt('amount_invested', 0);
 
   // Build unique map of active participating members
   const activeMembersMap = new Map();
@@ -262,17 +263,19 @@ export async function getActiveWithdrawalFormsForShareholder(shareholderId) {
     const currentEmail = currentShareholder?.email?.toLowerCase().trim() || '';
     const currentName = currentShareholder?.fullName?.toLowerCase().trim() || '';
 
-    // Check if the current shareholder has an active participation in USA Land Project
+    // Check if the current shareholder has an active participation in USA Land Project (amount_invested > 0)
     const { data: userInvestments } = await adminClient
       .from('investments')
       .select('id, opportunity_id, amount_invested, status, opportunities(name, type)')
       .eq('shareholder_id', shareholderId)
-      .neq('status', 'exited');
+      .neq('status', 'exited')
+      .gt('amount_invested', 0);
 
     const participatesInLand = (userInvestments || []).some(
       (inv) =>
-        Number(inv.opportunity_id) === USA_LAND_OPPORTUNITY_ID ||
-        (inv.opportunities?.name || '').toLowerCase().includes('usa land')
+        (Number(inv.opportunity_id) === USA_LAND_OPPORTUNITY_ID ||
+          (inv.opportunities?.name || '').toLowerCase().includes('usa land')) &&
+        Number(inv.amount_invested || 0) > 0
     );
 
     // 2. Fetch active/pending member_withdrawal_forms
