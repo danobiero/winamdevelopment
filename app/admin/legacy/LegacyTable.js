@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { deleteLegacyShareholder } from '@/app/_lib/actions';
 import { FormatCurrency } from '@/app/_lib/utils';
+import { useToast } from '@/app/_lib/ToastContext';
 import EditLegacyModal from './EditLegacyModal';
 import {
   CheckBadgeIcon,
@@ -12,6 +13,8 @@ import {
   ShieldCheckIcon,
   UserIcon,
   MagnifyingGlassIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 function getAllocations(r, opportunities = []) {
@@ -126,7 +129,9 @@ export default function LegacyTable({
   const [isPending, startTransition] = useTransition();
   const [editingRecord, setEditingRecord] = useState(null);
   const [editingAllocations, setEditingAllocations] = useState([]);
+  const [deletingRecord, setDeletingRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { showToast } = useToast();
 
   const handleOpenEdit = (record, allocations) => {
     setEditingRecord(record);
@@ -138,12 +143,38 @@ export default function LegacyTable({
     setEditingAllocations([]);
   };
 
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Delete legacy record for "${name}"?`)) {
-      startTransition(async () => {
-        await deleteLegacyShareholder(id);
-      });
+  const handleOpenDelete = (record, allocations = [], totalAmount = 0) => {
+    setDeletingRecord({
+      ...record,
+      allocationsCount: allocations.length,
+      totalAmount,
+    });
+  };
+
+  const handleCloseDelete = () => {
+    if (!isPending) {
+      setDeletingRecord(null);
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingRecord) return;
+    startTransition(async () => {
+      try {
+        await deleteLegacyShareholder(deletingRecord.id);
+        showToast?.(
+          `Legacy record for "${deletingRecord.full_name}" deleted successfully.`,
+          'success'
+        );
+        setDeletingRecord(null);
+      } catch (err) {
+        console.error('Error deleting legacy record:', err);
+        showToast?.(
+          err.message || 'Could not delete legacy record.',
+          'error'
+        );
+      }
+    });
   };
 
   const filteredRecords = (records || []).filter((r) => {
@@ -255,7 +286,7 @@ export default function LegacyTable({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(r.id, r.full_name)}
+                    onClick={() => handleOpenDelete(r, allocations, totalAmount)}
                     disabled={isPending}
                     title="Delete Staging Record"
                     className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
@@ -506,7 +537,7 @@ export default function LegacyTable({
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDelete(r.id, r.full_name)}
+                        onClick={() => handleOpenDelete(r, allocations, totalAmount)}
                         disabled={isPending}
                         title="Delete Staging Record"
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
@@ -532,6 +563,128 @@ export default function LegacyTable({
           initialAllocations={editingAllocations}
           onClose={handleCloseEdit}
         />
+      )}
+
+      {/* Custom Delete Confirmation Alert Modal */}
+      {deletingRecord && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={handleCloseDelete}
+        >
+          <div
+            className="bg-white rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-5 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Warning Icon Badge */}
+            <div className="flex items-center justify-center w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl mx-auto shadow-inner">
+              <ExclamationTriangleIcon className="h-7 w-7" />
+            </div>
+
+            {/* Text Header */}
+            <div className="text-center space-y-1">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Delete Legacy Shareholder?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                This action cannot be undone. This legacy staging record and any linked synthetic legacy payment entries will be permanently removed.
+              </p>
+            </div>
+
+            {/* Record Summary Card */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5 text-left text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-400 font-bold uppercase tracking-wider">
+                  Shareholder:
+                </span>
+                <span className="font-bold text-slate-900 text-right truncate">
+                  {deletingRecord.full_name}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-400 font-bold uppercase tracking-wider">
+                  Email:
+                </span>
+                <span className="font-mono font-medium text-blue-600 text-right break-all">
+                  {deletingRecord.email}
+                </span>
+              </div>
+
+              {deletingRecord.telephone && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">
+                    Telephone:
+                  </span>
+                  <span className="font-medium text-slate-700 text-right">
+                    {deletingRecord.telephone}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
+                <span className="text-slate-400 font-bold uppercase tracking-wider">
+                  Staged Portfolio:
+                </span>
+                <span className="font-mono font-black text-emerald-700 text-right">
+                  {FormatCurrency(deletingRecord.totalAmount || 0)} (
+                  {deletingRecord.allocationsCount || 0}{' '}
+                  {deletingRecord.allocationsCount === 1
+                    ? 'allocation'
+                    : 'allocations'}
+                  )
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-400 font-bold uppercase tracking-wider">
+                  Sync Status:
+                </span>
+                {deletingRecord.is_claimed ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckBadgeIcon className="h-3 w-3 text-emerald-600" />
+                    Claimed & Live
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                    <ClockIcon className="h-3 w-3 text-amber-500" />
+                    Awaiting Sign-In
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Buttons */}
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleCloseDelete}
+                disabled={isPending}
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isPending}
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-rose-600/20 active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isPending ? (
+                  <>
+                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="h-4 w-4" />
+                    <span>Yes, Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
