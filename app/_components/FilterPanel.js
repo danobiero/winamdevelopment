@@ -103,7 +103,7 @@ export default function FilterPanel({
     (showDateRange && (initialStartDate || initialEndDate));
 
   return (
-    <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="relative bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
       {/* Animated Top Loading Bar */}
       <div 
         className={`absolute top-0 left-0 right-0 h-1 bg-blue-600 transition-transform duration-500 ease-out origin-left ${
@@ -114,7 +114,7 @@ export default function FilterPanel({
       <div className={`p-4 flex flex-wrap gap-4 items-end transition-opacity duration-200 ${isPending ? 'opacity-70 pointer-events-none' : 'opacity-100'}`}>
         {/* Generic Search Input */}
         <div className="flex-1 min-w-[200px]">
-          <label htmlFor="genericSearchInput" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+          <label htmlFor="genericSearchInput" className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
             {searchLabel}
           </label>
           <div className="relative">
@@ -124,7 +124,7 @@ export default function FilterPanel({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder={placeholder}
-              className="w-full text-xs font-semibold border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50/50 pr-8"
+              className="w-full text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 pr-8 transition-colors"
             />
             {isPending && (
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -140,18 +140,24 @@ export default function FilterPanel({
         {/* Opportunity Filter (Conditional) */}
         {opportunities && (
           <div className="w-full sm:w-56">
-            <label htmlFor="filterOpportunity" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+            <label htmlFor="filterOpportunity" className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
               Filter by Opportunity
             </label>
             <select
               id="filterOpportunity"
               value={filterOpportunity}
               onChange={handleOpportunityChange}
-              className="w-full text-xs font-semibold border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50/50"
+              className="w-full text-xs font-semibold text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-colors"
             >
-              <option value="">All Opportunities</option>
+              <option value="" className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                All Opportunities
+              </option>
               {opportunities.map((opp) => (
-                <option key={opp.id} value={opp.id}>
+                <option
+                  key={opp.id}
+                  value={opp.id}
+                  className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                >
                   {opp.name}
                 </option>
               ))}
@@ -163,7 +169,7 @@ export default function FilterPanel({
         {showDateRange && (
           <>
             <div className="w-full sm:w-40">
-              <label htmlFor="startDate" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+              <label htmlFor="startDate" className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
                 Start Date
               </label>
               <input
@@ -171,12 +177,12 @@ export default function FilterPanel({
                 id="startDate"
                 value={startDate}
                 onChange={handleStartDateChange}
-                className="w-full text-xs font-semibold border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50/50"
+                className="w-full text-xs font-semibold text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 dark:[color-scheme:dark] transition-colors"
               />
             </div>
 
             <div className="w-full sm:w-40">
-              <label htmlFor="endDate" className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+              <label htmlFor="endDate" className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
                 End Date
               </label>
               <input
@@ -184,7 +190,7 @@ export default function FilterPanel({
                 id="endDate"
                 value={endDate}
                 onChange={handleEndDateChange}
-                className="w-full text-xs font-semibold border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50/50"
+                className="w-full text-xs font-semibold text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 dark:[color-scheme:dark] transition-colors"
               />
             </div>
           </>
@@ -195,7 +201,7 @@ export default function FilterPanel({
           {hasActiveFilters && (
             <Link
               href={basePath}
-              className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-lg transition-all text-center flex items-center justify-center border font-sans"
+              className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs rounded-lg transition-all text-center flex items-center justify-center font-sans"
             >
               Clear
             </Link>

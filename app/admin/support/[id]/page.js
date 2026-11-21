@@ -24,11 +24,11 @@ export default async function SupportDetailPage({ params }) {
     <div className="px-6 py-8 max-w-4xl mx-auto">
       {/* HEADER */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-primary-900 mb-2">
+        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2">
           {ticket.subject}
         </h1>
 
-        <div className="flex items-center gap-4 text-sm text-primary-500">
+        <div className="flex items-center gap-4 text-sm text-primary-500 dark:text-slate-400">
           <span>Ticket #{ticket.id}</span>
           <StatusBadge status={ticket.status} />
           <span>Created: {new Date(ticket.created_at).toLocaleString()}</span>

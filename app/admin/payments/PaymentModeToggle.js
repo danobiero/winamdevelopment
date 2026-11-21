@@ -37,19 +37,19 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 sm:p-5 transition-all">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 sm:p-5 transition-all">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Title and Active Status */}
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Payment Gateway Mode
             </span>
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                 currentMode === 'stripe'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                  : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
               }`}
             >
               <span
@@ -63,13 +63,13 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
               <ArrowPathIcon className="h-4 w-4 text-slate-400 animate-spin" />
             )}
           </div>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
             Choose whether investors pay automatically via Stripe or send manual payments via Zelle / Cash App.
           </p>
         </div>
 
         {/* Mode Selector Buttons */}
-        <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-xl border border-slate-200 self-start md:self-auto">
+        <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 self-start md:self-auto">
           {/* Manual (Zelle / Cash App) Option */}
           <button
             type="button"
@@ -77,14 +77,14 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
             onClick={() => handleToggle('manual')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
               currentMode === 'manual'
-                ? 'bg-white text-emerald-700 shadow-sm border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <BanknotesIcon className="h-4 w-4 text-emerald-600" />
+            <BanknotesIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             <span>Zelle / Cash App</span>
             {currentMode === 'manual' && (
-              <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+              <CheckCircleIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             )}
           </button>
 
@@ -95,14 +95,14 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
             onClick={() => handleToggle('stripe')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
               currentMode === 'stripe'
-                ? 'bg-white text-blue-700 shadow-sm border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-sm border border-slate-200/60 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <CreditCardIcon className="h-4 w-4 text-blue-600" />
+            <CreditCardIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span>Stripe Checkout</span>
             {currentMode === 'stripe' && (
-              <CheckCircleIcon className="h-4 w-4 text-blue-600" />
+              <CheckCircleIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             )}
           </button>
         </div>
@@ -110,26 +110,26 @@ export default function PaymentModeToggle({ initialMode = 'manual' }) {
 
       {/* Details Box for Active Mode */}
       {currentMode === 'manual' ? (
-        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 p-3 rounded-xl">
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 dark:bg-slate-800/60 p-3 rounded-xl">
           <div>
-            <span className="text-slate-400 font-medium block">Designated Payee</span>
-            <span className="font-bold text-slate-800">Winam Development Group</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium block">Designated Payee</span>
+            <span className="font-bold text-slate-800 dark:text-slate-100">Winam Development Group</span>
           </div>
           <div>
-            <span className="text-slate-400 font-medium block">Cash App Handle</span>
-            <span className="font-bold text-emerald-700 font-mono">$Winam (346-314-3469)</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium block">Cash App Handle</span>
+            <span className="font-bold text-emerald-700 dark:text-emerald-400 font-mono">$Winam (346-314-3469)</span>
           </div>
           <div>
-            <span className="text-slate-400 font-medium block">Zelle Recipient</span>
-            <span className="font-bold text-slate-800 font-mono">
+            <span className="text-slate-500 dark:text-slate-400 font-medium block">Zelle Recipient</span>
+            <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">
               346-314-3469 <br />
-              <span className="text-xs text-slate-600 font-sans">winamdevelopmentgroup@gmail.com</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-sans">winamdevelopmentgroup@gmail.com</span>
             </span>
           </div>
         </div>
       ) : (
-        <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-blue-700 bg-blue-50/50 p-3 rounded-xl flex items-center gap-2">
-          <CreditCardIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/50 p-3 rounded-xl flex items-center gap-2">
+          <CreditCardIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <span>
             Stripe mode is active. Investors are redirected directly to Stripe Checkout for credit/debit card processing.
           </span>

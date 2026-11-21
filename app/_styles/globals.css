@@ -6,6 +6,36 @@
   body {
     font-family: var(--font-open-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
+
+  /* Ensure form inputs, selects, textareas, and dropdown options always have high-contrast readable text in dark mode */
+  :where(input, select, textarea) {
+    color: #0f172a;
+  }
+
+  :where(option) {
+    color: #0f172a;
+    background-color: #ffffff;
+  }
+
+  :where(
+    .dark select[class*="dark:bg-"] option,
+    .dark select[class*="bg-slate-8"] option,
+    .dark select[class*="bg-slate-9"] option
+  ) {
+    color: #f8fafc;
+    background-color: #1e293b;
+  }
+
+  /* Prevent light-surface cards/modals/tables without dark:bg-* from inheriting white text from dark layouts */
+  :where(
+    .dark .bg-white:not([class*="dark:bg-"]),
+    .dark .bg-slate-50:not([class*="dark:bg-"]),
+    .dark .bg-gray-50:not([class*="dark:bg-"]),
+    .dark .bg-slate-100:not([class*="dark:bg-"]),
+    .dark .bg-gray-100:not([class*="dark:bg-"])
+  ) {
+    color: #0f172a;
+  }
 }
 
 @layer components {

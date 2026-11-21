@@ -100,13 +100,13 @@ export default async function PaymentsPage({ searchParams }) {
       {viewedPayment && <PaymentViewModal payment={viewedPayment} />}
 
       {/* HEADER */}
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Payments <span className="text-blue-600">Ledger</span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Payments <span className="text-blue-600 dark:text-blue-400">Ledger</span>
           </h1>
 
-          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {payments.length} Records
           </div>
         </div>
@@ -133,41 +133,41 @@ export default async function PaymentsPage({ searchParams }) {
           return (
             <div
               key={pay.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col space-y-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex flex-col space-y-4"
             >
-              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                <span className="text-xs font-mono text-slate-400 font-bold">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-bold">
                   ID: {pay.id?.slice(0, 8)}...
                 </span>
 
-                <span className="text-lg font-black text-slate-900">
+                <span className="text-lg font-black text-slate-900 dark:text-white">
                   {formatCurrency(pay.amount, pay.currency)}
                 </span>
               </div>
 
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                   Shareholder
                 </p>
 
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   {pay.shareholders?.fullName || pay.metadata?.applicant_name || pay.metadata?.email || 'Applicant / Shareholder'}
                 </h3>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                     Opportunity
                   </p>
 
-                  <div className="text-xs font-bold text-blue-600">
+                  <div className="text-xs font-bold text-blue-600 dark:text-blue-400">
                     {pay.opportunities?.name || 'N/A'}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
                     Status
                   </p>
 
@@ -175,7 +175,7 @@ export default async function PaymentsPage({ searchParams }) {
                 </div>
               </div>
 
-              <div className="pt-4 mt-auto border-t border-slate-50 flex gap-2">
+              <div className="pt-4 mt-auto border-t border-slate-100 dark:border-slate-800 flex gap-2">
                 {status === 'pending' ? (
                   <>
                     <Link
@@ -186,7 +186,7 @@ export default async function PaymentsPage({ searchParams }) {
                     </Link>
                     <Link
                       href={`/admin/payments?view=${pay.id}&page=${page}`}
-                      className="px-4 text-center py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition"
+                      className="px-4 text-center py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-xs font-black uppercase tracking-widest transition"
                     >
                       Details
                     </Link>
@@ -194,7 +194,7 @@ export default async function PaymentsPage({ searchParams }) {
                 ) : (
                   <Link
                     href={`/admin/payments?view=${pay.id}&page=${page}`}
-                    className="block w-full text-center py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest"
+                    className="block w-full text-center py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-widest"
                   >
                     Details
                   </Link>
@@ -206,71 +206,71 @@ export default async function PaymentsPage({ searchParams }) {
       </div>
 
       {/* --- DESKTOP TABLE VIEW --- */}
-      <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <table className="min-w-[850px] w-full divide-y divide-slate-100 text-xs">
-          <thead className="bg-slate-50">
+      <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+        <table className="min-w-[850px] w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+          <thead className="bg-slate-50 dark:bg-slate-800/80">
             <tr>
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Payment ID
               </th>
 
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Shareholder
               </th>
 
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Opportunity
               </th>
 
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Amount
               </th>
 
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Status
               </th>
 
-              <th className="px-6 py-4 text-left font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-left font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Date
               </th>
 
               {/* ✅ RESTORED ACTIONS COLUMN */}
-              <th className="px-6 py-4 text-right font-black text-slate-400 uppercase tracking-widest">
+              <th className="px-6 py-4 text-right font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {payments.map((pay) => {
               const status = getPaymentStatus(pay.status);
 
               return (
-                <tr key={pay.id} className="hover:bg-blue-50/30">
-                  <td className="px-6 py-4 font-mono text-xs text-slate-400">
+                <tr key={pay.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-800/60">
+                  <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
                     {pay.id}
                   </td>
 
-                  <td className="px-6 py-4 font-semibold text-slate-800">
+                  <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">
                     {pay.shareholders?.fullName || pay.metadata?.applicant_name || pay.metadata?.email || '—'}
                   </td>
 
-                  <td className="px-6 py-4 text-slate-700">
+                  <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                     {pay.opportunities?.name}
                   </td>
 
-                  <td className="px-6 py-4 font-black text-slate-900">
+                  <td className="px-6 py-4 font-black text-slate-900 dark:text-white">
                     {formatCurrency(pay.amount, pay.currency)}
                   </td>
 
                   <td className="px-6 py-4 flex items-center gap-2">
                     <PaymentStatusIndicator status={status} />
-                    <span className="capitalize font-semibold text-slate-600">
+                    <span className="capitalize font-semibold text-slate-600 dark:text-slate-300">
                       {pay.status}
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 text-slate-600 font-medium">
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-medium">
                     {formatDate(pay.created_at)}
                   </td>
 
@@ -287,7 +287,7 @@ export default async function PaymentsPage({ searchParams }) {
                       )}
                       <Link
                         href={`/admin/payments?view=${pay.id}&page=${page}`}
-                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-black uppercase text-slate-600 hover:border-slate-900 transition-colors"
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-black uppercase text-slate-700 dark:text-slate-200 hover:border-slate-900 dark:hover:border-slate-500 transition-colors"
                       >
                         Details
                       </Link>

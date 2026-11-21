@@ -26,12 +26,12 @@ export default async function CreateOpportunityPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 space-y-6 sm:space-y-8 antialiased">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          Create New <span className="text-blue-600">Opportunity</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          Create New <span className="text-blue-600 dark:text-blue-400">Opportunity</span>
         </h1>
         <Link
           href="/admin/opportunities"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors mt-2"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mt-2"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           <span>Back to Opportunities</span>

@@ -107,17 +107,17 @@ export default async function MembershipApplicationsPage({ searchParams }) {
       )}
 
       {/* --- HEADER SECTION --- */}
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Membership <span className="text-blue-600">Applications</span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Membership <span className="text-blue-600 dark:text-blue-400">Applications</span>
           </h1>
-          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {applications.length} Records on Page {page}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
           <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
@@ -134,7 +134,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                         : 'bg-red-500'
                 }`}
               />
-              <span className="text-xs font-bold text-slate-600">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                 {status}
               </span>
             </div>
@@ -144,7 +144,7 @@ export default async function MembershipApplicationsPage({ searchParams }) {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Fee Payment Status Filter Tabs */}
-        <div className="inline-flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
+        <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 w-fit">
           {[
             { key: 'all', label: 'All Applications', count: counts.all },
             { key: 'unpaid', label: 'Unpaid', count: counts.unpaid },
@@ -161,8 +161,8 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                       ? 'bg-red-600 text-white shadow-sm'
                       : tab.key === 'paid'
                         ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -170,8 +170,8 @@ export default async function MembershipApplicationsPage({ searchParams }) {
                   className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
                     isActive
                       ? 'bg-black/15 text-white'
-                      : 'bg-slate-200 text-slate-600'
-                  } ${isActive && tab.key === 'all' ? '!bg-slate-100 !text-slate-700' : ''}`}
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  } ${isActive && tab.key === 'all' ? '!bg-slate-100 dark:!bg-slate-700 !text-slate-700 dark:!text-slate-200' : ''}`}
                 >
                   {tab.count}
                 </span>

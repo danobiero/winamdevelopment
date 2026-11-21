@@ -108,7 +108,7 @@ export default function EditBookingFormClient({
 
   return (
     <div className="w-full">
-      <h2 className="text-xl sm:text-2xl font-semibold text-blue-950 mb-4 sm:mb-6">
+      <h2 className="text-xl sm:text-2xl font-semibold text-blue-950 dark:text-white mb-4 sm:mb-6">
         Edit Booking #{bookingId}
       </h2>
 

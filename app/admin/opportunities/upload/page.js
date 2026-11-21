@@ -12,8 +12,8 @@ export default async function UploadPage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-8">
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-        Upload Opportunity <span className="text-blue-600">Documents</span>
+      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        Upload Opportunity <span className="text-blue-600 dark:text-blue-400">Documents</span>
       </h1>
 
       <UploadDocuments opportunities={opportunities} />

@@ -22,17 +22,17 @@ export default async function SupportPage({ searchParams }) {
   return (
     <div className="w-full px-3 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
       {/* HEADER */}
-      <div className="flex flex-col gap-6 border-b border-slate-100 pb-6">
+      <div className="flex flex-col gap-6 border-b border-slate-100 dark:border-slate-800 pb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-[#000033] tracking-tight">
-              Support <span className="text-blue-600">Inbox</span>
+            <h1 className="text-xl sm:text-2xl font-black text-[#000033] dark:text-white tracking-tight">
+              Support <span className="text-blue-600 dark:text-blue-400">Inbox</span>
             </h1>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm w-fit">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-fit">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
               📥
             </div>
 
@@ -41,7 +41,7 @@ export default async function SupportPage({ searchParams }) {
                 Total Tickets
               </p>
 
-              <p className="text-lg font-black text-slate-900 leading-none">
+              <p className="text-lg font-black text-slate-900 dark:text-white leading-none">
                 {data.total}
               </p>
             </div>
@@ -49,26 +49,26 @@ export default async function SupportPage({ searchParams }) {
         </div>
 
         {/* STATUS LEGEND */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
           <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-xs font-bold text-slate-600">Open</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Open</span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               In Progress
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               Resolved
             </span>
           </div>

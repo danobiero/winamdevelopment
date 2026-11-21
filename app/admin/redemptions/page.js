@@ -100,42 +100,42 @@ export default async function RedemptionsPage({ searchParams }) {
       )}
 
       {/* --- HEADER SECTION --- */}
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Redemption <span className="text-blue-600">Requests</span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Redemption <span className="text-blue-600 dark:text-blue-400">Requests</span>
           </h1>
-          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             {redemptions.length} Total Records
           </div>
         </div>
 
         {/* STATUS KEY / LEGEND */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-slate-50/50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
           <span className="text-xs font-black uppercase tracking-widest text-slate-400">
             Status Key:
           </span>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               Pending
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               Approved
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-indigo-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               Completed
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-red-500" />
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
               Rejected
             </span>
           </div>

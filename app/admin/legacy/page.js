@@ -33,19 +33,19 @@ export default async function LegacyPage() {
   return (
     <div className="space-y-6 px-2 py-4 sm:px-4 lg:px-6 max-w-[1600px] w-full min-w-0 mx-auto">
       {/* Header Section */}
-      <header className="border-b border-slate-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="border-b border-slate-200 dark:border-slate-800 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-[#000033] tracking-tight uppercase">
-              Legacy <span className="text-blue-600">Registry</span>
+            <h1 className="text-xl sm:text-2xl font-black text-[#000033] dark:text-white tracking-tight uppercase">
+              Legacy <span className="text-blue-600 dark:text-blue-400">Registry</span>
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-200">
-              <UserGroupIcon className="h-3 w-3 text-blue-600" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <UserGroupIcon className="h-3 w-3 text-blue-600 dark:text-blue-400" />
               Pre-Platform Onboarding
             </span>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
             Pre-stage shareholders who joined before platform inception. When they sign in with Google, their portfolio, payment info, and membership migrate automatically.
           </p>
         </div>

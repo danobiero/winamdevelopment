@@ -26,7 +26,7 @@ export default async function EditOpportunityPage({ params }) {
         <div className="bg-red-50 p-4 rounded-full mb-4">
           <ExclamationTriangleIcon className="h-10 w-10 text-red-600" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Opportunity Not Found
         </h1>
         <p className="text-slate-500 mt-2 font-medium">
@@ -43,15 +43,15 @@ export default async function EditOpportunityPage({ params }) {
     */
     <div className="max-w-3xl mx-auto px-4 py-4 sm:px-0 sm:py-10 antialiased">
       <div className="mb-8 px-1">
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          Edit <span className="text-blue-600">Opportunity</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          Edit <span className="text-blue-600 dark:text-blue-400">Opportunity</span>
         </h1>
 
-        <p className="text-sm sm:text-base text-slate-500 font-medium mt-2 leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium mt-2 leading-relaxed">
           <span className="block sm:inline">
             Update the details and financial parameters for:
           </span>
-          <span className="text-blue-600 block sm:inline sm:ml-1 font-bold break-words">
+          <span className="text-blue-600 dark:text-blue-400 block sm:inline sm:ml-1 font-bold break-words">
             "{opportunity.name}"
           </span>
         </p>

@@ -44,15 +44,15 @@ export default async function RedemptionEditPage({ params }) {
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10 space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          Edit <span className="text-blue-600">Redemption</span>{' '}
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          Edit <span className="text-blue-600 dark:text-blue-400">Redemption</span>{' '}
           <span className="text-gray-400 font-mono text-xl">
             #{String(redemption.id).slice(0, 8)}
           </span>
         </h1>
         <Link
           href="/admin/redemptions"
-          className="text-sm font-medium text-blue-600 hover:text-blue-800"
+          className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
         >
           ← Back to Redemptions
         </Link>

@@ -14,13 +14,13 @@ export default function PaginationControls({ page, hasNext }) {
         className={`px-3.5 sm:px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all ${
           page <= 1
             ? 'invisible pointer-events-none'
-            : 'text-slate-600 border-slate-200 bg-white hover:border-slate-900 hover:text-slate-900 shadow-sm'
+            : 'text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-900 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-white shadow-sm'
         }`}
       >
         Previous
       </Link>
 
-      <span className="text-xs font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+      <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
         Page {page}
       </span>
 
@@ -29,7 +29,7 @@ export default function PaginationControls({ page, hasNext }) {
         className={`px-3.5 sm:px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all ${
           !hasNext
             ? 'invisible pointer-events-none'
-            : 'text-slate-600 border-slate-200 bg-white hover:border-slate-900 hover:text-slate-900 shadow-sm'
+            : 'text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-900 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-white shadow-sm'
         }`}
       >
         Next

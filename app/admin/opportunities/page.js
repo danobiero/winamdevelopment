@@ -58,12 +58,12 @@ export default async function OpportunitiesPage({ searchParams }) {
       )}
 
       {/* --- HEADER SECTION --- */}
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Opportunities <span className="text-blue-600">Catalog</span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Opportunities <span className="text-blue-600 dark:text-blue-400">Catalog</span>
           </h1>
-          <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full w-fit uppercase tracking-wider">
             Displaying {opportunities.length} Results
           </div>
         </div>

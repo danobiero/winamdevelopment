@@ -76,27 +76,27 @@ export default async function AdminHomePage() {
   }
 
   return (
-    <div className="bg-slate-50 relative overflow-x-hidden w-full h-full">
+    <div className="bg-slate-50 dark:bg-slate-950 relative overflow-x-hidden w-full h-full">
       {/* Decorative Blobs */}
-      <div className="absolute -top-32 -left-20 w-64 h-64 sm:w-96 sm:h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute -top-32 -right-20 w-64 h-64 sm:w-96 sm:h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="absolute -top-32 -left-20 w-64 h-64 sm:w-96 sm:h-96 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="absolute -top-32 -right-20 w-64 h-64 sm:w-96 sm:h-96 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
       <div className="relative z-10 px-4 py-4 sm:py-6 lg:px-10">
         {/* SLIM HEADER SECTION */}
         <div className="max-w-7xl mx-auto mb-6 sm:mb-8">
-          <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+          <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Admin <span className="text-blue-600">Console</span>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Admin <span className="text-blue-600 dark:text-blue-400">Console</span>
               </h1>
-              <p className="text-slate-500 text-xs uppercase tracking-[0.2em] font-bold mt-1">
+              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-[0.2em] font-bold mt-1">
                 Management Dashboard
               </p>
             </div>
 
-            <div className="mt-2 sm:mt-0 flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm w-fit">
+            <div className="mt-2 sm:mt-0 flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm w-fit">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <p className="text-slate-600 text-xs font-medium">
+              <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">
                 {session.user.name}
               </p>
             </div>
@@ -118,7 +118,7 @@ export default async function AdminHomePage() {
               <Link
                 key={name}
                 href={href}
-                className="group relative flex flex-row sm:flex-col items-center sm:items-start bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm transition-all active:scale-95 hover:shadow-lg overflow-hidden"
+                className="group relative flex flex-row sm:flex-col items-center sm:items-start bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm transition-all active:scale-95 hover:shadow-lg overflow-hidden"
               >
                 {/* Visual Accent */}
                 <div
@@ -137,19 +137,19 @@ export default async function AdminHomePage() {
                 {/* Text */}
                 <div className="ml-4 sm:ml-0 sm:mt-5 flex-grow relative z-20">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-base sm:text-lg font-extrabold text-slate-800">
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-800 dark:text-slate-100">
                       {name}
                     </h3>
                     <ChevronRightIcon
                       className={`h-4 w-4 ${textColor} sm:opacity-0 sm:-translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0`}
                     />
                   </div>
-                  <p className="hidden sm:block mt-1 text-slate-500 text-xs leading-relaxed line-clamp-1 font-medium">
+                  <p className="hidden sm:block mt-1 text-slate-500 dark:text-slate-400 text-xs leading-relaxed line-clamp-1 font-medium">
                     {description}
                   </p>
                 </div>
 
-                <div className="hidden sm:flex mt-5 pt-4 border-t border-slate-50 items-center text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">
+                <div className="hidden sm:flex mt-5 pt-4 border-t border-slate-50 dark:border-slate-800 items-center text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   Go to {name}
                 </div>
               </Link>
