@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { deleteUnpaidApplicationAction } from './membership-actions';
+import { useToast } from '@/app/_lib/ToastContext';
 
 const formatCurrency = (value, currency = 'USD') =>
   new Intl.NumberFormat('en-US', {
@@ -27,6 +29,9 @@ export default function ApplicationViewModal({ application, events = [] }) {
 
   // NEW: State for managing tabs
   const [activeTab, setActiveTab] = useState('details');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const { showToast } = useToast();
 
   if (!application) return null;
 
@@ -45,6 +50,31 @@ export default function ApplicationViewModal({ application, events = [] }) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const handleConfirmDelete = () => {
+    startDeleteTransition(async () => {
+      try {
+        const result = await deleteUnpaidApplicationAction(application.id);
+        if (result?.error) {
+          showToast?.(
+            result.message || 'Failed to delete unpaid application.',
+            'error'
+          );
+          return;
+        }
+        showToast?.(
+          result?.message || 'Unpaid application deleted successfully.',
+          'success'
+        );
+        handleClose();
+        router.refresh();
+      } catch (err) {
+        console.error('Error deleting application:', err);
+        showToast?.(err.message || 'An unexpected error occurred.', 'error');
+      }
+    });
+  };
+
+  const isUnpaid = !application.application_fee_paid;
   const canProcess =
     (application.status === 'applied' || application.status === 'reviewing') &&
     application.application_fee_paid;
@@ -380,6 +410,56 @@ export default function ApplicationViewModal({ application, events = [] }) {
                 PROCESS
               </button>
             </div>
+          ) : isUnpaid ? (
+            confirmingDelete ? (
+              <div className="space-y-3 animate-in fade-in duration-150">
+                <p className="text-xs font-bold text-red-600 text-center">
+                  Permanently delete this unpaid application for{' '}
+                  <span className="underline">{application.full_name}</span>?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={() => setConfirmingDelete(false)}
+                    className="flex-1 bg-white border border-gray-200 text-gray-600 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-50 transition-all disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={handleConfirmDelete}
+                    className="flex-1 bg-red-600 border border-red-700 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent animate-spin rounded-full" />
+                        <span>Deleting...</span>
+                      </>
+                    ) : (
+                      'Confirm Delete'
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={handleClose}
+                  className="flex-1 bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-[0.98]"
+                >
+                  CLOSE
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="flex-1 bg-red-600 border border-red-700 text-white py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition-all active:scale-[0.98] shadow-sm"
+                >
+                  DELETE
+                </button>
+              </div>
+            )
           ) : (
             <button
               onClick={handleClose}

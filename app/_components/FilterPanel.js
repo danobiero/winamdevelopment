@@ -48,6 +48,8 @@ export default function FilterPanel({
     // Maintain current pagination/view params if any
     const page = searchParams.get('page');
     if (page) params.set('page', page);
+    const feeStatus = searchParams.get('feeStatus');
+    if (feeStatus) params.set('feeStatus', feeStatus);
 
     if (currentValues.searchValue?.trim()) {
       params.set(searchParamName, currentValues.searchValue.trim());

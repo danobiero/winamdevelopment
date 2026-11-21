@@ -14,14 +14,27 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export async function getMembershipApplications({ from, to, searchApplicant }) {
+export async function getMembershipApplications({
+  from,
+  to,
+  searchApplicant,
+  feeStatus,
+}) {
   let query = supabase
     .from('membership_applications')
     .select('*')
     .eq('is_archived', false);
 
   if (searchApplicant) {
-    query = query.or(`full_name.ilike.%${searchApplicant}%,email.ilike.%${searchApplicant}%`);
+    query = query.or(
+      `full_name.ilike.%${searchApplicant}%,email.ilike.%${searchApplicant}%`
+    );
+  }
+
+  if (feeStatus === 'paid') {
+    query = query.eq('application_fee_paid', true);
+  } else if (feeStatus === 'unpaid') {
+    query = query.or('application_fee_paid.eq.false,application_fee_paid.is.null');
   }
 
   const { data, error } = await query
@@ -32,14 +45,44 @@ export async function getMembershipApplications({ from, to, searchApplicant }) {
   return data;
 }
 
+export async function getMembershipApplicationCounts({ searchApplicant } = {}) {
+  let baseQuery = supabase
+    .from('membership_applications')
+    .select('id, application_fee_paid')
+    .eq('is_archived', false);
+
+  if (searchApplicant) {
+    baseQuery = baseQuery.or(
+      `full_name.ilike.%${searchApplicant}%,email.ilike.%${searchApplicant}%`
+    );
+  }
+
+  const { data, error } = await baseQuery;
+  if (error || !data) {
+    return { all: 0, paid: 0, unpaid: 0 };
+  }
+
+  const paid = data.filter((a) => Boolean(a.application_fee_paid)).length;
+  const unpaid = data.length - paid;
+
+  return {
+    all: data.length,
+    paid,
+    unpaid,
+  };
+}
+
 export async function getMembershipApplicationById(id) {
   const { data, error } = await supabase
     .from('membership_applications')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching application by ID:', error);
+    return null;
+  }
   return data;
 }
 
@@ -133,4 +176,72 @@ export async function getApplicationEvents(applicationId) {
 
   if (error) return [];
   return data;
+}
+
+export async function deleteUnpaidApplicationAction(applicationId) {
+  try {
+    const session = await auth();
+    const adminId = session?.user?.adminId;
+    if (!adminId) {
+      return { error: true, message: 'Unauthorized: Admin access required.' };
+    }
+
+    if (!applicationId) {
+      return { error: true, message: 'Application ID is required.' };
+    }
+
+    // 1. Fetch application and verify it is unpaid
+    const { data: application, error: fetchError } = await supabase
+      .from('membership_applications')
+      .select('id, full_name, email, application_fee_paid')
+      .eq('id', applicationId)
+      .maybeSingle();
+
+    if (fetchError || !application) {
+      return {
+        error: true,
+        message: fetchError?.message || 'Application record not found.',
+      };
+    }
+
+    if (application.application_fee_paid) {
+      return {
+        error: true,
+        message: 'Cannot delete a paid membership application.',
+      };
+    }
+
+    // 2. Remove any related audit history events first
+    await supabase
+      .from('membership_application_events')
+      .delete()
+      .eq('application_id', applicationId);
+
+    // 3. Delete the unpaid application
+    const { error: deleteError } = await supabase
+      .from('membership_applications')
+      .delete()
+      .eq('id', applicationId);
+
+    if (deleteError) {
+      return {
+        error: true,
+        message: deleteError.message || 'Failed to delete unpaid application.',
+      };
+    }
+
+    revalidatePath('/admin/applications');
+    revalidatePath('/membership');
+
+    return {
+      success: true,
+      message: `Unpaid application for ${application.full_name || application.email} deleted successfully.`,
+    };
+  } catch (err) {
+    console.error('deleteUnpaidApplicationAction error:', err);
+    return {
+      error: true,
+      message: err.message || 'An unexpected error occurred while deleting the application.',
+    };
+  }
 }
